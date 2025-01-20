@@ -79,8 +79,21 @@ describe('Events', () => {
 
 			mouse.down();
 			expect(fired).to.be.false;
+			mouse.move([2, 2]);
+			expect(fired).to.be.false;
 			mouse.up();
 			expect(fired).to.be.true;
+		});
+
+		it('doesn\'t fire `drag-end` event on click without drag', () => {
+			let fired = false;
+
+			drgInstance.on('dragEnd', () => fired = true);
+
+			mouse.down();
+			expect(fired).to.be.false;
+			mouse.up();
+			expect(fired).to.be.false;
 		});
 
 		it('passes `DragEventWrapper` object to all event handlers', () => {

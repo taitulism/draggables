@@ -30,10 +30,10 @@ toggleContainerBtn.addEventListener('click', () => {
 
 const d = draggables();
 
-// d.on('grab', () => console.log('grabbed'))
-// 	.on('dragStart', () => console.log('dragStart'))
-// 	.on('dragging', () => console.log('dragging'))
-// 	.on('dragEnd', () => console.log('droped'));
+d.on('grab', () => console.log('grabbed'))
+	.on('dragStart', () => console.log('dragStart'))
+	.on('dragging', () => console.log('dragging'))
+	.on('dragEnd', () => console.log('droped'));
 
 // document.addEventListener('mousemove', (ev) => {
 // 	console.log(ev.x, ev.y);

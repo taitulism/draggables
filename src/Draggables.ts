@@ -135,14 +135,16 @@ export class Draggables {
 		window.removeEventListener(MOUSE_UP, this.onDrop);
 
 		const {activeDrag} = this;
-		const {elm, moveX, moveY, prevX, prevY} = activeDrag;
-		const elmMoveX = moveX || prevX;
-		const elmMoveY = moveY || prevY;
+		const {hasStarted, elm, moveX, moveY, prevX, prevY} = activeDrag;
 
-		elm.dataset.dragPosition = `${elmMoveX},${elmMoveY}`;
+		if (hasStarted) {
+			const elmMoveX = moveX || prevX;
+			const elmMoveY = moveY || prevY;
+			elm.dataset.dragPosition = `${elmMoveX},${elmMoveY}`;
+			this.events.dragEnd?.({ev, elm, relPos: [elmMoveX, elmMoveY]});
+		}
+
 		delete elm.dataset.dragActive;
-
 		this.contextElm!.style.userSelect = '';
-		this.events.dragEnd?.({ev, elm, relPos: [elmMoveX, elmMoveY]});
 	};
 }
