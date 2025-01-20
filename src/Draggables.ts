@@ -78,7 +78,7 @@ export class Draggables {
 	}
 
 	private onDragStart = (ev: PointerEvent) => {
-		if (!this.isEnabled) return;
+		if (!this.isEnabled || ev.button !== 0) return;
 
 		const draggableElm = getDraggable(ev.target);
 		if (!draggableElm) return;

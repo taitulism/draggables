@@ -14,6 +14,7 @@ function simulateMouseDown (elm: HTMLElement, point: Point) {
 		clientX: x,
 		clientY: y,
 		pointerId: 1,
+		button: 0,
 	});
 
 	elm.dispatchEvent(event);
@@ -25,6 +26,7 @@ function simulateMouseMove (elm: HTMLElement, point: Point) {
 		clientX: x,
 		clientY: y,
 		pointerId: 1,
+		button: 0,
 	});
 
 	elm.dispatchEvent(event);
@@ -36,6 +38,7 @@ function simulateMouseUp (elm: HTMLElement, point: Point) {
 		clientX: x,
 		clientY: y,
 		pointerId: 1,
+		button: 0,
 	});
 
 	elm.dispatchEvent(event);
