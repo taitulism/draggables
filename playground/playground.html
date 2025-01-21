@@ -53,6 +53,11 @@
 			height: 200px;
 			border: 1px solid gray;
 		}
+
+		#test-btn {
+			font-size: 14px;
+			padding: .1rem 0.18rem;
+		}
 	</style>
 </head>
 <body>
@@ -69,13 +74,14 @@
 		>
 			<div id="grips-container">
 				<div id="grip-a" class="grip" UNdata-drag-role="grip">A</div>
-				<div id="grip-b" class="grip" >B</div>
+				<div id="grip-b" class="grip" >B <br />
+					<button id="test-btn" data-drag-prevent-click>button</button>
+				</div>
 			</div>
 		</div>
 		<div id="static"></div>
 	</div>
 
 	<script type="module" src="./playground.ts"></script>
-</script>
 </body>
 </html>

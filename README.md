@@ -64,7 +64,7 @@ Using different data attributes you can control the dragging behavior.
 
 > To make an element "draggable" set its `data-drag-role` attribute to `"draggable"`.
 
-* `data-drag-zone` - set this attribute (key only, no value) on the element you want to define as the boundary element of its descendant draggable elements (see [Boundary Element](#boundary-element)).
+* `data-drag-zone` - Set this attribute (key only, no value) on the element you want to define as the boundary element of its descendant draggable elements (see [Boundary Element](#boundary-element)).
 * `data-drag-role` = `"draggable" | "grip"`
 	* `"draggable"` - Makes the element draggable.  
 	Can be used together with:
@@ -78,7 +78,9 @@ Using different data attributes you can control the dragging behavior.
 
 			Set this attribute when you need to toggle draggability of a draggable element.  
 			This toggles draggability of a single draggable element. If you want to disable all draggables in a context see [`.disable()`](#enable--disable) below.
-	* `"grip"` - The element becomes the handle of its closest draggable element. When used, draggable elements can only be dragged when grabbed by their grip element. A grip must be a descendant of a draggable element (throws an error when it's not).  
+	* `"grip"` - The element becomes the handle of its closest draggable element. When used, draggable elements can only be dragged when grabbed by their grip element. A grip must be a descendant of a draggable element (throws an error when it's not).
+* `data-drag-prevent-click` - When dragging an element by one of its clickable elements (button, checkbox etc.) they get clicked on drop. Set this attribute (key only, no value) on clickable elements inside a draggable element to prevent their click event on drop.
+
 
 ### Example:
 ```html
@@ -93,6 +95,9 @@ Using different data attributes you can control the dragging behavior.
    </div>
    <div class="card-body">
       Grab the title to move the card
+      <button data-drag-prevent-click>
+         Click
+      </button>
    </div>
 </div>
 ```

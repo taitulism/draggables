@@ -86,3 +86,20 @@ function createGripElm (id: string) {
 
 	return grip;
 }
+
+export function addButton (elm: HTMLElement, btn?: HTMLButtonElement) {
+	btn ||= createButton();
+
+	elm.appendChild(btn);
+	return btn;
+}
+
+function createButton () {
+	const btn = document.createElement('button');
+
+	btn.id = 'test-btn';
+	btn.textContent = 'click';
+	btn.dataset.dragPreventClick = ''; // Key Only
+
+	return btn;
+}

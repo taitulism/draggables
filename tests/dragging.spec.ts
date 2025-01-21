@@ -250,16 +250,18 @@ describe('Dragging Around', () => {
 	});
 
 	describe('Other Cases', () => {
-		it('regular click before drag doesn\'t reset position', () => {
-			// move away
+		it('doesn\'t reset position on click', () => {
+			// drag
 			mouse.down().move([50, 50]).up();
+			expect(drgElm.style.translate).to.equal(translate(50, 50));
 
 			// click
 			mouse.down().up();
+			expect(drgElm.style.translate).to.equal(translate(50, 50));
 
 			// drag
-			mouse.down().move([10, 10]);
-			expect(drgElm.style.translate).to.equal(translate(60, 60));
+			mouse.down().move([11, 11]);
+			expect(drgElm.style.translate).to.equal(translate(61, 61));
 
 			mouse.up();
 		});

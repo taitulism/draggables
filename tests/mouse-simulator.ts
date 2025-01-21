@@ -1,6 +1,6 @@
 import type {Point} from '../src/types';
 
-const getElmFromPoint = (p: Point) => document.elementFromPoint(...p) as HTMLElement;
+const getElmFromPoint = (p: Point) => document.elementFromPoint(...p) as Element;
 
 const createEvent = (type: string, props: PointerEventInit = {}) => {
 	const event = new window.Event(type, {bubbles: true});
@@ -8,7 +8,7 @@ const createEvent = (type: string, props: PointerEventInit = {}) => {
 	return event;
 };
 
-function simulateMouseDown (elm: HTMLElement, point: Point) {
+function simulateMouseDown (elm: Element, point: Point) {
 	const [x, y] = point;
 	const event = createEvent('pointerdown', {
 		clientX: x,
@@ -17,10 +17,10 @@ function simulateMouseDown (elm: HTMLElement, point: Point) {
 		button: 0,
 	});
 
-	elm.dispatchEvent(event);
+	return elm.dispatchEvent(event);
 }
 
-function simulateMouseMove (elm: HTMLElement, point: Point) {
+function simulateMouseMove (elm: Element, point: Point) {
 	const [x, y] = point;
 	const event = createEvent('pointermove', {
 		clientX: x,
@@ -29,10 +29,10 @@ function simulateMouseMove (elm: HTMLElement, point: Point) {
 		button: 0,
 	});
 
-	elm.dispatchEvent(event);
+	return elm.dispatchEvent(event);
 }
 
-function simulateMouseUp (elm: HTMLElement, point: Point) {
+function simulateMouseUp (elm: Element, point: Point) {
 	const [x, y] = point;
 	const event = createEvent('pointerup', {
 		clientX: x,
@@ -41,12 +41,26 @@ function simulateMouseUp (elm: HTMLElement, point: Point) {
 		button: 0,
 	});
 
-	elm.dispatchEvent(event);
+	return elm.dispatchEvent(event);
+}
+
+function simulateMouseClick (elm: Element, point: Point) {
+	const [x, y] = point;
+	const event = createEvent('click', {
+		clientX: x,
+		clientY: y,
+		pointerId: 1,
+		button: 0,
+	});
+
+	return elm.dispatchEvent(event);
 }
 
 export function createMouseSimulator () {
 	let currentPosition: Point = [0, 0];
 	let isDown = false;
+	let isClick = false;
+	let mouseDownElm: Element | undefined;
 
 	return {
 		get currentPosition () {
@@ -71,10 +85,10 @@ export function createMouseSimulator () {
 				currentPosition[1] += offset[1];
 			}
 
-			const elm = getElmFromPoint(currentPosition);
-			if (!elm) throw new Error('No element in current position');
+			mouseDownElm = getElmFromPoint(currentPosition);
+			if (!mouseDownElm) throw new Error('No element in current position');
 
-			simulateMouseDown(elm, currentPosition);
+			simulateMouseDown(mouseDownElm, currentPosition);
 			return this;
 		},
 
@@ -95,12 +109,38 @@ export function createMouseSimulator () {
 			const elm = getElmFromPoint(currentPosition) || document.documentElement;
 
 			simulateMouseUp(elm, currentPosition);
+
+			if (!isClick && elm === mouseDownElm) {
+				simulateMouseClick(elm, currentPosition);
+			}
+
+			mouseDownElm = undefined;
+
+			return this;
+		},
+
+		click (offset?: Point) {
+			isClick = true;
+			this.down(offset).up();
+
+			if (offset) {
+				currentPosition[0] += offset[0];
+				currentPosition[1] += offset[1];
+			}
+
+			const elm = getElmFromPoint(currentPosition);
+
+			simulateMouseClick(elm, currentPosition);
+
+			isClick = false;
 			return this;
 		},
 
 		reset () {
 			currentPosition = [0, 0];
 			isDown = false;
+			isClick = false;
+			mouseDownElm = undefined;
 		},
 	};
 }

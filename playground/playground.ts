@@ -2,16 +2,11 @@ import {draggables} from '../src';
 
 const container = document.getElementById('the-container')!;
 const drgElm = document.getElementById('drag-me')!;
+const testBtn = document.getElementById('test-btn')!;
 const toggleAxisBtn = document.getElementById('toggle-axis-btn')!;
 const toggleContainerBtn = document.getElementById('toggle-container-btn')!;
 const toggleDragBtn = document.getElementById('toggle-draggability-btn')!;
 // const staticElm = document.getElementById('static')!;
-
-toggleDragBtn.addEventListener('click', () => {
-	d.isEnabled
-		? d.disable()
-		: d.enable();
-}, false);
 
 toggleAxisBtn.addEventListener('click', () => {
 	if (drgElm.dataset.dragAxis === 'x') drgElm.dataset.dragAxis = 'y';
@@ -24,9 +19,20 @@ toggleContainerBtn.addEventListener('click', () => {
 	else container.dataset.dragZone = '';
 }, false);
 
+toggleDragBtn.addEventListener('click', () => {
+	d.isEnabled
+		? d.disable()
+		: d.enable();
+}, false);
+
 
 // const gripHandle = document.getElementById('grips-container')!;
 // const gripHandle = document.getElementById('grip-a')!;
+
+testBtn.addEventListener('click', (ev) => {
+	console.log(ev);
+	alert('Clicked');
+});
 
 const d = draggables();
 

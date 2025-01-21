@@ -11,6 +11,9 @@ const getClosestDraggable = (elm: HTMLElement) => elm.closest(DraggableSelector)
 export const isDisabled = (dataset: DOMStringMap) =>
 	'dragDisabled' in dataset && dataset.dragDisabled !== 'false';
 
+export const shouldStopClick = (evTarget: EventTarget) =>
+	evTarget instanceof HTMLElement && 'dragPreventClick' in evTarget.dataset;
+
 export const createEventsObj = (): EventsObj => ({
 	grab: undefined,
 	dragStart: undefined,

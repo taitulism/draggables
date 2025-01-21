@@ -8,6 +8,7 @@ import {
 	isDisabled,
 	drag,
 	DragzoneSelector,
+	shouldStopClick,
 } from './internals';
 
 const MOUSE_DOWN = 'pointerdown';
@@ -140,8 +141,18 @@ export class Draggables {
 		if (hasStarted) {
 			const elmMoveX = moveX || prevX;
 			const elmMoveY = moveY || prevY;
+
 			elm.dataset.dragPosition = `${elmMoveX},${elmMoveY}`;
 			this.events.dragEnd?.({ev, elm, relPos: [elmMoveX, elmMoveY]});
+
+			if (shouldStopClick(ev.target!)) {
+				ev.target?.addEventListener('click', (clickEv: Event) => {
+					clickEv.stopImmediatePropagation();
+				}, {
+					once:true,
+					capture: true,
+				});
+			}
 		}
 
 		delete elm.dataset.dragActive;
