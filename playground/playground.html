@@ -73,13 +73,15 @@
 			data-drag-disabled="false"
 		>
 			<div id="grips-container">
-				<div id="grip-a" class="grip" UNdata-drag-role="grip">A</div>
-				<div id="grip-b" class="grip" >B <br />
+				<div id="grip-a" class="grip" UNdata-drag-role="grip">A <br />
 					<button id="test-btn" data-drag-prevent-click>button</button>
+				</div>
+				<div id="grip-b" class="grip" >B <br />
+					<input type="checkbox" id="test-checkbox" data-drag-prevent-click />
 				</div>
 			</div>
 		</div>
-		<div id="static"></div>
+		<!-- <div id="static"></div> -->
 	</div>
 
 	<script type="module" src="./playground.ts"></script>

@@ -103,3 +103,20 @@ function createButton () {
 
 	return btn;
 }
+
+export function addCheckbox (elm: HTMLElement, checkbox?: HTMLInputElement) {
+	checkbox ||= createCheckbox();
+
+	elm.appendChild(checkbox);
+	return checkbox;
+}
+
+function createCheckbox () {
+	const checkbox = document.createElement('input');
+
+	checkbox.type = 'checkbox';
+	checkbox.id = 'test-checkbox';
+	checkbox.dataset.dragPreventClick = ''; // Key Only
+
+	return checkbox;
+}

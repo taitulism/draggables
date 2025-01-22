@@ -10,6 +10,7 @@ import {
 	addGripChild,
 	createDraggableElm,
 	addButton,
+	addCheckbox,
 } from './dom-utils';
 
 describe('Data Attributes', () => {
@@ -162,6 +163,8 @@ describe('Data Attributes', () => {
 			const btn = addButton(drgElm);
 			const spy = vi.fn();
 
+			mouse.moveToElm(btn);
+
 			// test click
 			btn.addEventListener('click', spy);
 			mouse.down().up();
@@ -177,6 +180,29 @@ describe('Data Attributes', () => {
 			expect(spy).toHaveBeenCalledOnce();
 
 			btn.remove();
+		});
+
+		it('prevents change of underlying interactive element (e.g. drag from a checkbox)', () => {
+			const checkbox = addCheckbox(drgElm);
+			const spy = vi.fn();
+
+			mouse.moveToElm(checkbox);
+
+			// test toggle
+			checkbox.addEventListener('click', spy);
+			mouse.down().up();
+			checkbox.removeEventListener('click', spy);
+
+			expect(spy).toHaveBeenCalledOnce();
+
+			// drag from checkbox
+			checkbox.addEventListener('click', spy);
+			mouse.down().move([50, 50]).up();
+			checkbox.removeEventListener('click', spy);
+
+			expect(spy).toHaveBeenCalledOnce();
+
+			checkbox.remove();
 		});
 	});
 });

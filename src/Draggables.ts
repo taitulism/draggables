@@ -146,7 +146,8 @@ export class Draggables {
 
 			if (shouldStopClick(ev.target!)) {
 				ev.target?.addEventListener('click', (clickEv: Event) => {
-					clickEv.stopImmediatePropagation();
+					clickEv.stopPropagation(); // for button
+					clickEv.preventDefault(); // for checkbox
 				}, {
 					once:true,
 					capture: true,

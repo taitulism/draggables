@@ -3,6 +3,7 @@ import {draggables} from '../src';
 const container = document.getElementById('the-container')!;
 const drgElm = document.getElementById('drag-me')!;
 const testBtn = document.getElementById('test-btn')!;
+const testCheckbox = document.getElementById('test-checkbox')!;
 const toggleAxisBtn = document.getElementById('toggle-axis-btn')!;
 const toggleContainerBtn = document.getElementById('toggle-container-btn')!;
 const toggleDragBtn = document.getElementById('toggle-draggability-btn')!;
@@ -30,8 +31,13 @@ toggleDragBtn.addEventListener('click', () => {
 // const gripHandle = document.getElementById('grip-a')!;
 
 testBtn.addEventListener('click', (ev) => {
-	console.log(ev);
-	alert('Clicked');
+	console.log('Clicked', ev);
+});
+
+testCheckbox.addEventListener('click', (ev) => {
+	// ev.preventDefault();
+
+	console.log((ev.target as HTMLInputElement).checked, ev);
 });
 
 const d = draggables();
