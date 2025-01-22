@@ -97,8 +97,8 @@ export function createActiveDrag (
 		// dragzoneElm: dragzoneElm.getBoundingClientRect(),
 		dragzoneBox: dragzoneElm.getBoundingClientRect(),
 		axis: dragAxis as DragAxis,
-		mouseStartX: !dragAxis || dragAxis === 'x' ? ev.clientX : 0,
-		mouseStartY: !dragAxis || dragAxis === 'y' ? ev.clientY : 0,
+		mouseStartX: ev.clientX,
+		mouseStartY: ev.clientY,
 		moveX: 0,
 		moveY: 0,
 		prevX: 0,
@@ -114,39 +114,29 @@ export function createActiveDrag (
 	return activeDrag;
 }
 
-export function drag (activeDrag: ActiveDrag, ev: PointerEvent) {
-	const {box, dragzoneBox, axis, mouseStartX, mouseStartY} = activeDrag;
+export function keepInBoundary (elmMoveX: number, elmMoveY: number, activeDrag: ActiveDrag) {
+	let xInBoundary = elmMoveX;
+	let yInBoundary = elmMoveY;
 
-	let moveFromPrevX = 0;
-	let moveFromPrevY = 0;
+	const {box, dragzoneBox} = activeDrag;
 
-	if (!axis || axis === 'x') {
-		const mouseMoveX = ev.clientX - mouseStartX;
-		const elmX = box.x + mouseMoveX;
-
-		moveFromPrevX = mouseMoveX;
-
-		if (elmX < dragzoneBox.x) {
-			moveFromPrevX += dragzoneBox.x - elmX;
+	if (elmMoveX) {
+		if (box.x + elmMoveX < dragzoneBox.x) {
+			xInBoundary = dragzoneBox.x - box.x;
 		}
-		else if (elmX + box.width > dragzoneBox.right) {
-			moveFromPrevX -= elmX + box.width - dragzoneBox.right;
+		else if (box.right + elmMoveX > dragzoneBox.right) {
+			xInBoundary = dragzoneBox.right - box.right;
 		}
 	}
 
-	if (!axis || axis === 'y') {
-		const mouseMoveY = ev.clientY - mouseStartY;
-		const elmY = box.y + mouseMoveY;
-
-		moveFromPrevY = mouseMoveY;
-
-		if (elmY < dragzoneBox.y) {
-			moveFromPrevY += dragzoneBox.y - elmY;
+	if (elmMoveY) {
+		if (box.y + elmMoveY < dragzoneBox.y) {
+			yInBoundary = dragzoneBox.y - box.y;
 		}
-		else if (elmY + box.height > dragzoneBox.bottom) {
-			moveFromPrevY -= elmY + box.height - dragzoneBox.bottom;
+		else if (box.bottom + elmMoveY > dragzoneBox.bottom) {
+			yInBoundary = dragzoneBox.bottom - box.bottom;
 		}
 	}
 
-	return [moveFromPrevX, moveFromPrevY];
+	return [xInBoundary, yInBoundary];
 }

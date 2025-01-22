@@ -158,7 +158,7 @@ d.enable();
 ### **.on(eventName, callback) / .off(eventName)**
 Start and stop listening to drag events:
 * **`'grab'`** - fires on `pointerdown` on a draggable element.
-* **`'dragStart'`** - drag started, fires on the first `pointermove` on a draggable element (after `pointerdown`).
+* **`'dragStart'`** - drag started, fires on the first `pointermove` that crosses the threshold (3px, hardcoded).
 * **`'dragging'`** - dragging around, fires on every `pointermove` except the first one.
 * **`'dragEnd'`** - dragging ended, fires on `pointerup`.
 

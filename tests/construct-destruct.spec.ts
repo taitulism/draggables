@@ -319,16 +319,16 @@ describe('draggables', () => {
 			expect(grabs).to.equal(1);
 
 			expect(starts).to.equal(0);
-			mouse.move([2, 2]);
+			mouse.move([5, 5]);
 			expect(starts).to.equal(1);
 
 			expect(moves).to.equal(0);
-			mouse.move([2, 2]);
+			mouse.move([5, 5]);
 			expect(moves).to.equal(1);
 
-			mouse.move([2, 2]);
-			mouse.move([2, 2]);
-			mouse.move([2, 2]);
+			mouse.move([5, 5]);
+			mouse.move([5, 5]);
+			mouse.move([5, 5]);
 			expect(starts).to.equal(1);
 			expect(moves).to.equal(4);
 
@@ -337,12 +337,12 @@ describe('draggables', () => {
 			expect(drops).to.equal(1);
 
 			expect(moves).to.equal(4);
-			mouse.move([2, 2]);
+			mouse.move([5, 5]);
 			expect(moves).to.equal(4);
 
 			drgInstance.destroy();
 
-			mouse.down().move([2, 2]).up();
+			mouse.down().move([5, 5]).up();
 			expect(grabs).to.equal(1);
 			expect(starts).to.equal(1);
 			expect(moves).to.equal(4);

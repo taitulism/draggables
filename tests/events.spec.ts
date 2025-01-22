@@ -52,7 +52,7 @@ describe('Events', () => {
 			expect(fired).to.be.false;
 			mouse.down();
 			expect(fired).to.be.false;
-			mouse.move([2, 2]);
+			mouse.move([5, 5]);
 			expect(fired).to.be.true;
 			mouse.up();
 		});
@@ -64,9 +64,9 @@ describe('Events', () => {
 
 			mouse.down();
 			expect(fired).to.be.false;
-			mouse.move([2, 2]);
+			mouse.move([5, 5]);
 			expect(fired).to.be.false;
-			mouse.move([2, 2]);
+			mouse.move([5, 5]);
 			expect(fired).to.be.true;
 
 			mouse.up();
@@ -79,7 +79,7 @@ describe('Events', () => {
 
 			mouse.down();
 			expect(fired).to.be.false;
-			mouse.move([2, 2]);
+			mouse.move([5, 5]);
 			expect(fired).to.be.false;
 			mouse.up();
 			expect(fired).to.be.true;
@@ -104,7 +104,7 @@ describe('Events', () => {
 			drgInstance.on('dragging', spy);
 			drgInstance.on('dragEnd', spy);
 
-			mouse.down().move([2, 2]).move([7, 8]).up();
+			mouse.down().move([5, 5]).move([7, 8]).up();
 
 			expect(spy).to.toHaveBeenCalledTimes(4);
 			expect(spy.mock.calls[0][0].elm).toBe(drgElm);
@@ -116,9 +116,9 @@ describe('Events', () => {
 			expect(spy.mock.calls[2][0].ev).to.be.instanceOf(Event);
 			expect(spy.mock.calls[3][0].ev).to.be.instanceOf(Event);
 			expect(spy.mock.calls[0][0].relPos).to.deep.equal([0, 0]);
-			expect(spy.mock.calls[1][0].relPos).to.deep.equal([2, 2]);
-			expect(spy.mock.calls[2][0].relPos).to.deep.equal([9, 10]);
-			expect(spy.mock.calls[3][0].relPos).to.deep.equal([9, 10]);
+			expect(spy.mock.calls[1][0].relPos).to.deep.equal([5, 5]);
+			expect(spy.mock.calls[2][0].relPos).to.deep.equal([12, 13]);
+			expect(spy.mock.calls[3][0].relPos).to.deep.equal([12, 13]);
 		});
 	});
 
@@ -155,19 +155,19 @@ describe('Events', () => {
 			drgInstance.on('dragStart', () => count++);
 
 			expect(count).to.equal(0);
-			mouse.down().move([2, 2]);
+			mouse.down().move([5, 5]);
 			expect(count).to.equal(1);
 			mouse.up();
 
 			expect(count).to.equal(1);
-			mouse.down().move([2, 2]);
+			mouse.down().move([5, 5]);
 			expect(count).to.equal(2);
 			mouse.up();
 
 			drgInstance.off('dragStart');
 
 			expect(count).to.equal(2);
-			mouse.down().move([2, 2]);
+			mouse.down().move([5, 5]);
 			expect(count).to.equal(2);
 			mouse.up();
 		});
@@ -178,16 +178,16 @@ describe('Events', () => {
 			drgInstance.on('dragging', () => count++);
 
 			mouse.down();
-			mouse.move([2, 2]);
+			mouse.move([5, 5]);
 			expect(count).to.equal(0);
-			mouse.move([2, 2]);
+			mouse.move([5, 5]);
 			expect(count).to.equal(1);
 			mouse.up();
 
 			mouse.down();
-			mouse.move([2, 2]);
+			mouse.move([5, 5]);
 			expect(count).to.equal(1);
-			mouse.move([2, 2]);
+			mouse.move([5, 5]);
 			expect(count).to.equal(2);
 			mouse.up();
 
@@ -195,9 +195,9 @@ describe('Events', () => {
 
 			mouse.down();
 			expect(count).to.equal(2);
-			mouse.move([2, 2]);
+			mouse.move([5, 5]);
 			expect(count).to.equal(2);
-			mouse.move([2, 2]);
+			mouse.move([5, 5]);
 			expect(count).to.equal(2);
 			mouse.up();
 		});
@@ -208,14 +208,14 @@ describe('Events', () => {
 			drgInstance.on('dragEnd', () => count++);
 
 			mouse.down();
-			mouse.move([2, 2]);
+			mouse.move([5, 5]);
 
 			expect(count).to.equal(0);
 			mouse.up();
 			expect(count).to.equal(1);
 
 			mouse.down();
-			mouse.move([2, 2]);
+			mouse.move([5, 5]);
 
 			expect(count).to.equal(1);
 			mouse.up();
@@ -224,7 +224,7 @@ describe('Events', () => {
 			drgInstance.off('dragEnd');
 
 			mouse.down();
-			mouse.move([2, 2]);
+			mouse.move([5, 5]);
 
 			expect(count).to.equal(2);
 			mouse.up();

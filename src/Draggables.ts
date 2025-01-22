@@ -6,9 +6,9 @@ import {
 	createActiveDrag,
 	pointerWithinPadding,
 	isDisabled,
-	drag,
 	DragzoneSelector,
 	shouldStopClick,
+	keepInBoundary,
 } from './internals';
 
 const MOUSE_DOWN = 'pointerdown';
@@ -107,28 +107,35 @@ export class Draggables {
 		if (!this.isEnabled || isDisabled(evTarget.dataset)) return;
 
 		const {activeDrag, events} = this;
-		const {hasStarted, elm, prevX, prevY} = activeDrag;
-		const [moveFromPrevX, moveFromPrevY] = drag(activeDrag, ev);
-		const elmMoveX = moveFromPrevX + prevX;
-		const elmMoveY = moveFromPrevY + prevY;
+		const {axis, hasStarted, elm, prevX, prevY, mouseStartX, mouseStartY} = activeDrag;
 
-		moveElm(elm, elmMoveX, elmMoveY);
+		const mouseMoveX = ev.clientX - mouseStartX;
+		const mouseMoveY = ev.clientY - mouseStartY;
 
-		activeDrag.moveX = elmMoveX;
-		activeDrag.moveY = elmMoveY;
+		const elmMoveX = !axis || axis === 'x' ? mouseMoveX : 0;
+		const elmMoveY = !axis || axis === 'y' ? mouseMoveY : 0;
 
-		// threshold
-		// const movedX = Math.abs(ev.clientX - activeDrag.mouseStartX);
-		// const movedY = Math.abs(ev.clientY - activeDrag.mouseStartY);
-		if (!hasStarted) {
-			// && movedX + movedY < 20
-			activeDrag.hasStarted = true;
-			events.dragStart?.({ev, elm, relPos: [elmMoveX, elmMoveY]});
-			// return;
+		const [elmXInBoundary, elmYInBoundary] = keepInBoundary(elmMoveX, elmMoveY, activeDrag);
+
+		const translateX = prevX + elmXInBoundary;
+		const translateY = prevY + elmYInBoundary;
+
+		if (hasStarted) {
+			moveElm(elm, translateX, translateY);
+			events.dragging?.({ev, elm, relPos: [translateX, translateY]});
 		}
 		else {
-			events.dragging?.({ev, elm, relPos: [elmMoveX, elmMoveY]});
+			const distance = Math.sqrt(mouseMoveX ** 2 + mouseMoveY ** 2);
+
+			if (distance > 3) {
+				moveElm(elm, translateX, translateY);
+				activeDrag.hasStarted = true;
+				events.dragStart?.({ev, elm, relPos: [translateX, translateY]});
+			}
 		}
+
+		activeDrag.moveX = translateX;
+		activeDrag.moveY = translateY;
 	};
 
 	private onDrop = (ev: PointerEvent) => {
@@ -139,11 +146,11 @@ export class Draggables {
 		const {hasStarted, elm, moveX, moveY, prevX, prevY} = activeDrag;
 
 		if (hasStarted) {
-			const elmMoveX = moveX || prevX;
-			const elmMoveY = moveY || prevY;
+			const translateX = moveX || prevX;
+			const translateY = moveY || prevY;
 
-			elm.dataset.dragPosition = `${elmMoveX},${elmMoveY}`;
-			this.events.dragEnd?.({ev, elm, relPos: [elmMoveX, elmMoveY]});
+			elm.dataset.dragPosition = `${translateX},${translateY}`;
+			this.events.dragEnd?.({ev, elm, relPos: [translateX, translateY]});
 
 			if (shouldStopClick(ev.target!)) {
 				ev.target?.addEventListener('click', (clickEv: Event) => {

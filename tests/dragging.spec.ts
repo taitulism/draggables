@@ -1,4 +1,4 @@
-import {beforeAll, beforeEach, afterEach, afterAll, describe, it, expect} from 'vitest';
+import {beforeAll, beforeEach, afterEach, afterAll, describe, it, expect, vi} from 'vitest';
 import {type Draggables, draggables} from '../src';
 import {createContainerElm, createDraggableElm} from './dom-utils';
 import {translate} from './utils';
@@ -105,6 +105,35 @@ describe('Dragging Around', () => {
 
 			mouse.move([11, 11]);
 			expect(drgElm.style.translate).to.equal(translate(10, 10));
+		});
+	});
+
+	describe('Threshold', () => {
+		it('doesn\'t start dragging until mouse move breaks threshold (3)', () => {
+			const spy = vi.fn();
+
+			drgInstance.on('dragStart', spy);
+			drgInstance.on('dragging', spy);
+
+			mouse.down();
+
+			mouse.move([1, 0]);
+			expect(drgElm.style.translate).to.be.empty;
+			mouse.move([0, 1]);
+			expect(drgElm.style.translate).to.be.empty;
+			mouse.move([1, 0]);
+			expect(drgElm.style.translate).to.be.empty;
+
+			expect(spy).not.toHaveBeenCalled();
+			mouse.move([1, 0]);
+			expect(drgElm.style.translate).to.equal(translate(3, 1));
+			expect(spy).toHaveBeenCalledOnce();
+
+			mouse.move([1, 0]);
+			expect(drgElm.style.translate).to.equal(translate(4, 1));
+			expect(spy).toHaveBeenCalledTimes(2);
+
+			mouse.up();
 		});
 	});
 
