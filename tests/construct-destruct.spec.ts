@@ -77,30 +77,6 @@ describe('draggables', () => {
 			});
 		});
 
-		describe('When called again with the same context element', () => {
-			it('throws an error', () => {
-				// test default <body>
-				let drgInstance1: Draggables;
-				const badFn1 = () => {
-					drgInstance1 = draggables();
-					/* errInstance = */ draggables();
-				};
-
-				expect(badFn1).to.throw('already bound and cannot be bound twice');
-				drgInstance1!.destroy();
-
-				// test given element
-				let drgInstance2: Draggables;
-				const badFn2 = () => {
-					drgInstance2 = draggables(testContainerElm);
-					/* errInstance = */ draggables(testContainerElm);
-				};
-
-				expect(badFn2).to.throw('already bound and cannot be bound twice');
-				drgInstance2!.destroy();
-			});
-		});
-
 		describe('When one context element contains another', () => {
 			it('only triggers the inner one', () => {
 				const drgInstance1 = draggables();

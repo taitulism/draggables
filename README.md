@@ -42,14 +42,9 @@ Default - `document.body`
 
 >NOTE: The context element is not necessarily a draggable element.
 
-At creation, passing an element to the `draggables(ctxElm)` function binds a *single* event listener to the passed in element. This starts listening to `pointerdown` events on draggable elements within that context element. If no element was passed in at creation the default context element will be the `<body>` element.
+The context element is the element that listens to `pointerdown` events for all draggable elements within it.
+Each instance binds a *single* event listener to the context element, or to the `<body>` element, if ommited.
 
-Many times the context element would be the immediate parent of the draggable elements, the "board" of the "stickynotes". If you have more than one "board" you can either make a single context for all off them (a mutual ancestor or the `<body>`) or prefer to work with multiple instances/contexts.
-
-Things to consider:
-1. There's one `Draggables` instace per context element.
-2. Each instance/context binds its own `pointerdown` event listener.
-3. Each context is the boundary element to its draggable elements (by default).
 
 ### Boundary Element
 To prevent users from dragging an element off-screen and being unable to retrieve it, a boundary element is always defined.
