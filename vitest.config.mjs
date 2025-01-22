@@ -6,9 +6,11 @@ export default defineConfig({
 		browser: {
 			enabled: true,
 			headless: false,
-			name: 'chromium',
 			provider: 'playwright',
-			providerOptions: {},
+			// providerOptions: {},
+			instances: [{
+				browser: 'chromium',
+			}],
 		},
 		coverage: {
 			enabled: false,
