@@ -110,7 +110,21 @@ While dragging an element it is set with a "read-only" data attribute: `data-dra
 ```
 
 #### `data-drag-position="x,y"`
-Elements are moved around using CSS `translate(x, y)` which sets a relative position to an element's original-natural position. When dropping an element its [x,y] position is saved as value of the data-attribute `data-drag-position="x,y"`. This position will be used as the new starting point for the following drag event.
+Elements are moved around using CSS `translate(x, y)` which sets a relative position to an element's natural position (in pixels). When dropping an element its [x,y] position is saved as numeric values in the data-attribute (e.g. `data-drag-position="30,-14"`). This position will be used as the starting point of the next drag.
+
+##### Initial Position
+`data-drag-position` can be used for setting draggable elements with initial position. To make it work you should also set the inline style of the element with the equivalent `translate` values:
+
+```js
+<div
+   data-drag-role="draggable"
+   data-drag-position={`${x}, ${y}`}
+   style:translate={`${x}px ${y}px`}     // svelte
+   style={{translate: `${x}px ${y}px`}}  // react
+>
+...
+   elm.style.translate = `${x}px ${y}px` // vanilla
+```
 
 
 ## Instance API
