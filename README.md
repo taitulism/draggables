@@ -100,15 +100,6 @@ Using different data attributes you can control the dragging behavior.
 ### "read-only" data attributes
 > Not actually read-only attributes per se but you probably should not change them.
 
-#### `data-drag-active` (key only attribute)
-While dragging an element it is set with a "read-only" data attribute: `data-drag-active` . It is removed on drop. This is mostly for styling purposes.
-
-```css
-[data-drag-active] {
-   background-color: yellow;
-}
-```
-
 #### `data-drag-position="x,y"`
 Elements are moved around using CSS `translate(x, y)` which sets a relative position to an element's natural position (in pixels). When dropping an element its [x,y] position is saved as numeric values in the data-attribute (e.g. `data-drag-position="30,-14"`). This position will be used as the starting point of the next drag.
 

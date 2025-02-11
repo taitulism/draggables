@@ -146,18 +146,6 @@ describe('Data Attributes', () => {
 		});
 	});
 
-	describe('While moving a draggable element', () => {
-		it('sets an empty attribute `data-drag-active`', () => {
-			expect(drgElm.dataset).not.to.haveOwnProperty('dragActive');
-			mouse.down();
-			expect(drgElm.dataset).to.haveOwnProperty('dragActive');
-			mouse.move([8, 12]);
-			expect(drgElm.dataset).to.haveOwnProperty('dragActive');
-			mouse.up();
-			expect(drgElm.dataset).not.to.haveOwnProperty('dragActive');
-		});
-	});
-
 	describe('An element with `data-drag-prevent-click`', () => {
 		it('prevents click of underlying interactive element (e.g. drag from a button)', () => {
 			const btn = addButton(drgElm);

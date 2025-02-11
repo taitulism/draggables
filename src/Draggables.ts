@@ -84,8 +84,6 @@ export class Draggables {
 		this.activeDrag = createActiveDrag(draggableElm, box, ev, dragzoneElm);
 		this.contextElm!.style.userSelect = 'none';
 
-		draggableElm.dataset.dragActive = ''; // Key only
-
 		window.addEventListener(MOUSE_MOVE, this.onDragging);
 		window.addEventListener(MOUSE_UP, this.onDrop);
 
@@ -155,7 +153,6 @@ export class Draggables {
 			}
 		}
 
-		delete elm.dataset.dragActive;
 		this.contextElm!.style.userSelect = '';
 	};
 }
