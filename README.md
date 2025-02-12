@@ -47,35 +47,137 @@ Each instance binds a *single* event listener to the context element, or to the 
 
 
 ### Boundary Element
-To prevent users from dragging an element off-screen and being unable to retrieve it, a boundary element is always defined.
+To prevent draggable elements from being moved off-screen and lost, they are always confined within a boundary.
 
-By default, the `<body>` element acts as the global movement container for all draggable elements. However, you can designate a different element as the boundary of its descendant draggable elements by adding the `data-drag-zone` attribute to it.
-
-So a draggable element's dragging zone is its closest parent with the `data-drag-zone` attribute or the `<body>` element.
+By default, this boundary is the `<body>` element. However, you can define a different element as the draggables container by setting it with the `data-drag-zone` attribute. A draggable element will be restricted to its closest ancestor with `data-drag-zone` or the `<body>` element.
 
 
 ## Data Attributes
-Using different data attributes you can control the dragging behavior.
+You can control the dragging behavior by using different data attributes.
 
-> To make an element "draggable" set its `data-drag-role` attribute to `"draggable"`.
+> NOTE: **Boolean** attributes are `true` when present (key only) and `false` when omitted.  
+No value is needed, simply including the attribute enables it.
 
-* `data-drag-zone` - Set this attribute (key only, no value) on the element you want to define as the boundary element of its descendant draggable elements (see [Boundary Element](#boundary-element)).
-* `data-drag-role` = `"draggable" | "grip"`
-	* `"draggable"` - Makes the element draggable.  
-	Can be used together with:
-		* `data-drag-axis` = `"x" | "y"`  
-		By default you can drag elements freely on both axes. You can Limit an element's movement to a single axis. 
-			* `"x"` - Limit dragging movment along the `x` axis.
-			* `"y"` - Limit dragging movment along the `y` axis.
-		* `data-drag-disabled`
-			* `"true"` - Disables dragging
-			* `"false"` - Enables dragging
+| Attribute Name            | Value                     | 
+|---------------------------|---------------------------|
+| `data-drag-role`          | `"draggable"` \| `"grip"` |
+| `data-drag-zone`          | `Boolean`                 |
+| `data-drag-prevent-click` | `Boolean`                 |
 
-			Set this attribute when you need to toggle draggability of a draggable element.  
-			This toggles draggability of a single draggable element. If you want to disable all draggables in a context see [`.disable()`](#enable--disable) below.
-	* `"grip"` - The element becomes the handle of its closest draggable element. When used, draggable elements can only be dragged when grabbed by their grip element. A grip must be a descendant of a draggable element (throws an error when it's not).
-* `data-drag-prevent-click` - When dragging an element by one of its clickable elements (button, checkbox etc.) they get clicked on drop. Set this attribute (key only, no value) on clickable elements inside a draggable element to prevent their click event on drop.
+The following attributes can only be set on an elements that have `data-drag-role` set to `"draggable"`:
 
+| Attribute Name            | Value                     | 
+|---------------------------|---------------------------|
+| `data-drag-position`      | `"x,y"`                   |
+| `data-drag-axis`          | `"x"` \| `"y"`            |
+| `data-drag-disabled`      | `Boolean`                 |
+
+&nbsp;
+
+### Details
+#### Click to expand:
+
+<!-- data-drag-role -->
+<details>
+   <summary><code>data-drag-role</code> = "draggable"</summary><br />
+   Makes an element draggable.
+   
+   <br />
+   Can be used together with:
+
+   * `data-drag-position`
+   * `data-drag-axis`
+   * `data-drag-disabled`
+
+----------
+</details>
+
+
+<!-- data-drag-role -->
+<details>
+   <summary><code>data-drag-role</code>="grip"</summary><br />
+   Set this attribute on an element to make it the handle/grip of its closest draggable element. When used, draggable elements can only be dragged when grabbed by their grip. A grip must be a descendant of a draggable element (throws an error when it's not).
+
+----------
+</details>
+
+
+<!-- data-drag-zone -->
+<details>
+   <summary><code>data-drag-zone</code></summary><br />
+   Set this attribute on the element you want to define as the boundary element of its descendant draggable elements
+   (see <a href="#boundary-element">Boundary Element</a>).
+
+----------
+</details>
+
+
+
+<!-- data-drag-prevent-click -->
+<details>
+   <summary><code>data-drag-prevent-click</code></summary><br />
+   When dragging an element by one of its clickable elements (button, checkbox etc.) they dispatch a click event on drop. Set this attribute on clickable elements inside a draggable element to ignore that click.
+
+----------
+</details>
+
+
+<!-- data-drag-position -->
+<details>
+   <summary><code>data-drag-position</code>="x,y"</summary><br />
+   
+   <strong>Must be used on an element with <code>data-drag-role="draggable"</code></strong>
+
+   Elements are moved around using CSS `translate(x, y)` which offsets them relative to their natural position in the DOM (in pixels).
+   When an element is dropped, its new [x, y] coordinates are stored in its `data-drag-position` attribute (e.g. `data-drag-position="30,-14"`), serving as the starting point for the next drag.
+
+   **Initial Position**  
+   To render an element at its last known position after it was previously dragged, you need to apply its saved position both as a `data-drag-position` attribute and as an inline `translate` style.
+This ensures the element appears in the correct position before any interaction.
+
+```js
+<div
+   data-drag-role="draggable"
+   data-drag-position={`${x}, ${y}`}     // <---
+   style:translate={`${x}px ${y}px`}     // svelte
+   style={{translate: `${x}px ${y}px`}}  // react
+>
+...
+   elm.style.translate = `${x}px ${y}px` // vanilla
+```
+
+----------
+</details>
+
+
+<!-- data-drag-axis -->
+<details>
+   <summary><code>data-drag-axis</code>="x" | "y"</summary><br />
+
+   <strong>Must be used on an element with <code>data-drag-role="draggable"</code></strong>
+   
+   By default you can drag elements freely on both axes. You can Limit an element's movement to a single axis.
+
+   * `"x"` - Limit dragging movment along the `x` axis.
+   * `"y"` - Limit dragging movment along the `y` axis.
+
+----------
+</details>
+
+
+<!-- data-drag-disabled -->
+<details>
+   <summary><code>data-drag-disabled</code></summary><br />
+
+   <strong>Must be used on an element with <code>data-drag-role="draggable"</code></strong>
+
+   Set this attribute when you need to toggle draggability of a draggable element.  
+   This for toggling draggability of a single draggable element. If you want to disable all draggables in a context see [`.disable()`](#enable--disable) below.
+
+----------
+</details>
+
+&nbsp;
 
 ### Example:
 ```html
@@ -96,36 +198,19 @@ Using different data attributes you can control the dragging behavior.
    </div>
 </div>
 ```
-
-### "read-only" data attributes
-> Not actually read-only attributes per se but you probably should not change them.
-
-#### `data-drag-position="x,y"`
-Elements are moved around using CSS `translate(x, y)` which sets a relative position to an element's natural position (in pixels). When dropping an element its [x,y] position is saved as numeric values in the data-attribute (e.g. `data-drag-position="30,-14"`). This position will be used as the starting point of the next drag.
-
-##### Initial Position
-`data-drag-position` can be used for setting draggable elements with initial position. To make it work you should also set the inline style of the element with the equivalent `translate` values:
-
-```js
-<div
-   data-drag-role="draggable"
-   data-drag-position={`${x}, ${y}`}
-   style:translate={`${x}px ${y}px`}     // svelte
-   style={{translate: `${x}px ${y}px`}}  // react
->
-...
-   elm.style.translate = `${x}px ${y}px` // vanilla
-```
-
+---------------------------------------------------------
 
 ## Instance API
 
 ### `draggables(contextElement, options)`
 #### arguments
-* `contextElement: HTMLElement` - optional. See [Context Element](#context-element) section above.
-* `options: DraggablesOptions` - optional. The instance's configuration object, applied for all draggable elements under the context element:
-	* `padding: number` - Blocks dragStart if the draggable element was grabbed by its **edge** within this number of pixels. Default is `0`.
-	* `cornerPadding: number` - Blocks dragStart if the draggable element was grabbed by its **corner** within this number of pixels. Default is `0`.
+* contextElement: `HTMLElement` = optional. See [Context Element](#context-element) section above.
+* options: `DraggablesOptions` = optional. The instance's configuration object, applied for all draggable elements within the context element:
+	* `padding: number` - Prevents dragging if the element was grabbed within this number of pixels from any **side edge**. Default is `0`.
+	* `cornerPadding: number` - Prevents dragging if the element was grabbed within this number of pixels from a **corner**. Default is `0`.
+
+> Padding options are useful for draggable elements that are also resizable, preventing unintended drags when grabbing edges or corners.
+
 ```js
 draggables();             // -->  <body>
 draggables({padding: 8}); // -->  <body>
@@ -133,12 +218,12 @@ draggables(myElm);
 draggables(myElm, {padding: 8});
 ```
 
-> The padding options are for dealing with draggable elements that are also resizable (by grabbing their corners/edges).
 
 Returns a `Draggables` instance:
 ```js
 const d = draggables();
 ```
+
 It has the following methods:
 
 ### **.enable() / .disable()**
