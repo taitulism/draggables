@@ -16,7 +16,7 @@ export type DragEventWrapper = {
 export type ActiveDrag = {
 	hasStarted: boolean
 	elm: HTMLElement
-	// dragzoneElm: HTMLElement
+	dragzoneElm: HTMLElement
 	box: DOMRect
 	dragzoneBox: DOMRect
 	axis?: DragAxis

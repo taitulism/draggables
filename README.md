@@ -51,6 +51,8 @@ To prevent draggable elements from being moved off-screen and lost, they are alw
 
 By default, this boundary is the `<body>` element. However, you can define a different element as the draggables container by setting it with the `data-drag-zone` attribute. A draggable element will be restricted to its closest ancestor with `data-drag-zone` or the `<body>` element.
 
+> During a drag, text selection is disabled by applying a `user-select: none` style to the boundary element.
+
 
 ## Data Attributes
 You can control the dragging behavior by using different data attributes.

@@ -82,7 +82,7 @@ export class Draggables {
 		const dragzoneElm = (draggableElm.closest(DragzoneSelector) || document.body) as HTMLElement;
 
 		this.activeDrag = createActiveDrag(draggableElm, box, ev, dragzoneElm);
-		this.contextElm!.style.userSelect = 'none';
+		dragzoneElm.style.setProperty('user-select', 'none');
 
 		window.addEventListener(MOUSE_MOVE, this.onDragging);
 		window.addEventListener(MOUSE_UP, this.onDrop);
@@ -133,7 +133,7 @@ export class Draggables {
 		window.removeEventListener(MOUSE_UP, this.onDrop);
 
 		const {activeDrag} = this;
-		const {hasStarted, elm, moveX, moveY, prevX, prevY} = activeDrag;
+		const {hasStarted, dragzoneElm, elm, moveX, moveY, prevX, prevY} = activeDrag;
 
 		if (hasStarted) {
 			const translateX = moveX || prevX;
@@ -153,6 +153,6 @@ export class Draggables {
 			}
 		}
 
-		this.contextElm!.style.userSelect = '';
+		dragzoneElm.style.removeProperty('user-select');
 	};
 }

@@ -94,7 +94,7 @@ export function createActiveDrag (
 		hasStarted: false,
 		elm,
 		box,
-		// dragzoneElm: dragzoneElm.getBoundingClientRect(),
+		dragzoneElm: dragzoneElm,
 		dragzoneBox: dragzoneElm.getBoundingClientRect(),
 		axis: dragAxis as DragAxis,
 		mouseStartX: ev.clientX,

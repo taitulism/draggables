@@ -40,7 +40,7 @@ testCheckbox.addEventListener('click', (ev) => {
 	console.log((ev.target as HTMLInputElement).checked, ev);
 });
 
-const d = draggables();
+const d = draggables({padding: 8});
 
 d.on('grab', () => console.log('grabbed'))
 	.on('dragStart', () => console.log('dragStart'))
