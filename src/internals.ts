@@ -89,7 +89,7 @@ export function createActiveDrag (
 	ev: PointerEvent,
 	dragzoneElm: HTMLElement,
 ): ActiveDrag {
-	const {dragAxis, dragPosition} = elm.dataset;
+	const {dragAxis} = elm.dataset;
 	const activeDrag: ActiveDrag = {
 		hasStarted: false,
 		elm,
@@ -105,10 +105,13 @@ export function createActiveDrag (
 		prevY: 0,
 	};
 
-	if (dragPosition) {
-		const [x, y] = dragPosition.split(',');
-		activeDrag.prevX = parseInt(x, 10);
-		activeDrag.prevY = parseInt(y, 10);
+	const {translate} = getComputedStyle(elm);
+
+	if (translate && translate !== 'none') {
+		const [x, y] = translate.split(' ');
+
+		activeDrag.prevX = parseInt(x, 10) || 0;
+		activeDrag.prevY = parseInt(y, 10) || 0;
 	}
 
 	return activeDrag;

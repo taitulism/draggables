@@ -139,7 +139,6 @@ export class Draggables {
 			const translateX = moveX || prevX;
 			const translateY = moveY || prevY;
 
-			elm.dataset.dragPosition = `${translateX},${translateY}`;
 			this.events.dragEnd?.({ev, elm, relPos: [translateX, translateY]});
 
 			if (shouldStopClick(ev.target!)) {

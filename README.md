@@ -29,6 +29,7 @@ draggables(contextElm, options);
 #### Section Links:
 * [Context Element](#context-element)
 * [Boundary Element](#boundary-element)
+* [Setting Initial Position](#setting-initial-position)
 * [Data Attributes](#data-attributes)
 * Instance API:
 	* [Creation](#draggablescontextelement-options)
@@ -54,6 +55,18 @@ By default, this boundary is the `<body>` element. However, you can define a dif
 > During a drag, text selection is disabled by applying a `user-select: none` style to the boundary element.
 
 
+### Setting Initial Position
+Draggable elements are moved using CSS `translate(x, y)` which offsets them relative to their natural position in the DOM (in pixels) and continuously updates as the element is dragged.
+
+If you want a draggable element to start at a specific position (e.g. restoring a saved position after a page reload), you should set its `translate` style manually when rendering the element for the first time.
+
+```js
+<div
+   data-drag-role="draggable"
+   style="translate: 30px -4px;"
+>...</div>
+```
+
 ## Data Attributes
 You can control the dragging behavior by using different data attributes.
 
@@ -70,7 +83,6 @@ The following attributes can only be set on an elements that have `data-drag-rol
 
 | Attribute Name            | Value                     | 
 |---------------------------|---------------------------|
-| `data-drag-position`      | `"x,y"`                   |
 | `data-drag-axis`          | `"x"` \| `"y"`            |
 | `data-drag-disabled`      | `Boolean`                 |
 
@@ -87,7 +99,6 @@ The following attributes can only be set on an elements that have `data-drag-rol
    <br />
    Can be used together with:
 
-   * `data-drag-position`
    * `data-drag-axis`
    * `data-drag-disabled`
 
@@ -119,34 +130,6 @@ The following attributes can only be set on an elements that have `data-drag-rol
 <details>
    <summary><code>data-drag-prevent-click</code></summary><br />
    When dragging an element by one of its clickable elements (button, checkbox etc.) they dispatch a click event on drop. Set this attribute on clickable elements inside a draggable element to ignore that click.
-
-----------
-</details>
-
-
-<!-- data-drag-position -->
-<details>
-   <summary><code>data-drag-position</code>="x,y"</summary><br />
-   
-   <strong>Must be used on an element with <code>data-drag-role="draggable"</code></strong>
-
-   Elements are moved around using CSS `translate(x, y)` which offsets them relative to their natural position in the DOM (in pixels).
-   When an element is dropped, its new [x, y] coordinates are stored in its `data-drag-position` attribute (e.g. `data-drag-position="30,-14"`), serving as the starting point for the next drag.
-
-   **Initial Position**  
-   To render an element at its last known position after it was previously dragged, you need to apply its saved position both as a `data-drag-position` attribute and as an inline `translate` style.
-This ensures the element appears in the correct position before any interaction.
-
-```js
-<div
-   data-drag-role="draggable"
-   data-drag-position={`${x}, ${y}`}     // <---
-   style:translate={`${x}px ${y}px`}     // svelte
-   style={{translate: `${x}px ${y}px`}}  // react
->
-...
-   elm.style.translate = `${x}px ${y}px` // vanilla
-```
 
 ----------
 </details>
