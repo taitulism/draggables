@@ -7,7 +7,6 @@ import {
 	pointerWithinPadding,
 	isDisabled,
 	DragzoneSelector,
-	shouldStopClick,
 	keepInBoundary,
 } from './internals';
 
@@ -140,16 +139,6 @@ export class Draggables {
 			const translateY = moveY || prevY;
 
 			this.events.dragEnd?.({ev, elm, relPos: [translateX, translateY]});
-
-			if (shouldStopClick(ev.target!)) {
-				ev.target?.addEventListener('click', (clickEv: Event) => {
-					clickEv.stopPropagation(); // for button
-					clickEv.preventDefault(); // for checkbox
-				}, {
-					once:true,
-					capture: true,
-				});
-			}
 		}
 
 		dragzoneElm.style.removeProperty('user-select');

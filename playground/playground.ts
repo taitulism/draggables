@@ -35,17 +35,29 @@ testBtn.addEventListener('click', (ev) => {
 });
 
 testCheckbox.addEventListener('click', (ev) => {
-	// ev.preventDefault();
-
 	console.log((ev.target as HTMLInputElement).checked, ev);
 });
 
 const d = draggables({padding: 8});
 
+function disableInterctions (elm: HTMLElement) {
+	elm.setAttribute('inert', '');
+}
+
+function enableInterctions (elm: HTMLElement) {
+	elm.removeAttribute('inert');
+}
+
 d.on('grab', () => console.log('grabbed'))
-	.on('dragStart', () => console.log('dragStart'))
+	.on('dragStart', ({elm}) => {
+		console.log('dragStart');
+		disableInterctions(elm);
+	})
 	.on('dragging', () => console.log('dragging'))
-	.on('dragEnd', () => console.log('droped'));
+	.on('dragEnd', ({ev, elm}) => {
+		console.log('droped', ev);
+		enableInterctions(elm);
+	});
 
 // document.addEventListener('mousemove', (ev) => {
 // 	console.log(ev.x, ev.y);

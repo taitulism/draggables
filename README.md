@@ -77,7 +77,6 @@ No value is needed, simply including the attribute enables it.
 |---------------------------|---------------------------|
 | `data-drag-role`          | `"draggable"` \| `"grip"` |
 | `data-drag-zone`          | `Boolean`                 |
-| `data-drag-prevent-click` | `Boolean`                 |
 
 The following attributes can only be set on an elements that have `data-drag-role` set to `"draggable"`:
 
@@ -125,16 +124,6 @@ The following attributes can only be set on an elements that have `data-drag-rol
 </details>
 
 
-
-<!-- data-drag-prevent-click -->
-<details>
-   <summary><code>data-drag-prevent-click</code></summary><br />
-   When dragging an element by one of its clickable elements (button, checkbox etc.) they dispatch a click event on drop. Set this attribute on clickable elements inside a draggable element to ignore that click.
-
-----------
-</details>
-
-
 <!-- data-drag-axis -->
 <details>
    <summary><code>data-drag-axis</code>="x" | "y"</summary><br />
@@ -177,9 +166,6 @@ The following attributes can only be set on an elements that have `data-drag-rol
    </div>
    <div class="card-body">
       Grab the title to move the card
-      <button data-drag-prevent-click>
-         Click
-      </button>
    </div>
 </div>
 ```

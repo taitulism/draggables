@@ -45,8 +45,8 @@
 			height: 50px;
 		}
 
-		#grip-A { background-color: yellow; }
-		#grip-B { background-color: green; }
+		#grip-A { background-color: #eeee10; }
+		#grip-B { background-color: #74be74; }
 
 		#static {
 			width: 200px;
@@ -57,6 +57,11 @@
 		#test-btn {
 			font-size: 14px;
 			padding: .1rem 0.18rem;
+		}
+
+		#test-checkbox {
+			width: 20px;
+			aspect-ratio: 1;
 		}
 	</style>
 </head>
@@ -74,10 +79,10 @@
 		>
 			<div id="grips-container">
 				<div id="grip-a" class="grip" UNdata-drag-role="grip">A <br />
-					<button id="test-btn" data-drag-prevent-click>button</button>
+					<button id="test-btn">button</button>
 				</div>
 				<div id="grip-b" class="grip" >B <br />
-					<input type="checkbox" id="test-checkbox" data-drag-prevent-click />
+					<input type="checkbox" id="test-checkbox" />
 				</div>
 			</div>
 		</div>

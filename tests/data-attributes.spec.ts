@@ -1,4 +1,4 @@
-import {beforeAll, beforeEach, afterEach, afterAll, describe, it, expect, vi} from 'vitest';
+import {beforeAll, beforeEach, afterEach, afterAll, describe, it, expect} from 'vitest';
 import {Draggables, draggables} from '../src';
 import {translate} from './utils';
 import {createMouseSimulator} from './mouse-simulator';
@@ -9,8 +9,6 @@ import {
 	addChild,
 	addGripChild,
 	createDraggableElm,
-	addButton,
-	addCheckbox,
 } from './dom-utils';
 
 describe('Data Attributes', () => {
@@ -143,54 +141,6 @@ describe('Data Attributes', () => {
 
 			mouse.down().move([9, 13]).up();
 			expect(drgElm.style.translate).to.equal(translate(8, 13));
-		});
-	});
-
-	describe('An element with `data-drag-prevent-click`', () => {
-		it('prevents click of underlying interactive element (e.g. drag from a button)', () => {
-			const btn = addButton(drgElm);
-			const spy = vi.fn();
-
-			mouse.moveToElm(btn);
-
-			// test click
-			btn.addEventListener('click', spy);
-			mouse.down().up();
-			btn.removeEventListener('click', spy);
-
-			expect(spy).toHaveBeenCalledOnce();
-
-			// drag from btn
-			btn.addEventListener('click', spy);
-			mouse.down().move([50, 50]).up();
-			btn.removeEventListener('click', spy);
-
-			expect(spy).toHaveBeenCalledOnce();
-
-			btn.remove();
-		});
-
-		it('prevents change of underlying interactive element (e.g. drag from a checkbox)', () => {
-			const checkbox = addCheckbox(drgElm);
-			const spy = vi.fn();
-
-			mouse.moveToElm(checkbox);
-
-			// test toggle
-			checkbox.addEventListener('click', spy);
-			mouse.down().up();
-			checkbox.removeEventListener('click', spy);
-
-			expect(spy).toHaveBeenCalledOnce();
-
-			// drag from checkbox
-			checkbox.addEventListener('click', spy);
-			mouse.down().move([50, 50]).up();
-			checkbox.removeEventListener('click', spy);
-
-			expect(spy).toHaveBeenCalledOnce();
-
-			checkbox.remove();
 		});
 	});
 });
