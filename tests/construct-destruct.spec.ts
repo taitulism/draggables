@@ -71,7 +71,7 @@ describe('draggables', () => {
 				mouse.moveToElm(drgElm2);
 
 				mouse.down().move([8, 12]).up();
-				expect(drgElm2.style.translate).to.be.empty;
+				expect(drgElm2.style.translate).toBeFalsy();
 
 				drgInstance.destroy();
 			});
@@ -107,11 +107,11 @@ describe('draggables', () => {
 				const drgInstance = draggables({padding: 8});
 
 				mouse.down([50, 4]).move([11, 11]).up();
-				expect(drgElm.style.translate).to.be.empty;
+				expect(drgElm.style.translate).toBeFalsy();
 				mouse.moveToElm(drgElm);
 
 				mouse.down([50, 8]).move([11, 11]).up();
-				expect(drgElm.style.translate).to.be.empty;
+				expect(drgElm.style.translate).toBeFalsy();
 				mouse.moveToElm(drgElm);
 
 				mouse.down([50, 9]).move([11, 11]).up();
@@ -124,11 +124,11 @@ describe('draggables', () => {
 				const drgInstance = draggables({padding: 8});
 
 				mouse.down([4, 50]).move([11, 11]).up();
-				expect(drgElm.style.translate).to.be.empty;
+				expect(drgElm.style.translate).toBeFalsy();
 				mouse.moveToElm(drgElm);
 
 				mouse.down([8, 50]).move([11, 11]).up();
-				expect(drgElm.style.translate).to.be.empty;
+				expect(drgElm.style.translate).toBeFalsy();
 				mouse.moveToElm(drgElm);
 
 				mouse.down([9, 50]).move([11, 11]).up();
@@ -141,11 +141,11 @@ describe('draggables', () => {
 				const drgInstance = draggables({padding: 8});
 
 				mouse.down([4, 50]).move([11, 11]).up();
-				expect(drgElm.style.translate).to.be.empty;
+				expect(drgElm.style.translate).toBeFalsy();
 				mouse.moveToElm(drgElm);
 
 				mouse.down([8, 50]).move([11, 11]).up();
-				expect(drgElm.style.translate).to.be.empty;
+				expect(drgElm.style.translate).toBeFalsy();
 				mouse.moveToElm(drgElm);
 
 				mouse.down([9, 50]).move([11, 11]).up();
@@ -158,11 +158,11 @@ describe('draggables', () => {
 				const drgInstance = draggables({padding: 8});
 
 				mouse.down([50, 4]).move([11, 11]).up();
-				expect(drgElm.style.translate).to.be.empty;
+				expect(drgElm.style.translate).toBeFalsy();
 				mouse.moveToElm(drgElm);
 
 				mouse.down([50, 8]).move([11, 11]).up();
-				expect(drgElm.style.translate).to.be.empty;
+				expect(drgElm.style.translate).toBeFalsy();
 				mouse.moveToElm(drgElm);
 
 				mouse.down([50, 9]).move([11, 11]).up();
@@ -177,11 +177,11 @@ describe('draggables', () => {
 				const drgInstance = draggables({cornerPadding: 8});
 
 				mouse.down([4, 4]).move([11, 11]).up();
-				expect(drgElm.style.translate).to.be.empty;
+				expect(drgElm.style.translate).toBeFalsy();
 				mouse.moveToElm(drgElm);
 
 				mouse.down([8, 8]).move([11, 11]).up();
-				expect(drgElm.style.translate).to.be.empty;
+				expect(drgElm.style.translate).toBeFalsy();
 				mouse.moveToElm(drgElm);
 
 				mouse.down([9, 8]).move([11, 11]).up();
@@ -197,11 +197,11 @@ describe('draggables', () => {
 				const drgInstance = draggables({cornerPadding: 8});
 
 				mouse.down([96, 4]).move([11, 11]).up();
-				expect(drgElm.style.translate).to.be.empty;
+				expect(drgElm.style.translate).toBeFalsy();
 				mouse.moveToElm(drgElm);
 
 				mouse.down([92, 8]).move([11, 11]).up();
-				expect(drgElm.style.translate).to.be.empty;
+				expect(drgElm.style.translate).toBeFalsy();
 				mouse.moveToElm(drgElm);
 
 				mouse.down([91, 8]).move([11, 11]).up();
@@ -218,11 +218,11 @@ describe('draggables', () => {
 				const drgInstance = draggables({cornerPadding: 8});
 
 				mouse.down([4, 96]).move([11, 11]).up();
-				expect(drgElm.style.translate).to.be.empty;
+				expect(drgElm.style.translate).toBeFalsy();
 				mouse.moveToElm(drgElm);
 
 				mouse.down([8, 92]).move([11, 11]).up();
-				expect(drgElm.style.translate).to.be.empty;
+				expect(drgElm.style.translate).toBeFalsy();
 				mouse.moveToElm(drgElm);
 
 				mouse.down([8, 91]).move([11, 11]).up();
@@ -239,11 +239,11 @@ describe('draggables', () => {
 				const drgInstance = draggables({cornerPadding: 8});
 
 				mouse.down([96, 96]).move([11, 11]).up();
-				expect(drgElm.style.translate).to.be.empty;
+				expect(drgElm.style.translate).toBeFalsy();
 				mouse.moveToElm(drgElm);
 
 				mouse.down([92, 92]).move([11, 11]).up();
-				expect(drgElm.style.translate).to.be.empty;
+				expect(drgElm.style.translate).toBeFalsy();
 				mouse.moveToElm(drgElm);
 
 				mouse.down([91, 92]).move([11, 11]).up();

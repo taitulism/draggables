@@ -36,7 +36,7 @@ describe('Dragging Around', () => {
 	describe('Basic Dragging', () => {
 		it('moves the elm on the X axis', () => {
 			mouse.down();
-			expect(drgElm.style.translate).to.be.empty;
+			expect(drgElm.style.translate).toBeFalsy();
 
 			mouse.move([8, 0]);
 			expect(drgElm.style.translate).to.equal(translate(8, 0));
@@ -56,7 +56,7 @@ describe('Dragging Around', () => {
 
 		it('moves the elm on the Y axis', () => {
 			mouse.down();
-			expect(drgElm.style.translate).to.be.empty;
+			expect(drgElm.style.translate).toBeFalsy();
 
 			mouse.move([0, 12]);
 			expect(drgElm.style.translate).to.equal(translate(0, 12));
@@ -76,7 +76,7 @@ describe('Dragging Around', () => {
 
 		it('moves the elm freely on both axes', () => {
 			mouse.down();
-			expect(drgElm.style.translate).to.be.empty;
+			expect(drgElm.style.translate).toBeFalsy();
 
 			mouse.move([8, 12]);
 			expect(drgElm.style.translate).to.equal(translate(8, 12));
@@ -96,9 +96,9 @@ describe('Dragging Around', () => {
 
 		it('only moves when supposed to', () => {
 			mouse.move([10, 10]);
-			expect(drgElm.style.translate).to.be.empty;
+			expect(drgElm.style.translate).toBeFalsy();
 			mouse.down();
-			expect(drgElm.style.translate).to.be.empty;
+			expect(drgElm.style.translate).toBeFalsy();
 			mouse.move([10, 10]);
 			expect(drgElm.style.translate).to.equal(translate(10, 10));
 			mouse.up();
@@ -118,11 +118,11 @@ describe('Dragging Around', () => {
 			mouse.down();
 
 			mouse.move([1, 0]);
-			expect(drgElm.style.translate).to.be.empty;
+			expect(drgElm.style.translate).toBeFalsy();
 			mouse.move([0, 1]);
-			expect(drgElm.style.translate).to.be.empty;
+			expect(drgElm.style.translate).toBeFalsy();
 			mouse.move([1, 0]);
-			expect(drgElm.style.translate).to.be.empty;
+			expect(drgElm.style.translate).toBeFalsy();
 
 			expect(spy).not.toHaveBeenCalled();
 			mouse.move([1, 0]);

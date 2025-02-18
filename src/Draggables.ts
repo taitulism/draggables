@@ -18,8 +18,8 @@ export class Draggables {
 	public isEnabled = true;
 	private contextElm?: HTMLElement;
 	private opts: DraggablesOptions;
-	private activeDrag!: ActiveDrag;
 	private events: EventsObj = createEventsObj();
+	private activeDrag?: ActiveDrag;
 
 	constructor (elm: HTMLElement, opts: DraggablesOptions) {
 		this.opts = opts;
@@ -42,8 +42,7 @@ export class Draggables {
 		if (this.activeDrag?.elm) {
 			delete this.activeDrag.elm.dataset.dragActive;
 
-			// @ts-ignore
-			this.activeDrag.elm = undefined;
+			this.activeDrag = undefined;
 		}
 
 		this.disable();
@@ -96,6 +95,7 @@ export class Draggables {
 		if (!this.isEnabled || isDisabled(evTarget.dataset)) return;
 
 		const {activeDrag, events} = this;
+		if (!activeDrag) throw new Error('Draggables Error: No active drag');
 		const {axis, hasStarted, elm, prevX, prevY, mouseStartX, mouseStartY} = activeDrag;
 
 		const mouseMoveX = ev.clientX - mouseStartX;
@@ -132,6 +132,7 @@ export class Draggables {
 		window.removeEventListener(MOUSE_UP, this.onDrop);
 
 		const {activeDrag} = this;
+		if (!activeDrag) throw new Error('Draggables Error: No active drag');
 		const {hasStarted, dragzoneElm, elm, moveX, moveY, prevX, prevY} = activeDrag;
 
 		if (hasStarted) {

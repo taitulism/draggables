@@ -38,9 +38,9 @@ describe('Events', () => {
 
 			drgInstance.on('grab', () => fired = true);
 
-			expect(fired).to.be.false;
+			expect(fired).toBe(false);
 			mouse.down();
-			expect(fired).to.be.true;
+			expect(fired).toBe(true);
 			mouse.up();
 		});
 
@@ -49,11 +49,11 @@ describe('Events', () => {
 
 			drgInstance.on('dragStart', () => fired = true);
 
-			expect(fired).to.be.false;
+			expect(fired).toBe(false);
 			mouse.down();
-			expect(fired).to.be.false;
+			expect(fired).toBe(false);
 			mouse.move([5, 5]);
-			expect(fired).to.be.true;
+			expect(fired).toBe(true);
 			mouse.up();
 		});
 
@@ -63,11 +63,11 @@ describe('Events', () => {
 			drgInstance.on('dragging', () => fired = true);
 
 			mouse.down();
-			expect(fired).to.be.false;
+			expect(fired).toBe(false);
 			mouse.move([5, 5]);
-			expect(fired).to.be.false;
+			expect(fired).toBe(false);
 			mouse.move([5, 5]);
-			expect(fired).to.be.true;
+			expect(fired).toBe(true);
 
 			mouse.up();
 		});
@@ -78,11 +78,11 @@ describe('Events', () => {
 			drgInstance.on('dragEnd', () => fired = true);
 
 			mouse.down();
-			expect(fired).to.be.false;
+			expect(fired).toBe(false);
 			mouse.move([5, 5]);
-			expect(fired).to.be.false;
+			expect(fired).toBe(false);
 			mouse.up();
-			expect(fired).to.be.true;
+			expect(fired).toBe(true);
 		});
 
 		it('doesn\'t fire `drag-end` event on click without drag', () => {
@@ -91,9 +91,9 @@ describe('Events', () => {
 			drgInstance.on('dragEnd', () => fired = true);
 
 			mouse.down();
-			expect(fired).to.be.false;
+			expect(fired).toBe(false);
 			mouse.up();
-			expect(fired).to.be.false;
+			expect(fired).toBe(false);
 		});
 
 		it('passes `DragEventWrapper` object to all event handlers', () => {

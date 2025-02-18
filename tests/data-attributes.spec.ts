@@ -45,7 +45,7 @@ describe('Data Attributes', () => {
 			delete drgElm.dataset.dragRole;
 
 			mouse.down().move([8, 12]).up();
-			expect(drgElm.style.translate).to.be.empty;
+			expect(drgElm.style.translate).toBeFalsy();
 
 			drgElm.dataset.dragRole = 'draggable';
 
@@ -85,11 +85,11 @@ describe('Data Attributes', () => {
 			const child = addChild(drgElm);
 
 			mouse.down().move([8, 12]).up();
-			expect(drgElm.style.translate).to.be.empty;
+			expect(drgElm.style.translate).toBeFalsy();
 
 			mouse.moveToElm(child);
 			mouse.down().move([8, 12]).up();
-			expect(drgElm.style.translate).to.be.empty;
+			expect(drgElm.style.translate).toBeFalsy();
 
 			mouse.moveToElm(grip);
 			mouse.down().move([8, 12]).up();
@@ -123,7 +123,7 @@ describe('Data Attributes', () => {
 
 				mouse.moveToElm(grip);
 				mouse.down().move([8, 12]);
-				expect(true).to.be.false;
+				expect(true).toBe(false);
 			});
 
 			return promise;

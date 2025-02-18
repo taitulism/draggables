@@ -35,17 +35,17 @@ describe('API', () => {
 
 	describe('.enable() / .disable()', () => {
 		it('toggles instance.isEnabled', () => {
-			expect(drgInstance.isEnabled).to.be.true;
+			expect(drgInstance.isEnabled).toBe(true);
 
 			drgInstance.disable();
-			expect(drgInstance.isEnabled).to.be.false;
+			expect(drgInstance.isEnabled).toBe(false);
 
 			drgInstance.enable();
-			expect(drgInstance.isEnabled).to.be.true;
+			expect(drgInstance.isEnabled).toBe(true);
 		});
 
 		it('toggles draggability', () => {
-			expect(drgElm.style.translate).to.be.empty;
+			expect(drgElm.style.translate).toBeFalsy();
 			mouse.down().move([10, 0]).up();
 			expect(drgElm.style.translate).to.equal(translate(10, 0));
 
@@ -64,7 +64,7 @@ describe('API', () => {
 		});
 
 		it('toggles draggability while dragging', () => {
-			expect(drgElm.style.translate).to.be.empty;
+			expect(drgElm.style.translate).toBeFalsy();
 			mouse.down().move([10, 0]);
 			expect(drgElm.style.translate).to.equal(translate(10, 0));
 
