@@ -1,6 +1,6 @@
 # BUGS.md
 
-Bugs and small stuff in `draggables`. Worst first. Claims cite `file:line`.
+Bugs and small stuff in `draggables`. Worst first. Claims cite `file:line`. The important ones are fixed.
 
 These are the concrete, near-term fixes — the starting point before the pivot.
 Architecture/abstraction items live in [GRILL.md](GRILL.md); the overall plan is in [pivot.md](pivot.md).
@@ -128,9 +128,3 @@ Public API improvment
 Notes:
 * meh. fix public api, don't expose the class or use a static fn for creation.
 * see also [GRILL.md](GRILL.md) A7
-
-## Small stuff
-- Threshold break teleports: once distance >3px, the element jumps by the *full* accumulated offset ([Draggables.ts:120-131](src/Draggables.ts#L120-L131)), not from the 3px point — a visible 3px+ pop at drag start.
-- `onDrop` never clears `activeDrag` or resets `hasStarted` ([Draggables.ts:130-146](src/Draggables.ts#L130-L146)); stale state lingers until the next `onDragStart` overwrites it.
-- `pointerWithinPadding` returns `undefined` (not `false`) when neither padding is set ([internals.ts:51-81](src/internals.ts#L51-L81)) — works via truthiness but the function's return type is implicitly `boolean | undefined`.
-- `getDraggable` mixes `return` and `throw` for control flow ([internals.ts:44](src/internals.ts#L44)) — a missing-draggable grip throws while every other rejection silently returns `undefined`; inconsistent contract for one function.

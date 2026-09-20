@@ -78,6 +78,8 @@ export function pointerWithinPadding (
 			offsetLeft <= cornerPadding && offsetBottom <= cornerPadding
 		);
 	}
+
+	return false;
 }
 
 export function createActiveDrag (
