@@ -252,3 +252,14 @@ draggables().on('dragging', (dragEv: DragEventWrapper) => {
 
 ### **.destroy()**
 Kills the `Draggables` instance for good, unbinds event listeners, releases element references. Once destroyed, an instance cannot be revived. Use it when the context element is removed from the DOM.
+
+
+-----
+
+
+DEVELOPMENT
+-----------
+Install Chromium for playwright testing
+```sh
+$ npx playwright install --only-shell --with-deps chromium
+```
