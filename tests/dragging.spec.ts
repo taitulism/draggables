@@ -308,6 +308,33 @@ describe('Dragging Around', () => {
 			expect(document.body.style.userSelect).to.equal('');
 		});
 
+		it('reports the current position in `grab`', () => {
+			let grabPos: [number, number] | undefined;
+			drgInstance.on('grab', (ev) => grabPos = ev.relPos);
+
+			mouse.down();
+			expect(grabPos).to.deep.equal([0, 0]);
+
+			mouse.move([29, 17]).up();
+
+			mouse.down();
+			expect(grabPos).to.deep.equal([29, 17]);
+
+			mouse.up();
+		});
+
+		it('reports `0` in `dragEnd` when dragged back to the origin', () => {
+			let lastPos: [number, number] | undefined;
+			drgInstance.on('dragEnd', (ev) => lastPos = ev.relPos);
+
+			mouse.down().move([29, 17]).up();
+			expect(lastPos).to.deep.equal([29, 17]);
+
+			mouse.down().move([-29, -17]).up();
+			expect(drgElm.style.translate).to.equal(translate(0, 0));
+			expect(lastPos).to.deep.equal([0, 0]);
+		});
+
 		it('clears `user-select` on drop even when threshold never broke', () => {
 			mouse.down();
 			expect(document.body.style.userSelect).to.equal('none');

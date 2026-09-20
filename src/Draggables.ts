@@ -48,7 +48,6 @@ export class Draggables {
 		const {activeDrag} = this;
 		if (!activeDrag) return;
 
-		delete activeDrag.elm.dataset.dragActive;
 		activeDrag.dragzoneElm.style.removeProperty('user-select');
 
 		this.activeDrag = undefined;
@@ -85,24 +84,28 @@ export class Draggables {
 
 		const dragzoneElm = (draggableElm.closest(DragzoneSelector) || document.body) as HTMLElement;
 
-		this.activeDrag = createActiveDrag(draggableElm, box, ev, dragzoneElm);
+		const activeDrag = createActiveDrag(draggableElm, box, ev, dragzoneElm);
+		this.activeDrag = activeDrag;
 		dragzoneElm.style.setProperty('user-select', 'none');
 
 		window.addEventListener(MOUSE_MOVE, this.onDragging);
 		window.addEventListener(MOUSE_UP, this.onDrop);
 
-		this.events.grab?.({ev, elm: draggableElm, relPos: [0, 0]});
+		this.events.grab?.({ev, elm: draggableElm, relPos: [activeDrag.prevX, activeDrag.prevY]});
 		ev.stopPropagation();
 	};
 
 	private onDragging = (ev: PointerEvent) => {
-		const evTarget = ev.target as HTMLElement;
-
-		if (!this.isEnabled || isDisabled(evTarget.dataset)) return;
+		if (!this.isEnabled) return;
 
 		const {activeDrag, events} = this;
 		if (!activeDrag) throw new Error('Draggables Error: No active drag');
 		const {axis, hasStarted, elm, prevX, prevY, mouseStartX, mouseStartY} = activeDrag;
+
+		if (isDisabled(elm.dataset)) {
+			this.onDrop(ev);
+			return;
+		}
 
 		const mouseMoveX = ev.clientX - mouseStartX;
 		const mouseMoveY = ev.clientY - mouseStartY;
@@ -139,13 +142,10 @@ export class Draggables {
 
 		const {activeDrag} = this;
 		if (!activeDrag) throw new Error('Draggables Error: No active drag');
-		const {hasStarted, elm, moveX, moveY, prevX, prevY} = activeDrag;
+		const {hasStarted, elm, moveX, moveY} = activeDrag;
 
 		if (hasStarted) {
-			const translateX = moveX || prevX;
-			const translateY = moveY || prevY;
-
-			this.events.dragEnd?.({ev, elm, relPos: [translateX, translateY]});
+			this.events.dragEnd?.({ev, elm, relPos: [moveX, moveY]});
 		}
 
 		this.cleanupActiveDrag();

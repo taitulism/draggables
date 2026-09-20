@@ -48,14 +48,14 @@ function enableInterctions (elm: HTMLElement) {
 	elm.removeAttribute('inert');
 }
 
-d.on('grab', () => console.log('grabbed'))
-	.on('dragStart', ({elm}) => {
-		console.log('dragStart');
+d.on('grab', ({elm, relPos}) => console.log('grabbed | relPos:', relPos, '| css:', elm.style.translate))
+	.on('dragStart', ({elm, relPos}) => {
+		console.log('dragStart | relPos:', relPos);
 		disableInterctions(elm);
 	})
 	.on('dragging', () => console.log('dragging'))
-	.on('dragEnd', ({ev, elm}) => {
-		console.log('droped', ev);
+	.on('dragEnd', ({elm, relPos}) => {
+		console.log('droped | relPos:', relPos, '| css:', elm.style.translate);
 		enableInterctions(elm);
 	});
 
