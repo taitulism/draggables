@@ -324,5 +324,15 @@ describe('draggables', () => {
 			expect(moves).to.equal(4);
 			expect(drops).to.equal(1);
 		});
+
+		it('cleans up `user-select` when called mid-drag', () => {
+			mouse.down().move([8, 12]);
+			expect(document.body.style.userSelect).to.equal('none');
+
+			drgInstance.destroy();
+			expect(document.body.style.userSelect).to.equal('');
+
+			mouse.up();
+		});
 	});
 });

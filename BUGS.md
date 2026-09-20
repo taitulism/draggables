@@ -1,0 +1,130 @@
+# BUGS.md
+
+Bugs, small stuff, and test gaps in `draggables`. Worst first. Claims cite `file:line`.
+
+These are the concrete, near-term fixes — the starting point before the pivot.
+Architecture/abstraction items live in [GRILL.md](GRILL.md); the overall plan is in [pivot.md](pivot.md).
+
+## Strong (real bugs / design holes)
+
+### 1. [FIXED] `destroy()` during an active drag leaves `user-select: none` stuck on the boundary
+[Draggables.ts:83](src/Draggables.ts#L83) sets `user-select: none` on the dragzone at drag start; only [onDrop](src/Draggables.ts#L145) removes it. [destroy()](src/Draggables.ts#L31-L49) removes the window listeners but never calls `removeProperty('user-select')` on the active dragzone. So tearing down an instance mid-drag (e.g. component unmount while the pointer is down) permanently freezes text selection on that container — the element that was the boundary can no longer be selected by the user, with no surviving handle to fix it. No test exercises destroy-mid-drag, so it's invisible.
+
+**Why it bites:** a page-level style leak outlives the instance that caused it; the consumer can't undo it short of a reload, and the common trigger (unmount mid-drag) is exactly what a SPA does routinely.
+
+Summary:
+cleanup `user-select` on drop.
+
+
+### 2. `data-drag-active` is documented but never set
+[Draggables.ts:43](src/Draggables.ts#L43) *deletes* `elm.dataset.dragActive` in `destroy()`, but nothing in the codebase ever assigns it (`grep dragActive src/` → only the delete). The delete is a teardown step for a "currently dragging" attribute that no code path ever sets, so it's an abandoned/half-wired feature: the obvious CSS hook for styling the active-drag state (`[data-drag-active]`) never matches anything, and the dead delete misleads any future reader into thinking the attribute is live.
+
+**Why it bites:** the only intended hook for styling the dragging state silently never fires — consumers ship `[data-drag-active]` CSS that does nothing and have no working way to style an in-progress drag.
+
+Summary:
+`data-drag-active` is documented but never set
+Its purpose: mark "currently dragging"
+
+Notes:
+* link to both docs and code
+* decide if i need it
+* fix
+
+### 3. Mid-drag disable check reads the wrong element
+[Draggables.ts:95](src/Draggables.ts#L95) gates `onDragging` on `isDisabled(evTarget.dataset)` where `evTarget = ev.target` — the element currently under the pointer, not the element being dragged. During a drag the pointer can be over any descendant or sibling. Consequence: toggling `data-drag-disabled` on the dragged element mid-drag does nothing, while dragging the pointer over an unrelated element that happens to carry `data-drag-disabled` silently freezes the drag. The intended target is `activeDrag.elm`. It's masked today only because the `isEnabled` check on the same line covers the `.disable()` path, and no test sets the *attribute* mid-drag.
+
+**Why it bites:** `data-drag-disabled` becomes nondeterministic mid-drag — behavior depends on whatever element happens to sit under the cursor, so drags freeze or refuse to freeze with no pattern the consumer can predict.
+
+Summary:
+Bug: `event.target` is not always the draggeble elm.
+
+Notes:
+* fix
+
+### 4. `dragEnd` reports the wrong position when the element ends at 0
+[Draggables.ts:139-140](src/Draggables.ts#L139-L140): `const translateX = moveX || prevX`. If a drag returns the element exactly to translate `0` on an axis (`moveX === 0`), the `||` falls back to `prevX`, so `dragEnd`'s `relPos` reports the pre-drag offset instead of `0`. A consumer persisting position on `dragEnd` saves stale coordinates whenever the user drags back to origin.
+
+**Why it bites:** save-on-drop silently corrupts persisted position for the one gesture (return to origin) a user is most likely to perform deliberately.
+
+Summary:
+Bug: when dragged to `0` - value is falsy and fallsback.
+
+Notes:
+* fix
+* one of three surfacings of the missing model layer — see [GRILL.md](GRILL.md) A8
+
+### 5. `relPos` is misnamed and inconsistent across events
+The field is typed `relPos` ([types.ts](src/types.ts)) implying "relative to grab", but every payload after `grab` carries the *absolute* translate (`prevX + move`, [Draggables.ts:114](src/Draggables.ts#L114),[122](src/Draggables.ts#L122),[142](src/Draggables.ts#L142)). Meanwhile `grab` hardcodes `[0, 0]` ([Draggables.ts:88](src/Draggables.ts#L88)) even when the element already has a translate offset. So a `grab` handler can't read the starting position, and the name actively misleads about what the number means — anyone computing deltas from `relPos` gets it wrong.
+
+**Why it bites:** the field name lies, so the first thing most consumers compute from it (a delta-from-grab) is wrong, and `grab` can't see the start position at all.
+
+Summary:
+unclear. needs an investigation.
+
+Notes:
+* investigate and fix
+* related: [GRILL.md](GRILL.md) A6 (no position source of truth)
+
+## Medium
+
+### 6. Invalid `data-drag-axis` silently freezes the element
+[internals.ts:96](src/internals.ts#L96) casts `dragAxis as DragAxis` with no validation. Any value other than `x`/`y` (typo, `"z"`, leftover `"both"`) makes both [Draggables.ts:104-105](src/Draggables.ts#L104-L105) branches evaluate to `0`, so the element is grabbable but immovable, with no error. Hard to diagnose from the consumer side.
+
+**Why it bites:** a one-character markup typo produces a grabbable-but-frozen element and zero error pointing at the cause.
+
+Summary:
+html attribute value validation
+
+Notes:
+* fix
+* symptom of the untyped-DOM-config half — see [GRILL.md](GRILL.md) A1
+
+### 7. `padding` and `cornerPadding` are mutually exclusive
+[internals.ts:64-80](src/internals.ts#L64-L80): if `padding` is truthy the function returns before the `cornerPadding` block is ever reached. You can't have both edge and corner dead-zones, and nothing in the API or types signals this — a caller setting both just silently loses `cornerPadding`.
+
+**Why it bites:** a valid-looking config silently drops one option; the consumer gets behavior they didn't ask for with no signal as to why.
+
+Summary: 
+When using both configs, `padding` and `cornerPadding`, only `padding` is checked. `cornerPadding is ignored.
+
+Notes:
+* rethink
+* rename
+* bug or feature? is precedence mentioned in docs?
+
+### 8. One handler per event, replace-not-add
+[Draggables.ts:61](src/Draggables.ts#L61) overwrites `this.events[eventName]`. Two consumers (or two concerns in one app) calling `.on('dragEnd', …)` means the second silently clobbers the first. Standard `addEventListener` semantics are additive; this surprises in any non-trivial integration and forces callers to multiplex by hand.
+
+**Why it bites:** two parts of an app listening on the same event silently clobber each other — order-dependent, no warning, painful to trace.
+
+Summary:
+One event handler per event. Bug or a feature?
+
+Notes:
+* rethink.
+* the original intent was for this to be a feature, not a bug, to force consumers to handle instance events in one place.
+* decision depends on [GRILL.md](GRILL.md) A2/A3
+
+### 9. Exported constructor bypasses the factory's ergonomics
+`export * from './Draggables'` ([index.ts:4](src/index.ts#L4)) exposes `Draggables`, whose constructor requires *both* `elm` and `opts` ([Draggables.ts:24](src/Draggables.ts#L24)) — no `document.body` default, no optional opts. So `new Draggables()` (the obvious path for TS users who see the class) is a type error / runtime trap, while only the lowercase factory is safe. Two public entry points with different contracts.
+
+**Why it bites:** the most discoverable entry point (`new Draggables()`) is the broken one, so TS users walk straight into the trap the factory exists to prevent.
+
+Summary:
+Public API improvment
+
+Notes:
+* meh. fix public api, don't expose the class or use a static fn for creation.
+* see also [GRILL.md](GRILL.md) A7
+
+## Test gaps
+
+- **Grip-outside-draggable throw is `.skip`ped** ([data-attributes.spec.ts:99](tests/data-attributes.spec.ts#L99)) — the throw at [internals.ts:44](src/internals.ts#L44) is documented behavior but untested; it could regress to a silent return unnoticed.
+- **No test for the `data-drag-disabled` attribute** (`grep dragDisabled tests/` → none). Both the `getDraggable` disabled paths ([internals.ts:34](src/internals.ts#L34),[45](src/internals.ts#L45)) and the mid-drag check (#3) are uncovered — directly why bug #3 hides.
+- **No destroy-mid-drag test** — see bug #1; the existing `.destroy()` tests ([construct-destruct.spec.ts:261](tests/construct-destruct.spec.ts#L261)) only tear down between drags.
+
+## Small stuff
+- Threshold break teleports: once distance >3px, the element jumps by the *full* accumulated offset ([Draggables.ts:117-123](src/Draggables.ts#L117-L123)), not from the 3px point — a visible 3px+ pop at drag start.
+- `onDrop` never clears `activeDrag` or resets `hasStarted` ([Draggables.ts:130-146](src/Draggables.ts#L130-L146)); stale state lingers until the next `onDragStart` overwrites it.
+- `pointerWithinPadding` returns `undefined` (not `false`) when neither padding is set ([internals.ts:51-81](src/internals.ts#L51-L81)) — works via truthiness but the function's return type is implicitly `boolean | undefined`.
+- `getDraggable` mixes `return` and `throw` for control flow ([internals.ts:44](src/internals.ts#L44)) — a missing-draggable grip throws while every other rejection silently returns `undefined`; inconsistent contract for one function.

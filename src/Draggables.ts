@@ -39,13 +39,19 @@ export class Draggables {
 
 		this.events = createEventsObj();
 
-		if (this.activeDrag?.elm) {
-			delete this.activeDrag.elm.dataset.dragActive;
-
-			this.activeDrag = undefined;
-		}
+		this.cleanupActiveDrag();
 
 		this.disable();
+	}
+
+	private cleanupActiveDrag () {
+		const {activeDrag} = this;
+		if (!activeDrag) return;
+
+		delete activeDrag.elm.dataset.dragActive;
+		activeDrag.dragzoneElm.style.removeProperty('user-select');
+
+		this.activeDrag = undefined;
 	}
 
 	public enable () {
@@ -133,7 +139,7 @@ export class Draggables {
 
 		const {activeDrag} = this;
 		if (!activeDrag) throw new Error('Draggables Error: No active drag');
-		const {hasStarted, dragzoneElm, elm, moveX, moveY, prevX, prevY} = activeDrag;
+		const {hasStarted, elm, moveX, moveY, prevX, prevY} = activeDrag;
 
 		if (hasStarted) {
 			const translateX = moveX || prevX;
@@ -142,6 +148,6 @@ export class Draggables {
 			this.events.dragEnd?.({ev, elm, relPos: [translateX, translateY]});
 		}
 
-		dragzoneElm.style.removeProperty('user-select');
+		this.cleanupActiveDrag();
 	};
 }

@@ -294,5 +294,26 @@ describe('Dragging Around', () => {
 
 			mouse.up();
 		});
+
+		it('sets `user-select` on the dragzone while dragging and clears it on drop', () => {
+			expect(document.body.style.userSelect).to.equal('');
+
+			mouse.down();
+			expect(document.body.style.userSelect).to.equal('none');
+
+			mouse.move([50, 50]);
+			expect(document.body.style.userSelect).to.equal('none');
+
+			mouse.up();
+			expect(document.body.style.userSelect).to.equal('');
+		});
+
+		it('clears `user-select` on drop even when threshold never broke', () => {
+			mouse.down();
+			expect(document.body.style.userSelect).to.equal('none');
+
+			mouse.up();
+			expect(document.body.style.userSelect).to.equal('');
+		});
 	});
 });
