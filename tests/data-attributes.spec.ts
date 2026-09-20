@@ -1,4 +1,4 @@
-import {beforeAll, beforeEach, afterEach, afterAll, describe, it, expect} from 'vitest';
+import {beforeAll, beforeEach, afterEach, afterAll, describe, it, expect, vi} from 'vitest';
 import {Draggables, draggables} from '../src';
 import {translate} from './utils';
 import {createMouseSimulator} from './mouse-simulator';
@@ -96,37 +96,29 @@ describe('Data Attributes', () => {
 			expect(drgElm.style.translate).to.equal(translate(8, 12));
 		});
 
-		it.skip('throws if not inside a draggable element', () => {
-			const originalWindowOnError = window.onerror;
+		it('throws if not inside a draggable element', () => {
+			const orphanGrip = addGrip(testContainerElm);
 
-			const promise = new Promise((resolve, reject) => {
-				const drgInstance = draggables();
+			let errMsg = '';
+			const onError = (ev: ErrorEvent) => {
+				errMsg = ev.message;
+				ev.stopImmediatePropagation();
+				ev.preventDefault();
+			};
 
-				// makeDraggable(drgElm);
-				const grip = addGrip(drgElm);
+			window.addEventListener('error', onError, true);
+			const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-				let errMsg: unknown;
+			mouse.moveToElm(orphanGrip);
+			mouse.down();
 
-				window.onerror = (message) => {
-					errMsg = message;
-					try {
-						expect(errMsg).to.include('must be inside a draggable');
-						mouse.up();
-						drgInstance.destroy();
-						window.onerror = originalWindowOnError;
-						resolve(true);
-					}
-					catch (err) {
-						reject(err);
-					}
-				};
+			errSpy.mockRestore();
+			window.removeEventListener('error', onError, true);
 
-				mouse.moveToElm(grip);
-				mouse.down().move([8, 12]);
-				expect(true).toBe(false);
-			});
+			expect(errMsg).to.include('must be inside a draggable');
 
-			return promise;
+			mouse.up();
+			orphanGrip.remove();
 		});
 	});
 

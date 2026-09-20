@@ -1,6 +1,6 @@
 # BUGS.md
 
-Bugs, small stuff, and test gaps in `draggables`. Worst first. Claims cite `file:line`.
+Bugs and small stuff in `draggables`. Worst first. Claims cite `file:line`.
 
 These are the concrete, near-term fixes — the starting point before the pivot.
 Architecture/abstraction items live in [GRILL.md](GRILL.md); the overall plan is in [pivot.md](pivot.md).
@@ -117,10 +117,10 @@ Notes:
 * the original intent was for this to be a feature, not a bug, to force consumers to handle instance events in one place.
 * decision depends on [GRILL.md](GRILL.md) A2/A3
 
-### 9. Exported constructor bypasses the factory's ergonomics
-`export * from './Draggables'` ([index.ts:4](src/index.ts#L4)) exposes `Draggables`, whose constructor requires *both* `elm` and `opts` ([Draggables.ts:24](src/Draggables.ts#L24)) — no `document.body` default, no optional opts. So `new Draggables()` (the obvious path for TS users who see the class) is a type error / runtime trap, while only the lowercase factory is safe. Two public entry points with different contracts.
+### 9. Two public entry points, no signal which one to use
+`export * from './Draggables'` ([index.ts:4](src/index.ts#L4)) exposes the class next to the `draggables` factory. Strict core + convenient wrapper is a fine pattern; the issue is only that nothing marks the factory as the intended path.
 
-**Why it bites:** the most discoverable entry point (`new Draggables()`) is the broken one, so TS users walk straight into the trap the factory exists to prevent.
+**Why it bites:** mild. Nothing behaves wrong — just an unclear API surface.
 
 Summary:
 Public API improvment
@@ -128,12 +128,6 @@ Public API improvment
 Notes:
 * meh. fix public api, don't expose the class or use a static fn for creation.
 * see also [GRILL.md](GRILL.md) A7
-
-## Test gaps
-
-- **Grip-outside-draggable throw is `.skip`ped** ([data-attributes.spec.ts:99](tests/data-attributes.spec.ts#L99)) — the throw at [internals.ts:44](src/internals.ts#L44) is documented behavior but untested; it could regress to a silent return unnoticed.
-- **No test for the `data-drag-disabled` attribute** (`grep dragDisabled tests/` → none). Both the `getDraggable` disabled paths ([internals.ts:34](src/internals.ts#L34),[45](src/internals.ts#L45)) and the mid-drag check (#3) are uncovered — directly why bug #3 hides.
-- **No destroy-mid-drag test** — see bug #1; the existing `.destroy()` tests ([construct-destruct.spec.ts:261](tests/construct-destruct.spec.ts#L261)) only tear down between drags.
 
 ## Small stuff
 - Threshold break teleports: once distance >3px, the element jumps by the *full* accumulated offset ([Draggables.ts:120-131](src/Draggables.ts#L120-L131)), not from the 3px point — a visible 3px+ pop at drag start.
