@@ -28,12 +28,12 @@ Old code only gets deleted.
 1. **Core, pure, no DOM** — `src/core/startDrag.ts`. `startDrag(x, y, opts) → {move, end, cancel}`.
    Unit tests, no browser needed. Nothing else changes yet; core is unused. **Done.**
 
-2. **Build `drag()` fresh, beside `Draggables`** — surface + target resolver, driving `startDrag`,
-   emitting `dx/dy/x/y`. New tests assert emitted numbers — the library no longer moves anything. Old `Draggables` and its tests stay untouched and green.
+2. **Build `drag()` fresh, beside `Draggables`** — contextElm + target resolver, driving `startDrag`,
+   emitting `dx/dy/x/y`. New tests assert emitted numbers — the library no longer moves anything. Old `Draggables` and its tests stay untouched and green. **Done.**
 
 3. **Swap** — exports point to `drag()`; delete `Draggables`, `internals.ts` and the old tests
    (`moveElm`, `keepInBoundary`, `axis`, `dragzoneBox`, `relPos` go with them). Old tests covering
-   rules that survive (grip, disabled, padding) are rewritten against the default resolver first.
+   rules that survive (grip, disabled, padding) are rewritten against the exported role resolver first.
    Playground pages become the reference: notes, resize, mouse gesture.
 
 ### Later
@@ -56,15 +56,15 @@ _(append decisions here as they're made, so later chats don't re-litigate them)_
 No incremental delta (since-last-move): it bakes clamping into the state it reads next frame,
 and it's derivable as `dx - prevDx`.
 
-`grab` fires before movement, so no delta: `{ev, elm, x, y}`.
+`grab` fires before movement, so `dx: 0, dy: 0`.
 
 Every drag starts at `dx: 0`. The computed-`translate` read in `createActiveDrag` goes — consumers
 accumulate.
 
 `relPos` is deleted — it was the accumulated CSS translate. Resolves Bug #5.
 
-`DragEventWrapper` splits into a type per event: `grab` has no deltas, `dragStart`/`dragging` carry
-`dx/dy`, and the dropzone pair only appears when `dropDetection` is on.
+`DragEventWrapper` becomes one `DraggableEvent` type for all events: `{ev, elm, dx, dy, x, y}`. The
+dropzone pair only appears when `dropDetection` is on.
 
 ### Drop targets
 
@@ -175,12 +175,12 @@ permanently in CSS, which would kill scrolling for anyone swiping over a draggab
 browser claims vertical touch drags as page scrolls. Also listen for `pointercancel` and treat it as
 `dragCancel`; today it leaves listeners bound and `activeDrag` set, so the next `pointerdown` throws.
 
-### Primitive: one surface + a target resolver
+### Primitive: one contextElm + a target resolver
 
 One primitive for every case (notes, kanban, resize, mouse gesture). Free-hand drawing is out of scope.
 
 ```js
-drag(surface)                                   // resize, gesture: surface is the dragged thing
+drag(contextElm)                                // resize, gesture: contextElm is the dragged thing
 drag(board, {target: '.note'})                  // selector → ev.target.closest(selector)
 drag(board, {target: (ev) => HTMLElement | null})
 ```
@@ -190,8 +190,12 @@ returns the element to drag, not a boolean — a grip resolves to its draggable.
 
 Runs once, at pointerdown. Mid-drag stays deferred.
 
-Today's `data-drag-role` / grip / `data-drag-disabled` / `padding` / `cornerPadding` rules become the
-default resolver. Consumers who want other rules replace it whole.
+No `target` → contextElm itself. Selector and default resolvers accept only `button === 0`; a
+function resolver decides buttons itself (gesture).
+
+Today's `data-drag-role` / grip / `data-drag-disabled` / `padding` / `cornerPadding` rules become an
+exported resolver, passed as `target` — not the implicit default. Consumers who want other rules
+replace it whole.
 
 `startDrag` stays as a private helper of this layer. It owns
 the phase and the threshold; `drag()` drives it and emits. Revisit if a non-pointer input (keyboard
