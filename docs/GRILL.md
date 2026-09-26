@@ -6,6 +6,15 @@ Bugs, small stuff and test gaps moved to [BUGS.md](BUGS.md) — those are the ne
 This file is the to-be-discussed half; the plan it feeds is [pivot.md](pivot.md).
 Numbering kept as-is (A1–A8); bug numbers referenced below (#N) live in [BUGS.md](BUGS.md).
 
+1. Some configs are the draggable elm concerns and some are instance concerns.
+2. Single event.
+3. All draggables (within instance context elm) have the same event listeners.
+4. Concurrent drags - future feature.
+5. Draggable's and dragzone's boxes are taken only on drag start and assume to stay static during the whole drag.
+6. Tight coupling with DOM (CSS).
+7. Confusing, I don't get the point. May be a duplicate of Bug #9.
+8. Confusing, I don't get the point.
+
 ## Architecture & abstractions
 
 ### A1. Configuration locus is split arbitrarily between DOM attributes and a JS options object
