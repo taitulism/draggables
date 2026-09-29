@@ -1,5 +1,5 @@
 import {beforeAll, beforeEach, afterEach, afterAll, describe, it, expect} from 'vitest';
-import {type Draggables, draggables} from '../src';
+import {type Draggables, draggables} from '../src/Draggables';
 import {createContainerElm, createDraggableElm} from './dom-utils';
 import {createMouseSimulator} from './mouse-simulator';
 import {translate} from './utils';

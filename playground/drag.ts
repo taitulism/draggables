@@ -1,4 +1,4 @@
-import {drag, type DragInstance, type DraggableEvent} from '../src/dom/drag';
+import {drag, type DragInstance, type DraggableEvent} from '../src';
 
 const board = document.getElementById('board')!;
 const panel = document.getElementById('panel')!;

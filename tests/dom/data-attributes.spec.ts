@@ -1,5 +1,5 @@
 import {beforeAll, beforeEach, afterEach, afterAll, describe, it, expect, vi} from 'vitest';
-import {drag, type DragInstance} from '../../src/dom/drag';
+import {drag, type DragInstance} from '../../src';
 import {createContainerElm, createDraggableElm, addChild, addGrip, addGripChild} from '../dom-utils';
 import {createMouseSimulator} from '../mouse-simulator';
 

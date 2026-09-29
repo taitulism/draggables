@@ -44,17 +44,18 @@ Old code only gets deleted.
       5. `cornerPadding` **Deferred.**
 
       Any other surviving rule found in the old tests gets its own sub-step.
-   2. **Exports** — point to `drag()`.
+   2. **Exports** — point to `drag()`. **Done.**
    3. **Port surviving tests** — old tests with no `drag()` equivalent yet, rewritten against
       `drag()`. One sub-step each, approval after each:
       1. nested contexts: only the inner one triggers (`construct-destruct.spec.ts`)
       2. `user-select` cleared on drop when the threshold never broke (`dragging.spec.ts`)
       3. `user-select` cleaned up on `destroy()` mid-drag (`construct-destruct.spec.ts`)
       4. `.on` / `.off` chainable (`api.spec.ts`)
+
       NOTE: These are not the complete list, just a sample. need to list all first, or at least by spec file.
    4. **Delete** — `Draggables`, `internals.ts` and the old tests (`moveElm`, `keepInBoundary`,
       `axis`, `dragzoneBox`, `relPos` go with them).
-   5. **Playgrounds** — become the reference: notes, resize, mouse gesture.
+   5. **Playgrounds** — become the reference: notes, axis, resize, mouse gesture.
    6. **Recipes** — consumer-side playground examples for the deleted features. One sub-step each,
       approval after each:
       1. moving the element (was `moveElm`)

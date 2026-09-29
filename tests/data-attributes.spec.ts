@@ -1,5 +1,5 @@
 import {beforeAll, beforeEach, afterEach, afterAll, describe, it, expect, vi} from 'vitest';
-import {Draggables, draggables} from '../src';
+import {Draggables, draggables} from '../src/Draggables';
 import {translate} from './utils';
 import {createMouseSimulator} from './mouse-simulator';
 import {

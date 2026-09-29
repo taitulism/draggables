@@ -1,4 +1,4 @@
-import {draggables} from '../src';
+import {draggables} from '../src/Draggables';
 
 const container = document.getElementById('the-container')!;
 const drgElm = document.getElementById('drag-me')!;

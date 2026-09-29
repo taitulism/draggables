@@ -151,3 +151,17 @@ export class Draggables {
 		this.cleanupActiveDrag();
 	};
 }
+
+const defaultOptions: DraggablesOptions = {
+	padding: 0,
+	cornerPadding: 0,
+};
+
+export const draggables = (
+	elmOrOpts?: HTMLElement | DraggablesOptions,
+	dragOptions?: DraggablesOptions,
+) => (
+	elmOrOpts instanceof HTMLElement
+		? new Draggables(elmOrOpts, dragOptions || defaultOptions)
+		: new Draggables(document.body, elmOrOpts || defaultOptions)
+);
