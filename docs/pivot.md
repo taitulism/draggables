@@ -30,17 +30,45 @@ Old code only gets deleted.
 
 2. **Build `drag()` fresh, beside `Draggables`** — contextElm + target resolver, driving `startDrag`,
    emitting `dx/dy/x/y`. New tests assert emitted numbers — the library no longer moves anything. Old `Draggables` and its tests stay untouched and green. **Done.**
+   Files: `src/dom/drag.ts`, `tests/dom/drag.spec.ts`, `playground/drag.html` (notes + resize).
+   Instance API: `on` / `off` / `destroy` — no `enable` / `disable` (deferred with mid-drag disabling).
 
-3. **Swap** — exports point to `drag()`; delete `Draggables`, `internals.ts` and the old tests
-   (`moveElm`, `keepInBoundary`, `axis`, `dragzoneBox`, `relPos` go with them). Old tests covering
-   rules that survive (grip, disabled, padding) are rewritten against the exported role resolver first.
-   Playground pages become the reference: notes, resize, mouse gesture.
+3. **Swap** — each sub-chunk waits for my approval.
+
+   1. **Role resolver** — old tests covering rules that survive are rewritten against an exported
+      role resolver. One sub-step per rule, approval after each:
+      1. `data-drag-role="draggable"` **Done.**
+      2. grip **Done.**
+      3. `data-drag-disabled` **Done.**
+      4. `padding` **Deferred.**
+      5. `cornerPadding` **Deferred.**
+
+      Any other surviving rule found in the old tests gets its own sub-step.
+   2. **Exports** — point to `drag()`.
+   3. **Port surviving tests** — old tests with no `drag()` equivalent yet, rewritten against
+      `drag()`. One sub-step each, approval after each:
+      1. nested contexts: only the inner one triggers (`construct-destruct.spec.ts`)
+      2. `user-select` cleared on drop when the threshold never broke (`dragging.spec.ts`)
+      3. `user-select` cleaned up on `destroy()` mid-drag (`construct-destruct.spec.ts`)
+      4. `.on` / `.off` chainable (`api.spec.ts`)
+      NOTE: These are not the complete list, just a sample. need to list all first, or at least by spec file.
+   4. **Delete** — `Draggables`, `internals.ts` and the old tests (`moveElm`, `keepInBoundary`,
+      `axis`, `dragzoneBox`, `relPos` go with them).
+   5. **Playgrounds** — become the reference: notes, resize, mouse gesture.
+   6. **Recipes** — consumer-side playground examples for the deleted features. One sub-step each,
+      approval after each:
+      1. moving the element (was `moveElm`)
+      2. keeping it in a boundary (was `keepInBoundary` / `dragzoneBox`)
+      3. locking an axis (was `axis`)
+      4. accumulating position across drags (was `relPos`)
 
 ### Later
 
 4. **`setPointerCapture`** — drops the window listeners. Behavioral, own chunk.
 5. **`dragCancel`** — Esc + destroy-mid-drag.
 6. **Dropzones** — `dropDetection` opt-in, both strategies. Playground: kanban.
+7. **`button` option** — `drag(el, {button: 2})`, default `0`, applies to every target kind. Today
+   selector/default targets hardcode `button === 0` and a function resolver checks buttons itself.
 
 ## Decisions log
 
@@ -64,7 +92,11 @@ accumulate.
 `relPos` is deleted — it was the accumulated CSS translate. Resolves Bug #5.
 
 `DragEventWrapper` becomes one `DraggableEvent` type for all events: `{ev, elm, dx, dy, x, y}`. The
-dropzone pair only appears when `dropDetection` is on.
+dropzone pair only appears when `dropDetection` is on. Named `DraggableEvent`, not `DragEvent`, to
+avoid shadowing the DOM's global `DragEvent`. Handler params are named `ev`.
+
+Values are raw, not rounded. `clientX/Y` are fractional under page zoom or OS scaling; rounding is
+the consumer's call.
 
 ### Drop targets
 
@@ -123,7 +155,7 @@ a folder move. Split when a second real consumer appears.
 
 Core emits `{dx, dy, x, y}`; `dom/` adds `elm` before the consumer sees it.
 
-Start threshold lives in core, configurable (currently hardcoded 3px).
+Start threshold lives in core, configurable via `threshold`, default 3px.
 
 `dom/` drives core and owns the emitter. Core's methods return what happened.
 
@@ -190,12 +222,12 @@ returns the element to drag, not a boolean — a grip resolves to its draggable.
 
 Runs once, at pointerdown. Mid-drag stays deferred.
 
-No `target` → contextElm itself. Selector and default resolvers accept only `button === 0`; a
+No `target` → role attrs (below). Selector and default resolvers accept only `button === 0`; a
 function resolver decides buttons itself (gesture).
 
-Today's `data-drag-role` / grip / `data-drag-disabled` / `padding` / `cornerPadding` rules become an
-exported resolver, passed as `target` — not the implicit default. Consumers who want other rules
-replace it whole.
+Today's `data-drag-role` / grip / `data-drag-disabled` rules are the default when no `target` is
+given — `drag(board)` just works with the attrs. Any `target` replaces them whole. Tests:
+`tests/dom/data-attributes.spec.ts`.
 
 `startDrag` stays as a private helper of this layer. It owns
 the phase and the threshold; `drag()` drives it and emits. Revisit if a non-pointer input (keyboard

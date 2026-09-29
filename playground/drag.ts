@@ -23,7 +23,7 @@ function setup () {
 	let startLeft = 0;
 	let startTop = 0;
 
-	notes = drag(board, {target: '.note', threshold})
+	notes = drag(board, {threshold})
 		.on('grab', (ev) => {
 			startLeft = ev.elm.offsetLeft;
 			startTop = ev.elm.offsetTop;

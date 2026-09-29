@@ -29,17 +29,36 @@ export type DragEventName = keyof Handlers
 
 const EVENT_NAMES: DragEventName[] = ['grab', 'dragStart', 'dragging', 'dragEnd'];
 const DragzoneSelector = '[data-drag-zone]';
+const DraggableSelector = '[data-drag-role="draggable"]';
+const GripSelector = '[data-drag-role="grip"]';
+const DragRoleSelector = `${DraggableSelector}, ${GripSelector}`;
+
+const isDisabled = (elm: HTMLElement) =>
+	'dragDisabled' in elm.dataset && elm.dataset.dragDisabled !== 'false';
+
+const resolveRole = (roleElm: HTMLElement) => {
+	if (roleElm.dataset.dragRole === 'draggable') {
+		if (isDisabled(roleElm)) return null;
+		if (roleElm.querySelector(GripSelector)) return null;
+		return roleElm;
+	}
+
+	const draggable = roleElm.closest<HTMLElement>(DraggableSelector);
+	if (!draggable) throw new Error(`A grip must be inside a draggable ${DraggableSelector}`);
+	return isDisabled(draggable) ? null : draggable;
+};
 
 const toResolver = (contextElm: HTMLElement, target?: string | TargetResolver): TargetResolver => {
 	if (typeof target === 'function') return target;
 
 	return (ev) => {
 		if (ev.button !== 0) return null;
-		if (!target) return contextElm;
 		if (!(ev.target instanceof Element)) return null;
 
-		const elm = ev.target.closest<HTMLElement>(target);
-		return elm && contextElm.contains(elm) ? elm : null;
+		const elm = ev.target.closest<HTMLElement>(target || DragRoleSelector);
+		if (!elm || !contextElm.contains(elm)) return null;
+
+		return target ? elm : resolveRole(elm);
 	};
 };
 
