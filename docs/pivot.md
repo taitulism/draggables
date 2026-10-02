@@ -30,7 +30,8 @@ Old code only gets deleted.
 
 2. **Build `drag()` fresh, beside `Draggables`** — contextElm + target resolver, driving `startDrag`,
    emitting `dx/dy/x/y`. New tests assert emitted numbers — the library no longer moves anything. Old `Draggables` and its tests stay untouched and green. **Done.**
-   Files: `src/dom/drag.ts`, `tests/dom/drag.spec.ts`, `playground/drag.html` (notes + resize).
+   Files: `src/dom/drag.ts`, `tests/dom/*.spec.ts` (was `drag.spec.ts`, split in 3.3),
+   `playground/drag.html` (notes + resize).
    Instance API: `on` / `off` / `destroy` — no `enable` / `disable` (deferred with mid-drag disabling).
 
 3. **Swap** — each sub-chunk waits for my approval.
@@ -46,16 +47,12 @@ Old code only gets deleted.
       Any other surviving rule found in the old tests gets its own sub-step.
    2. **Exports** — point to `drag()`. **Done.**
    3. **Port surviving tests** — old tests with no `drag()` equivalent yet, rewritten against
-      `drag()`. One sub-step each, approval after each:
-      1. nested contexts: only the inner one triggers (`construct-destruct.spec.ts`)
-      2. `user-select` cleared on drop when the threshold never broke (`dragging.spec.ts`)
-      3. `user-select` cleaned up on `destroy()` mid-drag (`construct-destruct.spec.ts`)
-      4. `.on` / `.off` chainable (`api.spec.ts`)
-
-      NOTE: These are not the complete list, just a sample. need to list all first, or at least by spec file.
+      `drag()`. One spec file at a time, approval after each. List: [Port list](#port-list).
+      Then split `drag.spec.ts` into the same files and delete it. **Done.**
    4. **Delete** — `Draggables`, `internals.ts` and the old tests (`moveElm`, `keepInBoundary`,
       `axis`, `dragzoneBox`, `relPos` go with them).
-   5. **Playgrounds** — become the reference: notes, axis, resize, mouse gesture.
+   5. **Playgrounds** — become the reference: notes, axis, resize, mouse gesture, rect drawing
+      (diagonal drag; consumer normalizes negative `dx/dy`).
    6. **Recipes** — consumer-side playground examples for the deleted features. One sub-step each,
       approval after each:
       1. moving the element (was `moveElm`)
@@ -210,11 +207,13 @@ browser claims vertical touch drags as page scrolls. Also listen for `pointercan
 
 ### Primitive: one contextElm + a target resolver
 
-One primitive for every case (notes, kanban, resize, mouse gesture). Free-hand drawing is out of scope.
+One primitive for every case (notes, kanban, resize, mouse gesture, rect drawing). Free-hand drawing
+is out of scope; rect drawing is in — it needs only the start and current point, not a path.
 
 ```js
-drag(contextElm)                                // resize, gesture: contextElm is the dragged thing
+drag(board)                                     // role attrs (below)
 drag(board, {target: '.note'})                  // selector → ev.target.closest(selector)
+drag(canvas, {target: () => canvas})            // resize, gesture, rect: contextElm is the dragged thing
 drag(board, {target: (ev) => HTMLElement | null})
 ```
 
@@ -236,3 +235,36 @@ dragging) appears.
 
 One handler per event stays (Bug #8). Going to many is additive, not breaking, so it can wait for a
 real need — a framework wrapper or a second consumer competing for the same event.
+
+## Port list
+
+Old tests with no `drag()` equivalent yet (3.3). New files mirror the old split, under `tests/dom/`.
+
+`dragging.spec.ts`
+1. emits nothing on move before pointerdown or after pointerup (was "only moves when supposed to")
+2. no `dragging` below the threshold, one per move after it breaks (was "Threshold")
+3. `dragging` dx/dy track the pointer across moves, back to `0` at the origin (was "continous dragging")
+4. `dragEnd` reports `0` when released at the origin
+5. `user-select` cleared on drop when the threshold never broke
+
+`events.spec.ts`
+1. every event carries `ev` and `elm` (was "passes `DragEventWrapper`…")
+2. `.off` stops `dragStart`
+3. `.off` stops `dragging`
+4. `.off` stops `dragEnd`
+
+`api.spec.ts`
+1. `.on` is chainable
+2. `.off` is chainable
+
+`construct-destruct.spec.ts`
+1. nested contexts: only the inner one triggers
+
+Not ported:
+- already covered by `drag.spec.ts`: per-event `.on`, no `dragEnd` on click, `grab` position,
+  `user-select` set/clear, `.off('grab')`, `.destroy()` stops emitting / cleans `user-select` mid-drag
+- deleted (recipes): basic X/Y/both moves, sequential grabbing points, boundary, no reset on click,
+  `data-drag-axis`
+- deferred: `.enable()` / `.disable()`, `data-drag-disabled` mid-drag, `padding`, `cornerPadding`
+- dropped: `draggables()` with no args (`drag()` requires a contextElm), "is a function" / "returns an
+  instance"
