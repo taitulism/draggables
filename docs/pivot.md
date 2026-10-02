@@ -23,7 +23,7 @@ design; the call is mine.
 
 ### The pivot
 
-Old code only gets deleted.
+Old code only gets deleted or archived.
 
 1. **Core, pure, no DOM** — `src/core/startDrag.ts`. `startDrag(x, y, opts) → {move, end, cancel}`.
    Unit tests, no browser needed. Nothing else changes yet; core is unused. **Done.**
@@ -49,8 +49,10 @@ Old code only gets deleted.
    3. **Port surviving tests** — old tests with no `drag()` equivalent yet, rewritten against
       `drag()`. One spec file at a time, approval after each. List: [Port list](#port-list).
       Then split `drag.spec.ts` into the same files and delete it. **Done.**
-   4. **Delete** — `Draggables`, `internals.ts` and the old tests (`moveElm`, `keepInBoundary`,
-      `axis`, `dragzoneBox`, `relPos` go with them).
+   4. **Archive** — `Draggables`, `internals.ts`, the old tests and the old playground move to
+      `archive/` as-is, for reference (`moveElm`, `keepInBoundary`, `axis`, `dragzoneBox`, `relPos`
+      go with them). Excluded from lint, typecheck and tests; imports aren't fixed.
+      `src/types.ts` is copied, not moved — test helpers still import `Point` / `DragAxis`. **Done.**
    5. **Playgrounds** — become the reference: notes, axis, resize, mouse gesture, rect drawing
       (diagonal drag; consumer normalizes negative `dx/dy`).
    6. **Recipes** — consumer-side playground examples for the deleted features. One sub-step each,
