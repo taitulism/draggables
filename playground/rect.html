@@ -1,0 +1,35 @@
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>rect — drag() Playground</title>
+	<link rel="stylesheet" href="./shared.css" />
+	<style type="text/css">
+		#canvas {
+			cursor: crosshair;
+			overflow: hidden;
+		}
+
+		.rect {
+			position: absolute;
+			background-color: #6850d433;
+			border: 2px solid #6850d4;
+		}
+
+		.rect.drawing {
+			border-style: dashed;
+		}
+	</style>
+</head>
+<body>
+	<nav id="nav"></nav>
+	<div id="controls">
+		<label>threshold <input id="threshold" type="number" value="3" min="0" style="width: 60px" /></label>
+		<button id="clear-log">Clear log</button>
+		<button id="clear-canvas">Clear canvas</button>
+	</div>
+	<div id="canvas" class="stage"></div>
+	<div id="log"></div>
+
+	<script type="module" src="./rect.ts"></script>
+</body>
+</html>

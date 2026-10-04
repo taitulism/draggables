@@ -1,0 +1,49 @@
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>scroller — drag() Playground</title>
+	<link rel="stylesheet" href="./shared.css" />
+	<style type="text/css">
+		#viewport {
+			overflow: hidden;
+			cursor: grab;
+		}
+
+		#viewport.panning {
+			cursor: grabbing;
+		}
+
+		#content {
+			display: grid;
+			grid-template-columns: repeat(20, 120px);
+			gap: 8px;
+			padding: 8px;
+			width: max-content;
+		}
+
+		.tile {
+			height: 120px;
+			background-color: #f5d76e;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		.tile:nth-child(3n) { background-color: #9fd8a0 }
+		.tile:nth-child(3n + 1) { background-color: #8fc1ec }
+	</style>
+</head>
+<body>
+	<nav id="nav"></nav>
+	<div id="controls">
+		<label>threshold <input id="threshold" type="number" value="3" min="0" style="width: 60px" /></label>
+		<button id="clear-log">Clear log</button>
+	</div>
+	<div id="viewport" class="stage">
+		<div id="content"></div>
+	</div>
+	<div id="log"></div>
+
+	<script type="module" src="./scroller.ts"></script>
+</body>
+</html>

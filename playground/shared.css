@@ -1,0 +1,63 @@
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+body {
+	font-family: monospace;
+	padding: 20px;
+}
+
+#nav {
+	display: flex;
+	margin-bottom: 16px;
+	background-color: #333;
+}
+
+#nav a {
+	padding: 8px 14px;
+	font-size: 15px;
+	color: #ddd;
+	text-decoration: none;
+}
+
+#nav a:hover {
+	background-color: #555;
+}
+
+#nav a[aria-current] {
+	font-weight: bold;
+	color: white;
+	background-color: #6850d4;
+}
+
+#controls {
+	display: flex;
+	gap: 16px;
+	align-items: center;
+	margin-bottom: 20px;
+}
+
+.stage {
+	position: relative;
+	height: 300px;
+	background-color: #c9c9c9;
+	touch-action: none;
+}
+
+body:has(#log) {
+	padding-right: calc(30% + 20px);
+}
+
+#log {
+	position: fixed;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	width: 30%;
+	overflow: auto;
+	white-space: pre;
+	background-color: #f3f3f3;
+	padding: 8px;
+}

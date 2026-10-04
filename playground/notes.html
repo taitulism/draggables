@@ -1,0 +1,47 @@
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>notes — drag() Playground</title>
+	<link rel="stylesheet" href="./shared.css" />
+	<style type="text/css">
+		.note {
+			position: absolute;
+			width: 110px;
+			height: 90px;
+			padding: 6px;
+			background-color: #f5d76e;
+		}
+
+		.note:nth-child(2) { background-color: #9fd8a0 }
+		.note:nth-child(3) { background-color: #8fc1ec }
+		.note[data-drag-disabled] { opacity: 0.5 }
+
+		.grip {
+			width: 100%;
+			height: 20px;
+			background-color: #0003;
+			cursor: grab;
+		}
+	</style>
+</head>
+<body>
+	<nav id="nav"></nav>
+	<div id="controls">
+		<label>threshold <input id="threshold" type="number" value="3" min="0" style="width: 60px" /></label>
+		<button id="clear-log">Clear log</button>
+	</div>
+	<div id="board" class="stage">
+		<div class="note" data-drag-role="draggable" data-name="note A" style="left: 20px; top: 20px">note A</div>
+		<div class="note" data-drag-role="draggable" data-name="note B" style="left: 160px; top: 40px">note B</div>
+		<div class="note" data-drag-role="draggable" data-name="note C" style="left: 300px; top: 60px">note C</div>
+		<div class="note" data-drag-role="draggable" data-name="grip only" style="left: 440px; top: 80px">
+			<div class="grip" data-drag-role="grip"></div>
+			grip only
+		</div>
+		<div class="note" data-drag-role="draggable" data-drag-disabled data-name="disabled" style="left: 580px; top: 100px">disabled</div>
+	</div>
+	<div id="log"></div>
+
+	<script type="module" src="./notes.ts"></script>
+</body>
+</html>

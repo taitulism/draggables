@@ -1,0 +1,72 @@
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>axis — drag() Playground</title>
+	<link rel="stylesheet" href="./shared.css" />
+	<style type="text/css">
+		#track {
+			position: relative;
+			width: 400px;
+			height: 8px;
+			margin: 30px 0;
+			background-color: #c9c9c9;
+		}
+
+		.thumb {
+			position: absolute;
+			top: -8px;
+			left: 0;
+			width: 24px;
+			height: 24px;
+			border-radius: 50%;
+			background-color: #6850d4;
+			cursor: ew-resize;
+			touch-action: none;
+		}
+
+		#panes {
+			display: flex;
+			flex-direction: column;
+			width: 400px;
+			height: 300px;
+			border: 1px solid #999;
+		}
+
+		#top-pane {
+			height: 150px;
+			background-color: #9fd8a0;
+			padding: 6px;
+		}
+
+		#splitter {
+			height: 8px;
+			background-color: #555;
+			cursor: ns-resize;
+			touch-action: none;
+		}
+
+		#bottom-pane {
+			flex: 1;
+			background-color: #8fc1ec;
+			padding: 6px;
+		}
+	</style>
+</head>
+<body>
+	<nav id="nav"></nav>
+	<div id="controls">
+		<label>threshold <input id="threshold" type="number" value="3" min="0" style="width: 60px" /></label>
+		<button id="clear-log">Clear log</button>
+		<span>value: <span id="value">0</span></span>
+	</div>
+	<div id="track"><div class="thumb"></div></div>
+	<div id="panes">
+		<div id="top-pane">top</div>
+		<div id="splitter"></div>
+		<div id="bottom-pane">bottom</div>
+	</div>
+	<div id="log"></div>
+
+	<script type="module" src="./axis.ts"></script>
+</body>
+</html>

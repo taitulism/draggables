@@ -31,7 +31,7 @@ Old code only gets deleted or archived.
 2. **Build `drag()` fresh, beside `Draggables`** — contextElm + target resolver, driving `startDrag`,
    emitting `dx/dy/x/y`. New tests assert emitted numbers — the library no longer moves anything. Old `Draggables` and its tests stay untouched and green. **Done.**
    Files: `src/dom/drag.ts`, `tests/dom/*.spec.ts` (was `drag.spec.ts`, split in 3.3),
-   `playground/drag.html` (notes + resize).
+   `playground/drag.html` (notes + resize; split per case in 3.5).
    Instance API: `on` / `off` / `destroy` — no `enable` / `disable` (deferred with mid-drag disabling).
 
 3. **Swap** — each sub-chunk waits for my approval.
@@ -54,7 +54,20 @@ Old code only gets deleted or archived.
       go with them). Excluded from lint, typecheck and tests; imports aren't fixed.
       `src/types.ts` is copied, not moved — test helpers still import `Point` / `DragAxis`. **Done.**
    5. **Playgrounds** — become the reference: notes, axis, resize, mouse gesture, rect drawing
-      (diagonal drag; consumer normalizes negative `dx/dy`).
+      (diagonal drag; consumer normalizes negative `dx/dy`), scroller. One page per case under
+      `playground/`, linked from `index.html`; `shared.ts` holds nav, log and threshold. Kanban
+      waits for dropzones (6). **Done, but I took some notes to resolve.**
+
+      Playgrounds notes (to discuss):
+        - with devTools opened - old page used to jitter
+        - core: public API. i'm not loving startDrag and step shape
+        - rect: 'dragging' set css. use RAF? css transform
+        - gesture: doesn't keep start x,y like 'rect' playground, it's in the attribute. ok but maybe i want unity.
+        - resize: `.handle` is like a grip. consider data-attr
+        - resize: can escape container. how to contain?
+        - axis/notes: clamp/max/containment is on `onDragging`. Add parent selector?
+        - list of public calls for each playground
+
    6. **Recipes** — consumer-side playground examples for the deleted features. One sub-step each,
       approval after each:
       1. moving the element (was `moveElm`)
