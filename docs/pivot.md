@@ -25,10 +25,10 @@ design; the call is mine.
 
 Old code only gets deleted or archived.
 
-1. **Core, pure, no DOM** — `src/core/startDrag.ts`. `startDrag(x, y, opts) → {move, end, cancel}`.
+1. **Core, pure, no DOM** — `src/core/Drag.ts`. `new Drag(opts)` → `start` / `move` / `end` / `cancel`.
    Unit tests, no browser needed. Nothing else changes yet; core is unused. **Done.**
 
-2. **Build `drag()` fresh, beside `Draggables`** — contextElm + target resolver, driving `startDrag`,
+2. **Build `drag()` fresh, beside `Draggables`** — contextElm + target resolver, driving core `Drag`,
    emitting `dx/dy/x/y`. New tests assert emitted numbers — the library no longer moves anything. Old `Draggables` and its tests stay untouched and green. **Done.**
    Files: `src/dom/drag.ts`, `tests/dom/*.spec.ts` (was `drag.spec.ts`, split in 3.3),
    `playground/drag.html` (notes + resize; split per case in 3.5).
@@ -59,13 +59,11 @@ Old code only gets deleted or archived.
       waits for dropzones (6). **Done, but I took some notes to resolve.**
 
       Playgrounds notes (to discuss):
-        - with devTools opened - old page used to jitter
-        - core: public API. i'm not loving startDrag and step shape
+        - resize: can escape container. how to contain?
+        - axis/notes: clamp/max/containment is on `onDragging`. Add parent selector?
         - rect: 'dragging' set css. use RAF? css transform
         - gesture: doesn't keep start x,y like 'rect' playground, it's in the attribute. ok but maybe i want unity.
         - resize: `.handle` is like a grip. consider data-attr
-        - resize: can escape container. how to contain?
-        - axis/notes: clamp/max/containment is on `onDragging`. Add parent selector?
         - list of public calls for each playground
 
    6. **Recipes** — consumer-side playground examples for the deleted features. One sub-step each,
@@ -172,20 +170,18 @@ Start threshold lives in core, configurable via `threshold`, default 3px.
 
 `dom/` drives core and owns the emitter. Core's methods return what happened.
 
-Core is a closure: private state without `#`, no `this` binding, and a drag is a short-lived
-process. Named for what it models:
+Core is a reusable `Drag` class with `#private` state: config in the constructor, one gesture per
+`start()`. It returns plain positions; `dom/` names the events.
 
 ```ts
-type Step =
-  | {type: 'dragStart' | 'dragging' | 'dragEnd', dx, dy, x, y}
-  | {type: 'dragCancel'}
-  | null                                   // below threshold, or a click ended
-
-const d = startDrag(x, y, {threshold})    // start point is the call; phase: pending → dragging → done
-d.move(x, y)                              // → Step; pending → dragging on threshold
-d.end(x, y)                               // → dragEnd, or null if it never started; done
-d.cancel()                                // → dragCancel if dragging; Esc, pointercancel, destroy; done
+const d = new Drag({threshold})   // state: idle
+d.start(x, y)                     // idle → pending
+d.move(x, y)                      // → {isStart, dx, dy, x, y}, or null below threshold; pending → dragging on threshold
+d.end(x, y)                       // → {dx, dy, x, y}, or null if it never started; → idle
+d.cancel()                        // → true if it was dragging; Esc, pointercancel, destroy; → idle
 ```
+
+`move` / `end` / `cancel` throw while idle.
 
 `dragEnd` recomputes `dx/dy` from the pointerup position rather than reusing the last move's. The
 pointer can travel between the final `pointermove` and `pointerup` — a fast flick, coalesced events,
@@ -193,10 +189,10 @@ a release just past a dropzone edge — and the consumer would commit a stale po
 subtractions.
 
 Synchronous and testable without subscribing. Multiple listeners are a binding-layer concern.
-Core state is just `startX`, `startY`, `phase`.
+Core state is just `startX`, `startY`, `state`, plus the `threshold` config.
 
-One core instance per drag, disposed on `end` / `cancel`. Allocation is negligible; a drag is a
-human action.
+One core instance per `drag()` instance, reused across gestures. Multi-touch would need one per
+`pointerId`.
 
 `end` returns `null` if the threshold was never passed (a plain click).
 
@@ -244,8 +240,8 @@ Today's `data-drag-role` / grip / `data-drag-disabled` rules are the default whe
 given — `drag(board)` just works with the attrs. Any `target` replaces them whole. Tests:
 `tests/dom/data-attributes.spec.ts`.
 
-`startDrag` stays as a private helper of this layer. It owns
-the phase and the threshold; `drag()` drives it and emits. Revisit if a non-pointer input (keyboard
+Core `Drag` stays as a private helper of this layer. It owns
+the state and the threshold; `drag()` drives it and emits. Revisit if a non-pointer input (keyboard
 dragging) appears.
 
 One handler per event stays (Bug #8). Going to many is additive, not breaking, so it can wait for a

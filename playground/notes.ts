@@ -1,3 +1,11 @@
+/*
+Known Issue:
+Symptom: jittery movement when dragging by an element with a non-default cursor (e.g. the grip).
+Cause: on fast movement the cursor slips off the grip and flickers between to pointers e.g. `grab` and `default`.
+Fix: during a drag, cursor must be fixed. add a `dragging` class to <body>, with `body.dragging * { cursor: grab !important }`.
+Note: `*` + `!important` overrides descendants' own cursors (links, buttons, etc.), which inheritance from <body> can't.
+*/
+
 import {drag} from '../src';
 import {mount, logOutput} from './shared';
 
@@ -14,7 +22,11 @@ mount((threshold) => {
 
 			logOutput('grab', ev);
 		})
-		.on('dragStart', (ev) => logOutput('dragStart', ev))
+		.on('dragStart', (ev) => {
+			document.body.style.cursor = 'grab !important';
+
+			logOutput('dragStart', ev);
+		})
 		.on('dragging', (ev) => {
 			const maxX = board.clientWidth - ev.elm.offsetWidth;
 			const maxY = board.clientHeight - ev.elm.offsetHeight;
@@ -23,7 +35,10 @@ mount((threshold) => {
 
 			logOutput('dragging', ev);
 		})
-		.on('dragEnd', (ev) => logOutput('dragEnd', ev));
+		.on('dragEnd', (ev) => {
+			document.body.style.removeProperty('cursor');
+			logOutput('dragEnd', ev)
+		});
 
 	return [notes];
 });

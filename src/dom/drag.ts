@@ -1,4 +1,4 @@
-import {startDrag, type Drag, type DragMoveStep} from '../core/startDrag';
+import {Drag, type DragPosition} from '../core/Drag';
 
 export type TargetResolver = (ev: PointerEvent) => HTMLElement | null
 
@@ -69,8 +69,8 @@ const assertName = (name: string) => {
 export function drag (contextElm: HTMLElement, opts: DragInstanceOptions = {}) {
 	const resolve = toResolver(contextElm, opts.target);
 	let handlers: Handlers = {};
-	let active: {core: Drag, elm: HTMLElement, dragzoneElm: HTMLElement} | undefined;
-
+	const core = new Drag({threshold: opts.threshold});
+	let active: {elm: HTMLElement, dragzoneElm: HTMLElement} | undefined;
 
 	const unbind = () => {
 		window.removeEventListener('pointermove', onMove);
@@ -79,9 +79,8 @@ export function drag (contextElm: HTMLElement, opts: DragInstanceOptions = {}) {
 		active = undefined;
 	};
 
-	const emit = (ev: PointerEvent, elm: HTMLElement, step: DragMoveStep) => {
-		const {type, ...pos} = step;
-		handlers[type]?.({ev, elm, ...pos});
+	const emit = (name: DragEventName, ev: PointerEvent, elm: HTMLElement, pos: DragPosition) => {
+		handlers[name]?.({ev, elm, ...pos});
 	};
 
 	const onDown = (ev: PointerEvent) => {
@@ -91,7 +90,8 @@ export function drag (contextElm: HTMLElement, opts: DragInstanceOptions = {}) {
 		if (!elm) return;
 
 		const dragzoneElm = elm.closest<HTMLElement>(DragzoneSelector) || document.body;
-		active = {core: startDrag(ev.clientX, ev.clientY, {threshold: opts.threshold}), elm, dragzoneElm};
+		core.start(ev.clientX, ev.clientY);
+		active = {elm, dragzoneElm};
 		dragzoneElm.style.setProperty('user-select', 'none');
 
 		window.addEventListener('pointermove', onMove);
@@ -104,17 +104,20 @@ export function drag (contextElm: HTMLElement, opts: DragInstanceOptions = {}) {
 	const onMove = (ev: PointerEvent) => {
 		if (!active) return;
 
-		const step = active.core.move(ev.clientX, ev.clientY);
-		if (step) emit(ev, active.elm, step);
+		const move = core.move(ev.clientX, ev.clientY);
+		if (!move) return;
+
+		const {isStart, ...pos} = move;
+		emit(isStart ? 'dragStart' : 'dragging', ev, active.elm, pos);
 	};
 
 	const onUp = (ev: PointerEvent) => {
 		if (!active) return;
 
-		const {core, elm} = active;
-		const step = core.end(ev.clientX, ev.clientY);
+		const {elm} = active;
+		const pos = core.end(ev.clientX, ev.clientY);
 		unbind();
-		if (step) emit(ev, elm, step);
+		if (pos) emit('dragEnd', ev, elm, pos);
 	};
 
 	contextElm.addEventListener('pointerdown', onDown);
