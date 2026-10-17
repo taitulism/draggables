@@ -68,8 +68,8 @@ const assertName = (name: string) => {
 
 export function drag (contextElm: HTMLElement, opts: DragInstanceOptions = {}) {
 	const resolve = toResolver(contextElm, opts.target);
-	let handlers: Handlers = {};
 	const core = new Drag({threshold: opts.threshold});
+	let handlers: Handlers = {};
 	let active: {elm: HTMLElement, dragzoneElm: HTMLElement} | undefined;
 
 	const unbind = () => {

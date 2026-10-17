@@ -6,12 +6,12 @@ const MIN = 60;
 const panel = document.getElementById('panel')!;
 
 mount((threshold) => {
-	let edge = '';
+	let side = '';
 	let start = {left: 0, top: 0, width: 0, height: 0};
 
-	const resize = drag(panel, {target: '.handle', threshold})
+	const resize = drag(panel, {threshold})
 		.on('grab', (ev) => {
-			edge = ev.elm.dataset.edge!;
+			side = (ev.ev.target as HTMLElement).closest<HTMLElement>('[data-side]')!.dataset.side!;
 			start = {
 				left: panel.offsetLeft,
 				top: panel.offsetTop,
@@ -22,18 +22,18 @@ mount((threshold) => {
 			logOutput('grab', ev);
 		})
 		.on('dragging', (ev) => {
-			if (edge.includes('e')) {
+			if (side.includes('e')) {
 				panel.style.width = `${Math.max(start.width + ev.dx, MIN)}px`;
 			}
-			if (edge.includes('w')) {
+			if (side.includes('w')) {
 				const width = Math.max(start.width - ev.dx, MIN);
 				panel.style.width = `${width}px`;
 				panel.style.left = `${start.left + start.width - width}px`;
 			}
-			if (edge.includes('s')) {
+			if (side.includes('s')) {
 				panel.style.height = `${Math.max(start.height + ev.dy, MIN)}px`;
 			}
-			if (edge.includes('n')) {
+			if (side.includes('n')) {
 				const height = Math.max(start.height - ev.dy, MIN);
 				panel.style.height = `${height}px`;
 				panel.style.top = `${start.top + start.height - height}px`;

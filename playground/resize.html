@@ -15,7 +15,7 @@
 			padding: 12px;
 		}
 
-		.handle {
+		[data-drag-role="grip"] {
 			position: absolute;
 			width: 12px;
 			height: 12px;
@@ -24,14 +24,14 @@
 			touch-action: none;
 		}
 
-		[data-edge="n"], [data-edge="s"] { left: calc(50% - 6px); cursor: ns-resize }
-		[data-edge="e"], [data-edge="w"] { top: calc(50% - 6px); cursor: ew-resize }
-		[data-edge^="n"] { top: -6px }
-		[data-edge^="s"] { bottom: -6px }
-		[data-edge$="e"] { right: -6px }
-		[data-edge$="w"] { left: -6px }
-		[data-edge="nw"], [data-edge="se"] { cursor: nwse-resize }
-		[data-edge="ne"], [data-edge="sw"] { cursor: nesw-resize }
+		[data-side="n"], [data-side="s"] { left: calc(50% - 6px); cursor: ns-resize }
+		[data-side="e"], [data-side="w"] { top: calc(50% - 6px); cursor: ew-resize }
+		[data-side^="n"] { top: -6px }
+		[data-side^="s"] { bottom: -6px }
+		[data-side$="e"] { right: -6px }
+		[data-side$="w"] { left: -6px }
+		[data-side="nw"], [data-side="se"] { cursor: nwse-resize }
+		[data-side="ne"], [data-side="sw"] { cursor: nesw-resize }
 	</style>
 </head>
 <body>
@@ -41,16 +41,16 @@
 		<button id="clear-log">Clear log</button>
 	</div>
 	<div class="stage">
-		<div id="panel">
+		<div id="panel" data-drag-role="draggable">
 			resize me
-			<div class="handle" data-edge="n" data-name="n"></div>
-			<div class="handle" data-edge="s" data-name="s"></div>
-			<div class="handle" data-edge="e" data-name="e"></div>
-			<div class="handle" data-edge="w" data-name="w"></div>
-			<div class="handle" data-edge="ne" data-name="ne"></div>
-			<div class="handle" data-edge="nw" data-name="nw"></div>
-			<div class="handle" data-edge="se" data-name="se"></div>
-			<div class="handle" data-edge="sw" data-name="sw"></div>
+			<div data-drag-role="grip" data-side="n"></div>
+			<div data-drag-role="grip" data-side="s"></div>
+			<div data-drag-role="grip" data-side="e"></div>
+			<div data-drag-role="grip" data-side="w"></div>
+			<div data-drag-role="grip" data-side="ne"></div>
+			<div data-drag-role="grip" data-side="nw"></div>
+			<div data-drag-role="grip" data-side="se"></div>
+			<div data-drag-role="grip" data-side="sw"></div>
 		</div>
 	</div>
 	<div id="log"></div>

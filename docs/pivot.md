@@ -59,11 +59,12 @@ Old code only gets deleted or archived.
       waits for dropzones (6). **Done, but I took some notes to resolve.**
 
       Playgrounds notes (to discuss):
+        - resize: `.handle` is like a grip. consider data-attr. The real issue is passing the `target` option bypasses the `draggable/grip/disabled` attrs handling, which i'm now thinking about removing completly. That's a big change and it means the user will have to write their own target resolver.
+        - i'm not loving 'drag's event shape `ev.ev`
         - resize: can escape container. how to contain?
         - axis/notes: clamp/max/containment is on `onDragging`. Add parent selector?
         - rect: 'dragging' set css. use RAF? css transform
         - gesture: doesn't keep start x,y like 'rect' playground, it's in the attribute. ok but maybe i want unity.
-        - resize: `.handle` is like a grip. consider data-attr
         - list of public calls for each playground
 
    6. **Recipes** — consumer-side playground examples for the deleted features. One sub-step each,
