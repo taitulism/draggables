@@ -11,7 +11,7 @@ mount((threshold) => {
 	let startY = 0;
 	let rect: HTMLElement;
 
-	const draw = drag(canvas, {target: (ev) => ev.button === 0 ? canvas : null, threshold})
+	const draw = drag(canvas, {threshold})
 		.on('grab', (ev) => {
 			const box = canvas.getBoundingClientRect();
 			startX = ev.x - box.left;

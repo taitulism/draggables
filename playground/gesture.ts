@@ -18,7 +18,7 @@ const direction = (dx: number, dy: number) => {
 mount((threshold) => {
 	let box: DOMRect;
 
-	const gesture = drag(area, {target: (ev) => ev.button === 2 ? area : null, threshold})
+	const gesture = drag(area, {button: 2, threshold})
 		.on('grab', (ev) => {
 			box = area.getBoundingClientRect();
 			line.setAttribute('x1', String(ev.x - box.left));

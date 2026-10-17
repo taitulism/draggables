@@ -30,7 +30,7 @@ mount((threshold) => {
 
 	let startHeight = 0;
 
-	const split = drag(splitter, {target: (ev) => ev.button === 0 ? splitter : null, threshold})
+	const split = drag(splitter, {threshold})
 		.on('grab', (ev) => {
 			startHeight = topPane.offsetHeight;
 

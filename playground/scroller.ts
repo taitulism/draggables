@@ -15,7 +15,7 @@ mount((threshold) => {
 	let startLeft = 0;
 	let startTop = 0;
 
-	const pan = drag(viewport, {target: (ev) => ev.button === 0 ? viewport : null, threshold})
+	const pan = drag(viewport, {threshold})
 		.on('grab', (ev) => {
 			startLeft = viewport.scrollLeft;
 			startTop = viewport.scrollTop;

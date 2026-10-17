@@ -1,5 +1,3 @@
-import type {DragAxis} from '../src/types';
-
 /*
           400
   ┌────┬───────────────┐
@@ -34,13 +32,8 @@ export function createDraggableElm () {
 	elm.style.width = '100px';
 	elm.style.height = '100px';
 	elm.style.backgroundColor = 'pink';
-	elm.dataset.dragRole = 'draggable';
 
 	return elm;
-}
-
-export function setAxis (elm: HTMLElement, axis: DragAxis) {
-	elm.dataset.dragAxis = axis;
 }
 
 export function addChild (elm: HTMLElement) {
@@ -77,7 +70,7 @@ export function addGrip (elm: HTMLElement, grip?: HTMLElement) {
 function createGripElm (id: string) {
 	const grip = document.createElement('div');
 
-	grip.dataset.dragRole = 'grip';
+	grip.classList.add('grip');
 	grip.id = `grip-${id}`;
 	grip.style.width = '30px';
 	grip.style.height = '30px';

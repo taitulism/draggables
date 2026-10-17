@@ -4,12 +4,15 @@ export type TargetResolver = (ev: PointerEvent) => HTMLElement | null
 
 export type DragInstanceOptions = {
 	target?: string | TargetResolver
+	handle?: string
+	button?: number
 	threshold?: number
 }
 
 export type DraggableEvent = {
 	ev: PointerEvent
 	elm: HTMLElement
+	handle: HTMLElement
 	dx: number
 	dy: number
 	x: number
@@ -28,37 +31,34 @@ type Handlers = {
 export type DragEventName = keyof Handlers
 
 const EVENT_NAMES: DragEventName[] = ['grab', 'dragStart', 'dragging', 'dragEnd'];
-const DragzoneSelector = '[data-drag-zone]';
-const DraggableSelector = '[data-drag-role="draggable"]';
-const GripSelector = '[data-drag-role="grip"]';
-const DragRoleSelector = `${DraggableSelector}, ${GripSelector}`;
 
-const isDisabled = (elm: HTMLElement) =>
-	'dragDisabled' in elm.dataset && elm.dataset.dragDisabled !== 'false';
+type Resolved = {elm: HTMLElement, handle: HTMLElement}
 
-const resolveRole = (roleElm: HTMLElement) => {
-	if (roleElm.dataset.dragRole === 'draggable') {
-		if (isDisabled(roleElm)) return null;
-		if (roleElm.querySelector(GripSelector)) return null;
-		return roleElm;
-	}
-
-	const draggable = roleElm.closest<HTMLElement>(DraggableSelector);
-	if (!draggable) throw new Error(`A grip must be inside a draggable ${DraggableSelector}`);
-	return isDisabled(draggable) ? null : draggable;
+const closestIn = (contextElm: HTMLElement, from: EventTarget | null, selector: string) => {
+	if (!(from instanceof Element)) return null;
+	const elm = from.closest<HTMLElement>(selector);
+	return elm && contextElm.contains(elm) ? elm : null;
 };
 
-const toResolver = (contextElm: HTMLElement, target?: string | TargetResolver): TargetResolver => {
-	if (typeof target === 'function') return target;
+const toResolver = (contextElm: HTMLElement, opts: DragInstanceOptions) => {
+	const {target, handle, button = 0} = opts;
 
-	return (ev) => {
-		if (ev.button !== 0) return null;
-		if (!(ev.target instanceof Element)) return null;
+	return (ev: PointerEvent): Resolved | null => {
+		if (ev.button !== button) return null;
 
-		const elm = ev.target.closest<HTMLElement>(target || DragRoleSelector);
-		if (!elm || !contextElm.contains(elm)) return null;
+		if (typeof target === 'function') {
+			const elm = target(ev);
+			return elm && {elm, handle: elm};
+		}
 
-		return target ? elm : resolveRole(elm);
+		const handleElm = handle ? closestIn(contextElm, ev.target, handle) : null;
+		if (handle && !handleElm) return null;
+
+		const from = handleElm || ev.target;
+		const elm = target ? closestIn(contextElm, from, target) : contextElm;
+		if (!elm) return null;
+
+		return {elm, handle: handleElm || elm};
 	};
 };
 
@@ -67,37 +67,37 @@ const assertName = (name: string) => {
 };
 
 export function drag (contextElm: HTMLElement, opts: DragInstanceOptions = {}) {
-	const resolve = toResolver(contextElm, opts.target);
+	const resolve = toResolver(contextElm, opts);
 	const core = new Drag({threshold: opts.threshold});
 	let handlers: Handlers = {};
-	let active: {elm: HTMLElement, dragzoneElm: HTMLElement} | undefined;
+	let active: Resolved | undefined;
 
 	const unbind = () => {
 		window.removeEventListener('pointermove', onMove);
 		window.removeEventListener('pointerup', onUp);
-		active?.dragzoneElm.style.removeProperty('user-select');
+		if (active) document.body.style.removeProperty('user-select');
 		active = undefined;
 	};
 
-	const emit = (name: DragEventName, ev: PointerEvent, elm: HTMLElement, pos: DragPosition) => {
-		handlers[name]?.({ev, elm, ...pos});
+	const emit = (name: DragEventName, ev: PointerEvent, resolved: Resolved, pos: DragPosition) => {
+		handlers[name]?.({ev, elm: resolved.elm, handle: resolved.handle, ...pos});
 	};
 
 	const onDown = (ev: PointerEvent) => {
 		if (active) return;
 
-		const elm = resolve(ev);
-		if (!elm) return;
+		const resolved = resolve(ev);
+		if (!resolved) return;
 
-		const dragzoneElm = elm.closest<HTMLElement>(DragzoneSelector) || document.body;
+		const {elm, handle} = resolved;
 		core.start(ev.clientX, ev.clientY);
-		active = {elm, dragzoneElm};
-		dragzoneElm.style.setProperty('user-select', 'none');
+		active = {elm, handle};
+		document.body.style.setProperty('user-select', 'none');
 
 		window.addEventListener('pointermove', onMove);
 		window.addEventListener('pointerup', onUp);
 
-		handlers.grab?.({ev, elm, dx: 0, dy: 0, x: ev.clientX, y: ev.clientY});
+		emit('grab', ev, resolved, {dx: 0, dy: 0, x: ev.clientX, y: ev.clientY});
 		ev.stopPropagation();
 	};
 
@@ -108,16 +108,16 @@ export function drag (contextElm: HTMLElement, opts: DragInstanceOptions = {}) {
 		if (!move) return;
 
 		const {isStart, ...pos} = move;
-		emit(isStart ? 'dragStart' : 'dragging', ev, active.elm, pos);
+		emit(isStart ? 'dragStart' : 'dragging', ev, active, pos);
 	};
 
 	const onUp = (ev: PointerEvent) => {
 		if (!active) return;
 
-		const {elm} = active;
+		const resolved = active;
 		const pos = core.end(ev.clientX, ev.clientY);
 		unbind();
-		if (pos) emit('dragEnd', ev, elm, pos);
+		if (pos) emit('dragEnd', ev, resolved, pos);
 	};
 
 	contextElm.addEventListener('pointerdown', onDown);

@@ -9,9 +9,9 @@ mount((threshold) => {
 	let side = '';
 	let start = {left: 0, top: 0, width: 0, height: 0};
 
-	const resize = drag(panel, {threshold})
+	const resize = drag(panel, {handle: '[data-side]', threshold})
 		.on('grab', (ev) => {
-			side = (ev.ev.target as HTMLElement).closest<HTMLElement>('[data-side]')!.dataset.side!;
+			side = ev.handle.dataset.side!;
 			start = {
 				left: panel.offsetLeft,
 				top: panel.offsetTop,

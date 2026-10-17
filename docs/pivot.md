@@ -37,7 +37,8 @@ Old code only gets deleted or archived.
 3. **Swap** — each sub-chunk waits for my approval.
 
    1. **Role resolver** — old tests covering rules that survive are rewritten against an exported
-      role resolver. One sub-step per rule, approval after each:
+      role resolver. One sub-step per rule, approval after each. **Superseded** — the role attrs
+      were dropped after 3.5, see [Primitive](#primitive-one-contextelm--a-target-resolver):
       1. `data-drag-role="draggable"` **Done.**
       2. grip **Done.**
       3. `data-drag-disabled` **Done.**
@@ -60,6 +61,7 @@ Old code only gets deleted or archived.
 
       Playgrounds notes (to discuss):
         - resize: `.handle` is like a grip. consider data-attr. The real issue is passing the `target` option bypasses the `draggable/grip/disabled` attrs handling, which i'm now thinking about removing completly. That's a big change and it means the user will have to write their own target resolver.
+          **Resolved:** attrs dropped; `handle` option + `ev.handle`. See [Primitive](#primitive-one-contextelm--a-target-resolver).
         - i'm not loving 'drag's event shape `ev.ev`
         - resize: can escape container. how to contain?
         - axis/notes: clamp/max/containment is on `onDragging`. Add parent selector?
@@ -78,9 +80,8 @@ Old code only gets deleted or archived.
 
 4. **`setPointerCapture`** — drops the window listeners. Behavioral, own chunk.
 5. **`dragCancel`** — Esc + destroy-mid-drag.
-6. **Dropzones** — `dropDetection` opt-in, both strategies. Playground: kanban.
-7. **`button` option** — `drag(el, {button: 2})`, default `0`, applies to every target kind. Today
-   selector/default targets hardcode `button === 0` and a function resolver checks buttons itself.
+6. **Dropzones** — `dropzone` selector option, opt-in, both strategies. Playground: kanban.
+7. **`button` option** — `drag(el, {button: 2})`, default `0`, applies to every target kind. **Done.**
 
 ## Decisions log
 
@@ -103,8 +104,8 @@ accumulate.
 
 `relPos` is deleted — it was the accumulated CSS translate. Resolves Bug #5.
 
-`DragEventWrapper` becomes one `DraggableEvent` type for all events: `{ev, elm, dx, dy, x, y}`. The
-dropzone pair only appears when `dropDetection` is on. Named `DraggableEvent`, not `DragEvent`, to
+`DragEventWrapper` becomes one `DraggableEvent` type for all events: `{ev, elm, handle, dx, dy, x, y}`. The
+`dropzone` field only appears when the `dropzone` option is set. Named `DraggableEvent`, not `DragEvent`, to
 avoid shadowing the DOM's global `DragEvent`. Handler params are named `ev`.
 
 Values are raw, not rounded. `clientX/Y` are fractional under page zoom or OS scaling; rounding is
@@ -112,24 +113,24 @@ the consumer's call.
 
 ### Drop targets
 
-Marked with `data-drag-dropzone="<id>"`. `dragEnd` reports the target with the same `dropzoneElm` /
-`dropzoneId` pair as `dragging`, re-tested at the pointerup position rather than reusing the last
-move's.
+A `dropzone` selector option, not an attribute (no magic attrs — see
+[Primitive](#primitive-one-contextelm--a-target-resolver)). `dragEnd` reports the target like
+`dragging`, re-tested at the pointerup position rather than reusing the last move's.
 
-`dropDetection: 'pointer' | 'overlap' | undefined`. Opt-in — undefined means no hit-testing and no
-`dropzone` field, so resize and scroller consumers pay nothing for a DOM read per move.
+Strategy: `'pointer' | 'overlap'` (option name open). Opt-in — no `dropzone` selector means no
+hit-testing and no `dropzone` field, so resize and scroller consumers pay nothing for a DOM read per move.
 
-- `pointer` — `elementsFromPoint(x, y)` (plural), first `[data-drag-dropzone]` that isn't the
+- `pointer` — `elementsFromPoint(x, y)` (plural), first `dropzone` match that isn't the
   dragged element. Plural avoids mutating `pointer-events` on the dragged element, and survives
   consumer overlays sitting on top.
 - `overlap` — dragged element's box against each dropzone; largest overlap area wins
   (not DOM order — that would let a 2px overlap earlier in the markup beat the intended zone).
 
-Hit-tested continuously, exposed on the `dragging` payload as `dropzoneElm` (the element) and
-`dropzoneId` (the attribute's value). Consumers derive transitions by
+Hit-tested continuously, exposed on the `dragging` payload as `dropzone` (the element, or `null`).
+No id — the consumer reads whatever it needs off the element. Consumers derive transitions by
 comparing against the previous value.
 
-`dragStart` carries the pair too, giving consumers the origin zone for "moved from A to B".
+`dragStart` carries it too, giving consumers the origin zone for "moved from A to B".
 
 ### No clamping — consumer's job
 
@@ -139,7 +140,8 @@ width, or scroll offset, and only the consumer knows which.
 Drops: `keepInBoundary`, `dragzoneBox`, `axis` — including the `data-drag-axis` attribute. It's
 `if (dy) dy = 0` in a handler the consumer already writes, and an axis is a runtime decision (which
 edge of a resize was grabbed).
-Stays: `DragzoneSelector`, `dragzoneElm` (still needed for `user-select`), `padding`, `cornerPadding`.
+Stays: `padding`, `cornerPadding` (deferred; may end up as `target` function territory rather than
+options). `data-drag-zone` / `dragzoneElm` are dropped — `user-select` is always set on `<body>`.
 
 Consumer side — measure on `dragStart`, arithmetic on `dragging`:
 
@@ -161,11 +163,11 @@ drag.on('dragging', ({elm, dx}) => {
 
 `moveElm` goes — the library doesn't touch the DOM's position.
 
-`src/core/` (gesture math, no DOM) + `src/dom/` (PointerEvent listeners, `getDraggable`, padding,
+`src/core/` (gesture math, no DOM) + `src/dom/` (PointerEvent listeners, target/handle resolving,
 `user-select`, dropzones). One package. `core/` never imports `dom/`, so a package split later is
 a folder move. Split when a second real consumer appears.
 
-Core emits `{dx, dy, x, y}`; `dom/` adds `elm` before the consumer sees it.
+Core emits `{dx, dy, x, y}`; `dom/` adds `elm` and `handle` before the consumer sees it.
 
 Start threshold lives in core, configurable via `threshold`, default 3px.
 
@@ -210,7 +212,8 @@ release — the drag stays stuck. Capture routes both to the captured element wh
 first write. Below perceptual threshold, and the only option that keeps the element under the cursor.
 Zeroing them, or re-origining at the break, trades that invisible jump for a permanent 3px trail.
 
-**Deferred:** everything about disabling mid-drag — `disable()` and `data-drag-disabled` both.
+**Deferred:** everything about disabling mid-drag — `disable()`. (`data-drag-disabled` is gone with
+the role attrs; disabling at grab is a selector, e.g. `:not(.locked)`.)
 
 **Deferred (touch):** library sets `touch-action: none` on grab and removes it on drag end — not
 permanently in CSS, which would kill scrolling for anyone swiping over a draggable. Without it the
@@ -223,10 +226,11 @@ One primitive for every case (notes, kanban, resize, mouse gesture, rect drawing
 is out of scope; rect drawing is in — it needs only the start and current point, not a path.
 
 ```js
-drag(board)                                     // role attrs (below)
-drag(board, {target: '.note'})                  // selector → ev.target.closest(selector)
-drag(canvas, {target: () => canvas})            // resize, gesture, rect: contextElm is the dragged thing
-drag(board, {target: (ev) => HTMLElement | null})
+drag(canvas)                                    // contextElm is the dragged thing (rect, scroller, splitter)
+drag(area, {button: 2})                         // gesture
+drag(board, {target: '.note:not(.locked)', handle: '.grip'})
+drag(panel, {handle: '[data-side]'})            // resize; reads ev.handle
+drag(board, {target: (ev) => HTMLElement | null})  // escape hatch
 ```
 
 The resolver gets the whole `PointerEvent` (padding needs `clientX/Y`, gesture needs `button`) and
@@ -234,12 +238,21 @@ returns the element to drag, not a boolean — a grip resolves to its draggable.
 
 Runs once, at pointerdown. Mid-drag stays deferred.
 
-No `target` → role attrs (below). Selector and default resolvers accept only `button === 0`; a
-function resolver decides buttons itself (gesture).
+**No magic attrs.** The `data-drag-role` / grip / `data-drag-disabled` / `data-drag-zone` attrs are
+dropped. Built-in role resolving was opinionated and would keep growing (resizable roles, custom role
+names…). Plain selectors cover it: disabling is `:not(...)`, grip-only is `handle`.
 
-Today's `data-drag-role` / grip / `data-drag-disabled` rules are the default when no `target` is
-given — `drag(board)` just works with the attrs. Any `target` replaces them whole. Tests:
-`tests/dom/data-attributes.spec.ts`.
+- No `target` → contextElm.
+- `target` selector → closest match inside contextElm.
+- `handle` selector → drag only starts on a handle inside contextElm; the dragged element is the
+  `target` closest to it (or contextElm). Exposed as `ev.handle` (`=== elm` when unset).
+- `target` function → replaces both; `handle` is ignored, `ev.handle === elm`. Returning
+  `{elm, handle}` is a possible later, additive extension.
+- `button` (default `0`) applies to every kind, functions included.
+
+`handle` is string-only — a function `target` already covers anything a handle function could.
+
+Tests: `tests/dom/construct-destruct.spec.ts` (options).
 
 Core `Drag` stays as a private helper of this layer. It owns
 the state and the threshold; `drag()` drives it and emits. Revisit if a non-pointer input (keyboard

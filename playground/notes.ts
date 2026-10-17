@@ -15,7 +15,7 @@ mount((threshold) => {
 	let startLeft = 0;
 	let startTop = 0;
 
-	const notes = drag(board, {threshold})
+	const notes = drag(board, {target: '.note:not(.locked)', handle: '.grip, .note:not(:has(.grip))', threshold})
 		.on('grab', (ev) => {
 			startLeft = ev.elm.offsetLeft;
 			startTop = ev.elm.offsetTop;
