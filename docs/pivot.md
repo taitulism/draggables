@@ -63,6 +63,7 @@ Old code only gets deleted or archived.
         - resize: `.handle` is like a grip. consider data-attr. The real issue is passing the `target` option bypasses the `draggable/grip/disabled` attrs handling, which i'm now thinking about removing completly. That's a big change and it means the user will have to write their own target resolver.
           **Resolved:** attrs dropped; `handle` option + `ev.handle`. See [Primitive](#primitive-one-contextelm--a-target-resolver).
         - i'm not loving 'drag's event shape `ev.ev`
+          **Resolved:** type renamed `DragData`, handler param `dragData` → `dragData.ev`.
         - resize: can escape container. how to contain?
         - axis/notes: clamp/max/containment is on `onDragging`. Add parent selector?
         - rect: 'dragging' set css. use RAF? css transform
@@ -104,9 +105,10 @@ accumulate.
 
 `relPos` is deleted — it was the accumulated CSS translate. Resolves Bug #5.
 
-`DragEventWrapper` becomes one `DraggableEvent` type for all events: `{ev, elm, handle, dx, dy, x, y}`. The
-`dropzone` field only appears when the `dropzone` option is set. Named `DraggableEvent`, not `DragEvent`, to
-avoid shadowing the DOM's global `DragEvent`. Handler params are named `ev`.
+`DragEventWrapper` becomes one `DragData` type for all events: `{ev, elm, handle, dx, dy, x, y}`. The
+`dropzone` field only appears when the `dropzone` option is set. Named `DragData`, not `DragEvent`, to
+avoid shadowing the DOM's global `DragEvent`, and so handler params are named `dragData` (not `ev`,
+which made `ev.ev`).
 
 Values are raw, not rounded. `clientX/Y` are fractional under page zoom or OS scaling; rounding is
 the consumer's call.

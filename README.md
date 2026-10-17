@@ -234,17 +234,17 @@ d.off('dragStart');
 ```
 
 **Event Handlers**  
-The event handlers get called with a `DragEventWrapper` object which holds 3 properties:
+The event handlers get called with a `DragData` object which holds 3 properties:
 * `ev` - the vanilla pointer event (type `PointerEvent`)
 * `elm` - the draggable element, which is not always the `ev.target` (type `HTMLElement`), 
 * `relPos` - the draggable element's relative position (in pixels), that is, relative to its pre-drag position (type `[x: number, y: number]`)
 
 ```js
-draggables().on('dragging', (dragEv: DragEventWrapper) => {
+draggables().on('dragging', (dragData: DragData) => {
    console.log(
-      dragEv.elm,       // e.g. <div data-drag-role="draggable">
-      dragEv.ev.target, // e.g. <div data-drag-role="grip">
-      dragEv.relPos     // e.g. [3, -8] (on 'grab' events it's always [0,0])
+      dragData.elm,       // e.g. <div data-drag-role="draggable">
+      dragData.ev.target, // e.g. <div data-drag-role="grip">
+      dragData.relPos     // e.g. [3, -8] (on 'grab' events it's always [0,0])
    );
 });
 ```

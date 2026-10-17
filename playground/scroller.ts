@@ -16,27 +16,27 @@ mount((threshold) => {
 	let startTop = 0;
 
 	const pan = drag(viewport, {threshold})
-		.on('grab', (ev) => {
+		.on('grab', (dragData) => {
 			startLeft = viewport.scrollLeft;
 			startTop = viewport.scrollTop;
 
-			logOutput('grab', ev);
+			logOutput('grab', dragData);
 		})
-		.on('dragStart', (ev) => {
+		.on('dragStart', (dragData) => {
 			viewport.classList.add('panning');
 
-			logOutput('dragStart', ev);
+			logOutput('dragStart', dragData);
 		})
-		.on('dragging', (ev) => {
-			viewport.scrollLeft = startLeft - ev.dx;
-			viewport.scrollTop = startTop - ev.dy;
+		.on('dragging', (dragData) => {
+			viewport.scrollLeft = startLeft - dragData.dx;
+			viewport.scrollTop = startTop - dragData.dy;
 
-			logOutput('dragging', ev);
+			logOutput('dragging', dragData);
 		})
-		.on('dragEnd', (ev) => {
+		.on('dragEnd', (dragData) => {
 			viewport.classList.remove('panning');
 
-			logOutput('dragEnd', ev);
+			logOutput('dragEnd', dragData);
 		});
 
 	return [pan];

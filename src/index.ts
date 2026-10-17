@@ -2,7 +2,7 @@ export {drag} from './dom/drag';
 export type {
 	DragInstance,
 	DragInstanceOptions,
-	DraggableEvent,
+	DragData,
 	DragEventHandler,
 	DragEventName,
 	TargetResolver,

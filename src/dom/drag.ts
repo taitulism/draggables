@@ -9,7 +9,7 @@ export type DragInstanceOptions = {
 	threshold?: number
 }
 
-export type DraggableEvent = {
+export type DragData = {
 	ev: PointerEvent
 	elm: HTMLElement
 	handle: HTMLElement
@@ -19,7 +19,7 @@ export type DraggableEvent = {
 	y: number
 }
 
-export type DragEventHandler = (ev: DraggableEvent) => void
+export type DragEventHandler = (dragData: DragData) => void
 
 type Handlers = {
 	grab?: DragEventHandler

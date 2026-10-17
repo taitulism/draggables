@@ -12,32 +12,32 @@ mount((threshold) => {
 	let rect: HTMLElement;
 
 	const draw = drag(canvas, {threshold})
-		.on('grab', (ev) => {
+		.on('grab', (dragData) => {
 			const box = canvas.getBoundingClientRect();
-			startX = ev.x - box.left;
-			startY = ev.y - box.top;
+			startX = dragData.x - box.left;
+			startY = dragData.y - box.top;
 
-			logOutput('grab', ev);
+			logOutput('grab', dragData);
 		})
-		.on('dragStart', (ev) => {
+		.on('dragStart', (dragData) => {
 			rect = document.createElement('div');
 			rect.className = 'rect drawing';
 			canvas.append(rect);
 
-			logOutput('dragStart', ev);
+			logOutput('dragStart', dragData);
 		})
-		.on('dragging', (ev) => {
-			rect.style.left = `${startX + Math.min(ev.dx, 0)}px`;
-			rect.style.top = `${startY + Math.min(ev.dy, 0)}px`;
-			rect.style.width = `${Math.abs(ev.dx)}px`;
-			rect.style.height = `${Math.abs(ev.dy)}px`;
+		.on('dragging', (dragData) => {
+			rect.style.left = `${startX + Math.min(dragData.dx, 0)}px`;
+			rect.style.top = `${startY + Math.min(dragData.dy, 0)}px`;
+			rect.style.width = `${Math.abs(dragData.dx)}px`;
+			rect.style.height = `${Math.abs(dragData.dy)}px`;
 
-			logOutput('dragging', ev);
+			logOutput('dragging', dragData);
 		})
-		.on('dragEnd', (ev) => {
+		.on('dragEnd', (dragData) => {
 			rect.classList.remove('drawing');
 
-			logOutput('dragEnd', ev);
+			logOutput('dragEnd', dragData);
 		});
 
 	return [draw];

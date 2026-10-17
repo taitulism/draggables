@@ -1,4 +1,4 @@
-import type {DragInstance, DraggableEvent} from '../src';
+import type {DragInstance, DragData} from '../src';
 
 const PAGES = ['core', 'notes', 'axis', 'resize', 'gesture', 'rect', 'scroller'];
 
@@ -19,10 +19,10 @@ export function logLine (line: string) {
 	log.textContent = `${line}\n${log.textContent}`;
 }
 
-export function logOutput (name: string, ev: DraggableEvent) {
-	const id = ev.elm.id || ev.elm.dataset.name || ev.elm.className;
+export function logOutput (name: string, dragData: DragData) {
+	const id = dragData.elm.id || dragData.elm.dataset.name || dragData.elm.className;
 	
-	logLine(`${name.padEnd(9)} ${id} dx:${ev.dx} dy:${ev.dy} x:${ev.x} y:${ev.y}`);
+	logLine(`${name.padEnd(9)} ${id} dx:${dragData.dx} dy:${dragData.dy} x:${dragData.x} y:${dragData.y}`);
 }
 
 export function mount (setup: (threshold: number) => DragInstance[]) {

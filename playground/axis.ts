@@ -13,36 +13,36 @@ mount((threshold) => {
 	let startLeft = 0;
 
 	const slider = drag(track, {target: '.thumb', threshold})
-		.on('grab', (ev) => {
-			startLeft = ev.elm.offsetLeft;
+		.on('grab', (dragData) => {
+			startLeft = dragData.elm.offsetLeft;
 
-			logOutput('grab', ev);
+			logOutput('grab', dragData);
 		})
-		.on('dragging', (ev) => {
-			const max = track.clientWidth - ev.elm.offsetWidth;
-			const left = clamp(startLeft + ev.dx, 0, max);
-			ev.elm.style.left = `${left}px`;
+		.on('dragging', (dragData) => {
+			const max = track.clientWidth - dragData.elm.offsetWidth;
+			const left = clamp(startLeft + dragData.dx, 0, max);
+			dragData.elm.style.left = `${left}px`;
 			value.textContent = String(Math.round(left / max * 100));
 
-			logOutput('dragging', ev);
+			logOutput('dragging', dragData);
 		})
-		.on('dragEnd', (ev) => logOutput('dragEnd', ev));
+		.on('dragEnd', (dragData) => logOutput('dragEnd', dragData));
 
 	let startHeight = 0;
 
 	const split = drag(splitter, {threshold})
-		.on('grab', (ev) => {
+		.on('grab', (dragData) => {
 			startHeight = topPane.offsetHeight;
 
-			logOutput('grab', ev);
+			logOutput('grab', dragData);
 		})
-		.on('dragging', (ev) => {
+		.on('dragging', (dragData) => {
 			const max = panes.clientHeight - splitter.offsetHeight - 30;
-			topPane.style.height = `${clamp(startHeight + ev.dy, 30, max)}px`;
+			topPane.style.height = `${clamp(startHeight + dragData.dy, 30, max)}px`;
 
-			logOutput('dragging', ev);
+			logOutput('dragging', dragData);
 		})
-		.on('dragEnd', (ev) => logOutput('dragEnd', ev));
+		.on('dragEnd', (dragData) => logOutput('dragEnd', dragData));
 
 	return [slider, split];
 });

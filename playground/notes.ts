@@ -16,28 +16,28 @@ mount((threshold) => {
 	let startTop = 0;
 
 	const notes = drag(board, {target: '.note:not(.locked)', handle: '.grip, .note:not(:has(.grip))', threshold})
-		.on('grab', (ev) => {
-			startLeft = ev.elm.offsetLeft;
-			startTop = ev.elm.offsetTop;
+		.on('grab', (dragData) => {
+			startLeft = dragData.elm.offsetLeft;
+			startTop = dragData.elm.offsetTop;
 
-			logOutput('grab', ev);
+			logOutput('grab', dragData);
 		})
-		.on('dragStart', (ev) => {
+		.on('dragStart', (dragData) => {
 			document.body.style.cursor = 'grab !important';
 
-			logOutput('dragStart', ev);
+			logOutput('dragStart', dragData);
 		})
-		.on('dragging', (ev) => {
-			const maxX = board.clientWidth - ev.elm.offsetWidth;
-			const maxY = board.clientHeight - ev.elm.offsetHeight;
-			ev.elm.style.left = `${Math.min(Math.max(startLeft + ev.dx, 0), maxX)}px`;
-			ev.elm.style.top = `${Math.min(Math.max(startTop + ev.dy, 0), maxY)}px`;
+		.on('dragging', (dragData) => {
+			const maxX = board.clientWidth - dragData.elm.offsetWidth;
+			const maxY = board.clientHeight - dragData.elm.offsetHeight;
+			dragData.elm.style.left = `${Math.min(Math.max(startLeft + dragData.dx, 0), maxX)}px`;
+			dragData.elm.style.top = `${Math.min(Math.max(startTop + dragData.dy, 0), maxY)}px`;
 
-			logOutput('dragging', ev);
+			logOutput('dragging', dragData);
 		})
-		.on('dragEnd', (ev) => {
+		.on('dragEnd', (dragData) => {
 			document.body.style.removeProperty('cursor');
-			logOutput('dragEnd', ev)
+			logOutput('dragEnd', dragData)
 		});
 
 	return [notes];
