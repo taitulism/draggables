@@ -1,4 +1,5 @@
 import {Drag, type DragPosition} from '../core/Drag';
+import {clamp} from '../clamp';
 
 export type TargetResolver = (ev: PointerEvent) => HTMLElement | null
 
@@ -17,6 +18,8 @@ export type DragData = {
 	dy: number
 	x: number
 	y: number
+	clampTo: (container: HTMLElement | string) => {left: number, top: number}
+	clampPointTo: (container: HTMLElement | string) => {x: number, y: number}
 }
 
 export type DragEventHandler = (dragData: DragData) => void
@@ -33,6 +36,8 @@ export type DragEventName = keyof Handlers
 const EVENT_NAMES: DragEventName[] = ['grab', 'dragStart', 'dragging', 'dragEnd'];
 
 type Resolved = {elm: HTMLElement, handle: HTMLElement}
+
+type Active = Resolved & {startLeft: number, startTop: number}
 
 const closestIn = (contextElm: HTMLElement, from: EventTarget | null, selector: string) => {
 	if (!(from instanceof Element)) return null;
@@ -62,6 +67,29 @@ const toResolver = (contextElm: HTMLElement, opts: DragInstanceOptions) => {
 	};
 };
 
+const createClampTo = ({elm, startLeft, startTop}: Active, pos: DragPosition) => (container: HTMLElement | string) => {
+	const left = startLeft + pos.dx;
+	const top = startTop + pos.dy;
+	const box = typeof container === 'string' ? elm.parentElement?.closest<HTMLElement>(container) : container;
+	if (!box) return {left, top};
+
+	return {
+		left: clamp(left, 0, box.clientWidth - elm.offsetWidth),
+		top: clamp(top, 0, box.clientHeight - elm.offsetHeight),
+	};
+};
+
+const createClampPointTo = ({elm}: Active, pos: DragPosition) => (container: HTMLElement | string) => {
+	const box = typeof container === 'string' ? elm.closest<HTMLElement>(container) : container;
+	if (!box) return {x: pos.x, y: pos.y};
+
+	const rect = box.getBoundingClientRect();
+	return {
+		x: clamp(pos.x - rect.left, 0, rect.width),
+		y: clamp(pos.y - rect.top, 0, rect.height),
+	};
+};
+
 const assertName = (name: string) => {
 	if (!EVENT_NAMES.includes(name as DragEventName)) throw new Error('No such event name');
 };
@@ -70,7 +98,7 @@ export function drag (contextElm: HTMLElement, opts: DragInstanceOptions = {}) {
 	const resolve = toResolver(contextElm, opts);
 	const core = new Drag({threshold: opts.threshold});
 	let handlers: Handlers = {};
-	let active: Resolved | undefined;
+	let active: Active | undefined;
 
 	const unbind = () => {
 		window.removeEventListener('pointermove', onMove);
@@ -79,8 +107,9 @@ export function drag (contextElm: HTMLElement, opts: DragInstanceOptions = {}) {
 		active = undefined;
 	};
 
-	const emit = (name: DragEventName, ev: PointerEvent, resolved: Resolved, pos: DragPosition) => {
-		handlers[name]?.({ev, elm: resolved.elm, handle: resolved.handle, ...pos});
+	const emit = (name: DragEventName, ev: PointerEvent, resolved: Active, pos: DragPosition) => {
+		const {elm, handle} = resolved;
+		handlers[name]?.({ev, elm, handle, ...pos, clampTo: createClampTo(resolved, pos), clampPointTo: createClampPointTo(resolved, pos)});
 	};
 
 	const onDown = (ev: PointerEvent) => {
@@ -91,13 +120,13 @@ export function drag (contextElm: HTMLElement, opts: DragInstanceOptions = {}) {
 
 		const {elm, handle} = resolved;
 		core.start(ev.clientX, ev.clientY);
-		active = {elm, handle};
+		active = {elm, handle, startLeft: elm.offsetLeft, startTop: elm.offsetTop};
 		document.body.style.setProperty('user-select', 'none');
 
 		window.addEventListener('pointermove', onMove);
 		window.addEventListener('pointerup', onUp);
 
-		emit('grab', ev, resolved, {dx: 0, dy: 0, x: ev.clientX, y: ev.clientY});
+		emit('grab', ev, active, {dx: 0, dy: 0, x: ev.clientX, y: ev.clientY});
 		ev.stopPropagation();
 	};
 

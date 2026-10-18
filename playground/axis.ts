@@ -1,4 +1,4 @@
-import {drag} from '../src';
+import {drag, clamp} from '../src';
 import {mount, logOutput} from './shared';
 
 const track = document.getElementById('track')!;
@@ -7,20 +7,12 @@ const splitter = document.getElementById('splitter')!;
 const topPane = document.getElementById('top-pane')!;
 const panes = document.getElementById('panes')!;
 
-const clamp = (n: number, min: number, max: number) => Math.min(Math.max(n, min), max);
-
 mount((threshold) => {
-	let startLeft = 0;
-
 	const slider = drag(track, {target: '.thumb', threshold})
-		.on('grab', (dragData) => {
-			startLeft = dragData.elm.offsetLeft;
-
-			logOutput('grab', dragData);
-		})
+		.on('grab', (dragData) => logOutput('grab', dragData))
 		.on('dragging', (dragData) => {
 			const max = track.clientWidth - dragData.elm.offsetWidth;
-			const left = clamp(startLeft + dragData.dx, 0, max);
+			const {left} = dragData.clampTo(track);
 			dragData.elm.style.left = `${left}px`;
 			value.textContent = String(Math.round(left / max * 100));
 

@@ -13,9 +13,7 @@ mount((threshold) => {
 
 	const draw = drag(canvas, {threshold})
 		.on('grab', (dragData) => {
-			const box = canvas.getBoundingClientRect();
-			startX = dragData.x - box.left;
-			startY = dragData.y - box.top;
+			({x: startX, y: startY} = dragData.clampPointTo(canvas));
 
 			logOutput('grab', dragData);
 		})
@@ -27,10 +25,11 @@ mount((threshold) => {
 			logOutput('dragStart', dragData);
 		})
 		.on('dragging', (dragData) => {
-			rect.style.left = `${startX + Math.min(dragData.dx, 0)}px`;
-			rect.style.top = `${startY + Math.min(dragData.dy, 0)}px`;
-			rect.style.width = `${Math.abs(dragData.dx)}px`;
-			rect.style.height = `${Math.abs(dragData.dy)}px`;
+			const {x, y} = dragData.clampPointTo(canvas);
+			rect.style.left = `${Math.min(startX, x)}px`;
+			rect.style.top = `${Math.min(startY, y)}px`;
+			rect.style.width = `${Math.abs(x - startX)}px`;
+			rect.style.height = `${Math.abs(y - startY)}px`;
 
 			logOutput('dragging', dragData);
 		})

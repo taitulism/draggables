@@ -12,14 +12,8 @@ import {mount, logOutput} from './shared';
 const board = document.getElementById('board')!;
 
 mount((threshold) => {
-	let startLeft = 0;
-	let startTop = 0;
-
 	const notes = drag(board, {target: '.note:not(.locked)', handle: '.grip, .note:not(:has(.grip))', threshold})
 		.on('grab', (dragData) => {
-			startLeft = dragData.elm.offsetLeft;
-			startTop = dragData.elm.offsetTop;
-
 			logOutput('grab', dragData);
 		})
 		.on('dragStart', (dragData) => {
@@ -28,10 +22,9 @@ mount((threshold) => {
 			logOutput('dragStart', dragData);
 		})
 		.on('dragging', (dragData) => {
-			const maxX = board.clientWidth - dragData.elm.offsetWidth;
-			const maxY = board.clientHeight - dragData.elm.offsetHeight;
-			dragData.elm.style.left = `${Math.min(Math.max(startLeft + dragData.dx, 0), maxX)}px`;
-			dragData.elm.style.top = `${Math.min(Math.max(startTop + dragData.dy, 0), maxY)}px`;
+			const {left, top} = dragData.clampTo(board);
+			dragData.elm.style.left = `${left}px`;
+			dragData.elm.style.top = `${top}px`;
 
 			logOutput('dragging', dragData);
 		})

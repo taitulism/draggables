@@ -65,15 +65,15 @@ Old code only gets deleted or archived.
         - i'm not loving 'drag's event shape `ev.ev`
           **Resolved:** type renamed `DragData`, handler param `dragData` → `dragData.ev`.
         - resize: can escape container. how to contain?
+          **Resolved:** exported `clamp(n, min, max)`. See [Clamping](#clamping).
         - axis/notes: clamp/max/containment is on `onDragging`. Add parent selector?
-        - rect: 'dragging' set css. use RAF? css transform
-        - gesture: doesn't keep start x,y like 'rect' playground, it's in the attribute. ok but maybe i want unity.
-        - list of public calls for each playground
+          **Resolved:** `dragData.clampTo(container)`, element or selector. See [Clamping](#clamping).
 
    6. **Recipes** — consumer-side playground examples for the deleted features. One sub-step each,
       approval after each:
       1. moving the element (was `moveElm`)
       2. keeping it in a boundary (was `keepInBoundary` / `dragzoneBox`)
+         **Resolved:** notes and axis slider use `dragData.clampTo`. See [Clamping](#clamping).
       3. locking an axis (was `axis`)
       4. accumulating position across drags (was `relPos`)
 
@@ -134,10 +134,62 @@ comparing against the previous value.
 
 `dragStart` carries it too, giving consumers the origin zone for "moved from A to B".
 
-### No clamping — consumer's job
+### Clamping
 
-The library can't clamp meaningfully once it doesn't position the element: `dx` may mean position,
-width, or scroll offset, and only the consumer knows which.
+Helpers the consumer calls:
+
+- `dragData.clampTo(container)` — the dragged element's position (`{left, top}`), kept inside
+  `container`. For moving things: notes, a slider thumb.
+- `dragData.clampPointTo(container)` — the pointer (`{x, y}`) relative to `container`, kept inside
+  it. For drawing: a selection rect, a gesture line.
+- `clamp(n, min, max)` — exported for everything else: resize, a splitter, min/max sizes.
+
+`container` is an element or a selector (matched against the dragged element's ancestors;
+`clampPointTo` also matches the element itself). No match → the unclamped value.
+
+#### Known bug: `clampTo` with a container that isn't the positioning parent
+
+`clampTo` builds `left`/`top` from `offsetLeft`/`offsetTop`, measured from the element's positioning
+parent (`offsetParent`, the nearest ancestor with `position` set). It caps them by the container's
+size, as if they were measured from the container's edge. When the two edges don't line up, the
+allowed range shifts by the gap between them: one side stops early, the other overshoots.
+
+Board 300px wide, a wrapper (the positioning parent) starting 50px into it, a 100px note:
+
+```
+board:    0                                   300
+          ├───────────────────────────────────┤
+wrapper:       50
+               ├──────────────────────────────...
+               ↑ note's `left` is measured from here
+
+clampTo(board) → max left = 300 - 100 = 200
+
+note at left=200 (from wrapper):
+               ├────── 200 ──────┤
+board coords:  50               250      350
+                                 ┌─────────┐
+                                 │  note   │
+                                 └─────────┘
+                                       ↑ 300 = board's edge
+                                       note sticks out 50px
+```
+
+Same at the other end: `left=0` lands at board x=50, 50px short of the edge.
+
+Also hit when the element is moved with `transform`/`translate`: `offsetLeft` ignores transforms, so
+the start position is wrong.
+
+Fix: clamp the delta using screen rects (`getBoundingClientRect`), element on grab, container on
+call:
+
+```ts
+const minDx = containerRect.left - elmStartRect.left;
+const maxDx = containerRect.right - elmStartRect.right;
+left = startLeft + clamp(dx, minDx, maxDx);
+```
+
+Screen rects share one origin, so the positioning parent no longer matters.
 
 Drops: `keepInBoundary`, `dragzoneBox`, `axis` — including the `data-drag-axis` attribute. It's
 `if (dy) dy = 0` in a handler the consumer already writes, and an axis is a runtime decision (which
@@ -145,19 +197,13 @@ edge of a resize was grabbed).
 Stays: `padding`, `cornerPadding` (deferred; may end up as `target` function territory rather than
 options). `data-drag-zone` / `dragzoneElm` are dropped — `user-select` is always set on `<body>`.
 
-Consumer side — measure on `dragStart`, arithmetic on `dragging`:
+Consumer side:
 
 ```js
-let startX, maxX
-
-drag.on('dragStart', ({elm}) => {
-  startX = elm.offsetLeft
-  maxX = elm.parentElement.offsetWidth - elm.offsetWidth
-})
-
-drag.on('dragging', ({elm, dx}) => {
-  const x = Math.min(Math.max(startX + dx, 0), maxX)
-  elm.style.translate = `${x - startX}px 0`
+drag.on('dragging', (dragData) => {
+  const {left, top} = dragData.clampTo(board)
+  dragData.elm.style.left = `${left}px`
+  dragData.elm.style.top = `${top}px`
 })
 ```
 

@@ -16,22 +16,21 @@ const direction = (dx: number, dy: number) => {
 };
 
 mount((threshold) => {
-	let box: DOMRect;
-
-	const gesture = drag(area, {button: 2, threshold})
+	const gesture = drag(area, {button: 0, threshold})
 		.on('grab', (dragData) => {
-			box = area.getBoundingClientRect();
-			line.setAttribute('x1', String(dragData.x - box.left));
-			line.setAttribute('y1', String(dragData.y - box.top));
-			line.setAttribute('x2', String(dragData.x - box.left));
-			line.setAttribute('y2', String(dragData.y - box.top));
+			const {x, y} = dragData.clampPointTo(area);
+			line.setAttribute('x1', String(x));
+			line.setAttribute('y1', String(y));
+			line.setAttribute('x2', String(x));
+			line.setAttribute('y2', String(y));
 			result.textContent = '';
 
 			logOutput('grab', dragData);
 		})
 		.on('dragging', (dragData) => {
-			line.setAttribute('x2', String(dragData.x - box.left));
-			line.setAttribute('y2', String(dragData.y - box.top));
+			const {x, y} = dragData.clampPointTo(area);
+			line.setAttribute('x2', String(x));
+			line.setAttribute('y2', String(y));
 			result.textContent = direction(dragData.dx, dragData.dy);
 
 			logOutput('dragging', dragData);
