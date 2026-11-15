@@ -1,4 +1,4 @@
-import {drag, clamp} from '../src';
+import {drag} from '../src';
 import {mount, logOutput} from './shared';
 
 const MIN = 60;
@@ -8,36 +8,38 @@ const stage = panel.parentElement!;
 
 mount((threshold) => {
 	let side = '';
-	let start = {left: 0, top: 0, width: 0, height: 0};
+	let anchor = {left: 0, top: 0, right: 0, bottom: 0};
 
-	const resize = drag(panel, {handle: '[data-side]', threshold})
+	const resize = drag(panel, {handle: '[data-side]', threshold, bound: 'pointer', container: stage})
 		.on('grab', (dragData) => {
 			side = dragData.handle.dataset.side!;
-			start = {
+			anchor = {
 				left: panel.offsetLeft,
 				top: panel.offsetTop,
-				width: panel.offsetWidth,
-				height: panel.offsetHeight,
+				right: panel.offsetLeft + panel.offsetWidth,
+				bottom: panel.offsetTop + panel.offsetHeight,
 			};
 
 			logOutput('grab', dragData);
 		})
 		.on('dragging', (dragData) => {
+			const {containerX, containerY} = dragData;
+
 			if (side.includes('e')) {
-				panel.style.width = `${clamp(start.width + dragData.dx, MIN, stage.clientWidth - start.left)}px`;
+				panel.style.width = `${Math.max(containerX - anchor.left, MIN)}px`;
 			}
 			if (side.includes('w')) {
-				const width = clamp(start.width - dragData.dx, MIN, start.left + start.width);
+				const width = Math.max(anchor.right - containerX, MIN);
 				panel.style.width = `${width}px`;
-				panel.style.left = `${start.left + start.width - width}px`;
+				panel.style.left = `${anchor.right - width}px`;
 			}
 			if (side.includes('s')) {
-				panel.style.height = `${clamp(start.height + dragData.dy, MIN, stage.clientHeight - start.top)}px`;
+				panel.style.height = `${Math.max(containerY - anchor.top, MIN)}px`;
 			}
 			if (side.includes('n')) {
-				const height = clamp(start.height - dragData.dy, MIN, start.top + start.height);
+				const height = Math.max(anchor.bottom - containerY, MIN);
 				panel.style.height = `${height}px`;
-				panel.style.top = `${start.top + start.height - height}px`;
+				panel.style.top = `${anchor.bottom - height}px`;
 			}
 
 			logOutput('dragging', dragData);

@@ -12,19 +12,16 @@ import {mount, logOutput} from './shared';
 const board = document.getElementById('board')!;
 
 mount((threshold) => {
-	const notes = drag(board, {target: '.note:not(.locked)', handle: '.grip, .note:not(:has(.grip))', threshold})
-		.on('grab', (dragData) => {
-			logOutput('grab', dragData);
-		})
+	const notes = drag(board, {target: '.note:not(.locked)', handle: '.grip, .note:not(:has(.grip))', threshold, container: board})
+		.on('grab', (dragData) => logOutput('grab', dragData))
 		.on('dragStart', (dragData) => {
 			document.body.style.cursor = 'grab !important';
 
 			logOutput('dragStart', dragData);
 		})
 		.on('dragging', (dragData) => {
-			const {left, top} = dragData.clampTo(board);
-			dragData.elm.style.left = `${left}px`;
-			dragData.elm.style.top = `${top}px`;
+			dragData.elm.style.left = `${dragData.left}px`;
+			dragData.elm.style.top = `${dragData.top}px`;
 
 			logOutput('dragging', dragData);
 		})

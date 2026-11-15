@@ -16,21 +16,21 @@ const direction = (dx: number, dy: number) => {
 };
 
 mount((threshold) => {
-	const gesture = drag(area, {button: 0, threshold})
+	const gesture = drag(area, {button: 0, threshold, bound: 'pointer'})
 		.on('grab', (dragData) => {
-			const {x, y} = dragData.clampPointTo(area);
-			line.setAttribute('x1', String(x));
-			line.setAttribute('y1', String(y));
-			line.setAttribute('x2', String(x));
-			line.setAttribute('y2', String(y));
+			const {containerX, containerY} = dragData;
+			line.setAttribute('x1', String(containerX));
+			line.setAttribute('y1', String(containerY));
+			line.setAttribute('x2', String(containerX));
+			line.setAttribute('y2', String(containerY));
 			result.textContent = '';
 
 			logOutput('grab', dragData);
 		})
 		.on('dragging', (dragData) => {
-			const {x, y} = dragData.clampPointTo(area);
-			line.setAttribute('x2', String(x));
-			line.setAttribute('y2', String(y));
+			const {containerX, containerY} = dragData;
+			line.setAttribute('x2', String(containerX));
+			line.setAttribute('y2', String(containerY));
 			result.textContent = direction(dragData.dx, dragData.dy);
 
 			logOutput('dragging', dragData);

@@ -67,13 +67,13 @@ Old code only gets deleted or archived.
         - resize: can escape container. how to contain?
           **Resolved:** exported `clamp(n, min, max)`. See [Clamping](#clamping).
         - axis/notes: clamp/max/containment is on `onDragging`. Add parent selector?
-          **Resolved:** `dragData.clampTo(container)`, element or selector. See [Clamping](#clamping).
+          **Resolved:** ~~`dragData.clampTo(container)`~~ `container` option, element or selector. See [Clamping](#clamping).
 
    6. **Recipes** — consumer-side playground examples for the deleted features. One sub-step each,
       approval after each:
-      1. moving the element (was `moveElm`)
+      1. ~~moving the element (was `moveElm`)~~ **Deprecated.**
       2. keeping it in a boundary (was `keepInBoundary` / `dragzoneBox`)
-         **Resolved:** notes and axis slider use `dragData.clampTo`. See [Clamping](#clamping).
+         **Done.** Notes and axis slider use the `container` option. See [Clamping](#clamping).
       3. locking an axis (was `axis`)
       4. accumulating position across drags (was `relPos`)
 
@@ -91,9 +91,15 @@ _(append decisions here as they're made, so later chats don't re-litigate them)_
 ### Move event payload
 
 ```js
-{ dx, dy,    // since drag start
-  x, y }     // current pointer, client px
+{ dx, dy,    // since drag start; clamped when the `container` option is set
+  x, y,      // current pointer, client px
+  left, top, // start offsetLeft/offsetTop + dx/dy
+  containerX, containerY, startContainerX, startContainerY,  // with `container` or `bound: 'pointer'`
+  tx, ty }   // start translate + dx/dy; with `translate: true`
 ```
+
+Optional fields are typed by the options: `DragData<O>` makes them required when the matching option
+is passed.
 
 No incremental delta (since-last-move): it bakes clamping into the state it reads next frame,
 and it's derivable as `dx - prevDx`.
@@ -105,7 +111,7 @@ accumulate.
 
 `relPos` is deleted — it was the accumulated CSS translate. Resolves Bug #5.
 
-`DragEventWrapper` becomes one `DragData` type for all events: `{ev, elm, handle, dx, dy, x, y}`. The
+`DragEventWrapper` becomes one `DragData` type for all events: `{ev, elm, handle, ...payload}`. The
 `dropzone` field only appears when the `dropzone` option is set. Named `DragData`, not `DragEvent`, to
 avoid shadowing the DOM's global `DragEvent`, and so handler params are named `dragData` (not `ev`,
 which made `ev.ev`).
@@ -136,18 +142,32 @@ comparing against the previous value.
 
 ### Clamping
 
-Helpers the consumer calls:
+- `container` option — `drag(el, {container})`. `dragData.dx`/`dy` arrive clamped so the dragged
+  element stays inside `container`'s padding box. For moving things: notes, a slider thumb. Works
+  with `left`/`top` and `translate` alike, since it's a delta.
+- `instance.refreshContainerBounds()` — re-reads the container's rect mid-drag (scroll, resize).
+  No-op without an active drag.
+- `bound: 'pointer'` option — clamps the pointer instead of the element's box, and adds
+  `containerX/Y` / `startContainerX/Y` (pointer relative to the container). Without `container`, the
+  container is the dragged element itself. For drawing and resizing: a selection rect, a gesture
+  line, resize handles.
+- `translate: true` option — reads the computed `translate` on grab, adds `tx/ty`.
+- `clamp(n, min, max)` — exported for everything else: a splitter, min/max sizes.
 
-- `dragData.clampTo(container)` — the dragged element's position (`{left, top}`), kept inside
-  `container`. For moving things: notes, a slider thumb.
-- `dragData.clampPointTo(container)` — the pointer (`{x, y}`) relative to `container`, kept inside
-  it. For drawing: a selection rect, a gesture line.
-- `clamp(n, min, max)` — exported for everything else: resize, a splitter, min/max sizes.
+`container` is an element or a selector (matched against the dragged element's ancestors). No
+match → the unclamped value.
 
-`container` is an element or a selector (matched against the dragged element's ancestors;
-`clampPointTo` also matches the element itself). No match → the unclamped value.
+**Open:** a selector that matches nothing conflicts with the strict `DragData` type, which promises
+`containerX`/`startContainerX` (and Y) as numbers whenever `container` or `bound: 'pointer'` is
+passed, while at runtime they're `undefined`. Options: throw, fall back to the element, or keep it
+(the type is slightly wrong).
 
-#### Known bug: `clampTo` with a container that isn't the positioning parent
+Rects are cached on grab — the dragged element's and the container's — so moves do no DOM reads
+(a rect read after the consumer writes `left`/`top` forces a reflow per move). The dragged element
+is never re-measured mid-drag: its rect would include the movement. One container per drag; to
+span several, use their common parent. `dragData.clampTo()` and `clampPointTo()` are removed.
+
+#### ~~Known bug: `clampTo` with a container that isn't the positioning parent~~ **Fixed** by the `container` option
 
 `clampTo` builds `left`/`top` from `offsetLeft`/`offsetTop`, measured from the element's positioning
 parent (`offsetParent`, the nearest ancestor with `position` set). It caps them by the container's
@@ -180,8 +200,7 @@ Same at the other end: `left=0` lands at board x=50, 50px short of the edge.
 Also hit when the element is moved with `transform`/`translate`: `offsetLeft` ignores transforms, so
 the start position is wrong.
 
-Fix: clamp the delta using screen rects (`getBoundingClientRect`), element on grab, container on
-call:
+Fix: clamp the delta using screen rects (`getBoundingClientRect`), both on grab:
 
 ```ts
 const minDx = containerRect.left - elmStartRect.left;
@@ -200,11 +219,11 @@ options). `data-drag-zone` / `dragzoneElm` are dropped — `user-select` is alwa
 Consumer side:
 
 ```js
-drag.on('dragging', (dragData) => {
-  const {left, top} = dragData.clampTo(board)
-  dragData.elm.style.left = `${left}px`
-  dragData.elm.style.top = `${top}px`
-})
+drag(board, {target: '.note', container: board})
+  .on('dragging', ({elm, left, top}) => {
+    elm.style.left = `${left}px`
+    elm.style.top = `${top}px`
+  })
 ```
 
 ### Structure

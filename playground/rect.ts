@@ -7,16 +7,10 @@ const clearCanvasBtn = document.getElementById('clear-canvas')!;
 clearCanvasBtn.addEventListener('click', () => canvas.replaceChildren());
 
 mount((threshold) => {
-	let startX = 0;
-	let startY = 0;
 	let rect: HTMLElement;
 
-	const draw = drag(canvas, {threshold})
-		.on('grab', (dragData) => {
-			({x: startX, y: startY} = dragData.clampPointTo(canvas));
-
-			logOutput('grab', dragData);
-		})
+	const draw = drag(canvas, {threshold, bound: 'pointer'})
+		.on('grab', (dragData) => logOutput('grab', dragData))
 		.on('dragStart', (dragData) => {
 			rect = document.createElement('div');
 			rect.className = 'rect drawing';
@@ -25,11 +19,11 @@ mount((threshold) => {
 			logOutput('dragStart', dragData);
 		})
 		.on('dragging', (dragData) => {
-			const {x, y} = dragData.clampPointTo(canvas);
-			rect.style.left = `${Math.min(startX, x)}px`;
-			rect.style.top = `${Math.min(startY, y)}px`;
-			rect.style.width = `${Math.abs(x - startX)}px`;
-			rect.style.height = `${Math.abs(y - startY)}px`;
+			const {startContainerX, startContainerY, containerX, containerY} = dragData;
+			rect.style.left = `${Math.min(startContainerX, containerX)}px`;
+			rect.style.top = `${Math.min(startContainerY, containerY)}px`;
+			rect.style.width = `${Math.abs(containerX - startContainerX)}px`;
+			rect.style.height = `${Math.abs(containerY - startContainerY)}px`;
 
 			logOutput('dragging', dragData);
 		})

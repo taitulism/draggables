@@ -8,13 +8,12 @@ const topPane = document.getElementById('top-pane')!;
 const panes = document.getElementById('panes')!;
 
 mount((threshold) => {
-	const slider = drag(track, {target: '.thumb', threshold})
+	const slider = drag(track, {target: '.thumb', threshold, container: track})
 		.on('grab', (dragData) => logOutput('grab', dragData))
 		.on('dragging', (dragData) => {
 			const max = track.clientWidth - dragData.elm.offsetWidth;
-			const {left} = dragData.clampTo(track);
-			dragData.elm.style.left = `${left}px`;
-			value.textContent = String(Math.round(left / max * 100));
+			dragData.elm.style.left = `${dragData.left}px`;
+			value.textContent = String(Math.round(dragData.left / max * 100));
 
 			logOutput('dragging', dragData);
 		})

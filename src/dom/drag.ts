@@ -8,9 +8,26 @@ export type DragInstanceOptions = {
 	handle?: string
 	button?: number
 	threshold?: number
+	container?: HTMLElement | string
+	bound?: 'element' | 'pointer'
+	translate?: boolean
 }
 
-export type DragData = {
+type ContainerData = {
+	containerX: number
+	containerY: number
+	startContainerX: number
+	startContainerY: number
+}
+
+type TranslateData = {
+	tx: number
+	ty: number
+}
+
+type HasContainer = {container: HTMLElement | string} | {bound: 'pointer'}
+
+export type DragData<O extends DragInstanceOptions = DragInstanceOptions> = {
 	ev: PointerEvent
 	elm: HTMLElement
 	handle: HTMLElement
@@ -18,26 +35,42 @@ export type DragData = {
 	dy: number
 	x: number
 	y: number
-	clampTo: (container: HTMLElement | string) => {left: number, top: number}
-	clampPointTo: (container: HTMLElement | string) => {x: number, y: number}
+	left: number
+	top: number
+}
+	& (O extends HasContainer ? ContainerData : Partial<ContainerData>)
+	& (O extends {translate: true} ? TranslateData : Partial<TranslateData>)
+
+export type DragEventHandler<O extends DragInstanceOptions = DragInstanceOptions> =
+	(dragData: DragData<O>) => void
+
+type Handlers<O extends DragInstanceOptions> = {
+	grab?: DragEventHandler<O>
+	dragStart?: DragEventHandler<O>
+	dragging?: DragEventHandler<O>
+	dragEnd?: DragEventHandler<O>
 }
 
-export type DragEventHandler = (dragData: DragData) => void
-
-type Handlers = {
-	grab?: DragEventHandler
-	dragStart?: DragEventHandler
-	dragging?: DragEventHandler
-	dragEnd?: DragEventHandler
-}
-
-export type DragEventName = keyof Handlers
+export type DragEventName = keyof Handlers<DragInstanceOptions>
 
 const EVENT_NAMES: DragEventName[] = ['grab', 'dragStart', 'dragging', 'dragEnd'];
 
 type Resolved = {elm: HTMLElement, handle: HTMLElement}
 
-type Active = Resolved & {startLeft: number, startTop: number}
+type BBox = {left: number, top: number, right: number, bottom: number}
+
+type Point = {x: number, y: number}
+
+type Active = Resolved & {
+	startX: number
+	startY: number
+	startLeft: number
+	startTop: number
+	startTranslate: Point | null
+	clampBox: BBox | null
+	containerElm: HTMLElement | null
+	containerBBox: BBox | null
+}
 
 const closestIn = (contextElm: HTMLElement, from: EventTarget | null, selector: string) => {
 	if (!(from instanceof Element)) return null;
@@ -67,37 +100,69 @@ const toResolver = (contextElm: HTMLElement, opts: DragInstanceOptions) => {
 	};
 };
 
-const createClampTo = ({elm, startLeft, startTop}: Active, pos: DragPosition) => (container: HTMLElement | string) => {
-	const left = startLeft + pos.dx;
-	const top = startTop + pos.dy;
-	const box = typeof container === 'string' ? elm.parentElement?.closest<HTMLElement>(container) : container;
-	if (!box) return {left, top};
+const resolveContainer = (elm: HTMLElement, {container, bound}: DragInstanceOptions) => {
+	if (typeof container === 'string') return elm.parentElement?.closest<HTMLElement>(container) || null;
+	return container || (bound === 'pointer' ? elm : null);
+};
+
+const readTranslate = (elm: HTMLElement): Point => {
+	const value = getComputedStyle(elm).translate;
+	const [x = 0, y = 0] = value === 'none' ? [] : value.split(' ').map(parseFloat);
+	return {x, y};
+};
+
+const measureBBox = (box: HTMLElement): BBox => {
+	const rect = box.getBoundingClientRect();
+	const left = rect.left + box.clientLeft;
+	const top = rect.top + box.clientTop;
+	return {left, top, right: left + box.clientWidth, bottom: top + box.clientHeight};
+};
+
+const measureClampBox = (elm: HTMLElement, ev: PointerEvent, bound: DragInstanceOptions['bound']): BBox => {
+	const {clientX: x, clientY: y} = ev;
+	if (bound === 'pointer') return {left: x, top: y, right: x, bottom: y};
+	return elm.getBoundingClientRect();
+};
+
+const clampMove = ({clampBox, containerBBox}: Active, pos: DragPosition): DragPosition => {
+	if (!clampBox || !containerBBox) return pos;
 
 	return {
-		left: clamp(left, 0, box.clientWidth - elm.offsetWidth),
-		top: clamp(top, 0, box.clientHeight - elm.offsetHeight),
+		...pos,
+		dx: clamp(pos.dx, containerBBox.left - clampBox.left, containerBBox.right - clampBox.right),
+		dy: clamp(pos.dy, containerBBox.top - clampBox.top, containerBBox.bottom - clampBox.bottom),
 	};
 };
 
-const createClampPointTo = ({elm}: Active, pos: DragPosition) => (container: HTMLElement | string) => {
-	const box = typeof container === 'string' ? elm.closest<HTMLElement>(container) : container;
-	if (!box) return {x: pos.x, y: pos.y};
+const toContainerPoints = ({startX, startY, containerBBox}: Active, {dx, dy}: DragPosition) => {
+	if (!containerBBox) return {};
 
-	const rect = box.getBoundingClientRect();
+	const startContainerX = startX - containerBBox.left;
+	const startContainerY = startY - containerBBox.top;
 	return {
-		x: clamp(pos.x - rect.left, 0, rect.width),
-		y: clamp(pos.y - rect.top, 0, rect.height),
+		startContainerX,
+		startContainerY,
+		containerX: startContainerX + dx,
+		containerY: startContainerY + dy,
 	};
+};
+
+const toTranslate = ({startTranslate}: Active, {dx, dy}: DragPosition) => {
+	if (!startTranslate) return {};
+	return {tx: startTranslate.x + dx, ty: startTranslate.y + dy};
 };
 
 const assertName = (name: string) => {
 	if (!EVENT_NAMES.includes(name as DragEventName)) throw new Error('No such event name');
 };
 
-export function drag (contextElm: HTMLElement, opts: DragInstanceOptions = {}) {
+export function drag<const O extends DragInstanceOptions = object> (
+	contextElm: HTMLElement,
+	opts: O = {} as O,
+) {
 	const resolve = toResolver(contextElm, opts);
 	const core = new Drag({threshold: opts.threshold});
-	let handlers: Handlers = {};
+	let handlers: Handlers<O> = {};
 	let active: Active | undefined;
 
 	const unbind = () => {
@@ -108,8 +173,19 @@ export function drag (contextElm: HTMLElement, opts: DragInstanceOptions = {}) {
 	};
 
 	const emit = (name: DragEventName, ev: PointerEvent, resolved: Active, pos: DragPosition) => {
-		const {elm, handle} = resolved;
-		handlers[name]?.({ev, elm, handle, ...pos, clampTo: createClampTo(resolved, pos), clampPointTo: createClampPointTo(resolved, pos)});
+		const {elm, handle, startLeft, startTop} = resolved;
+		const move = clampMove(resolved, pos);
+
+		handlers[name]?.({
+			ev,
+			elm,
+			handle,
+			...move,
+			left: startLeft + move.dx,
+			top: startTop + move.dy,
+			...toContainerPoints(resolved, move),
+			...toTranslate(resolved, move),
+		} as DragData<O>);
 	};
 
 	const onDown = (ev: PointerEvent) => {
@@ -120,7 +196,19 @@ export function drag (contextElm: HTMLElement, opts: DragInstanceOptions = {}) {
 
 		const {elm, handle} = resolved;
 		core.start(ev.clientX, ev.clientY);
-		active = {elm, handle, startLeft: elm.offsetLeft, startTop: elm.offsetTop};
+		const containerElm = resolveContainer(elm, opts);
+		active = {
+			elm,
+			handle,
+			startX: ev.clientX,
+			startY: ev.clientY,
+			startLeft: elm.offsetLeft,
+			startTop: elm.offsetTop,
+			startTranslate: opts.translate ? readTranslate(elm) : null,
+			clampBox: containerElm && measureClampBox(elm, ev, opts.bound),
+			containerElm,
+			containerBBox: containerElm && measureBBox(containerElm),
+		};
 		document.body.style.setProperty('user-select', 'none');
 
 		window.addEventListener('pointermove', onMove);
@@ -152,7 +240,7 @@ export function drag (contextElm: HTMLElement, opts: DragInstanceOptions = {}) {
 	contextElm.addEventListener('pointerdown', onDown);
 
 	const instance = {
-		on (name: DragEventName, handler: DragEventHandler) {
+		on (name: DragEventName, handler: DragEventHandler<O>) {
 			assertName(name);
 			handlers[name] = handler;
 			return instance;
@@ -161,6 +249,11 @@ export function drag (contextElm: HTMLElement, opts: DragInstanceOptions = {}) {
 		off (name: DragEventName) {
 			assertName(name);
 			handlers[name] = undefined;
+			return instance;
+		},
+
+		refreshContainerBounds () {
+			if (active?.containerElm) active.containerBBox = measureBBox(active.containerElm);
 			return instance;
 		},
 
