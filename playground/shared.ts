@@ -7,10 +7,12 @@ const thresholdInput = document.getElementById('threshold') as HTMLInputElement;
 const clearLogBtn = document.getElementById('clear-log')!;
 const log = document.getElementById('log')!;
 
-const current = location.pathname.split('/').pop()?.replace('.html', '');
+const current = location.pathname.split('/').pop()?.replace('.html', '').replace(/^(index)?$/, 'core');
+
+const href = (page: string) => page === 'core' ? './' : `./${page}.html`;
 
 nav.innerHTML = PAGES
-	.map((page) => `<a href="./${page}.html"${page === current ? ' aria-current="page"' : ''}>${page}</a>`)
+	.map((page) => `<a href="${href(page)}"${page === current ? ' aria-current="page"' : ''}>${page}</a>`)
 	.join('');
 
 clearLogBtn.addEventListener('click', () => log.textContent = '');
