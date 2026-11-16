@@ -5,7 +5,7 @@ export type TargetResolver = (ev: PointerEvent) => HTMLElement | null
 
 export type DragInstanceOptions = {
 	target?: string | TargetResolver
-	handle?: string
+	grip?: string
 	button?: number
 	threshold?: number
 	container?: HTMLElement | string
@@ -31,7 +31,7 @@ type HasContainer = {container: HTMLElement | string} | {bound: 'pointer'}
 export type DragData<O extends DragInstanceOptions = DragInstanceOptions> = {
 	ev: PointerEvent
 	elm: HTMLElement
-	handle: HTMLElement
+	grip: HTMLElement
 	dx: number
 	dy: number
 	x: number
@@ -57,7 +57,7 @@ export type DragEventName = keyof Handlers<DragInstanceOptions>
 
 const EVENT_NAMES: DragEventName[] = ['grab', 'dragStart', 'dragging', 'dragEnd', 'dragCancel'];
 
-type Resolved = {elm: HTMLElement, handle: HTMLElement}
+type Resolved = {elm: HTMLElement, grip: HTMLElement}
 
 type BBox = {left: number, top: number, right: number, bottom: number}
 
@@ -81,24 +81,24 @@ const closestIn = (contextElm: HTMLElement, from: EventTarget | null, selector: 
 };
 
 const toResolver = (contextElm: HTMLElement, opts: DragInstanceOptions) => {
-	const {target, handle, button = 0} = opts;
+	const {target, grip, button = 0} = opts;
 
 	return (ev: PointerEvent): Resolved | null => {
 		if (ev.button !== button) return null;
 
 		if (typeof target === 'function') {
 			const elm = target(ev);
-			return elm && {elm, handle: elm};
+			return elm && {elm, grip: elm};
 		}
 
-		const handleElm = handle ? closestIn(contextElm, ev.target, handle) : null;
-		if (handle && !handleElm) return null;
+		const gripElm = grip ? closestIn(contextElm, ev.target, grip) : null;
+		if (grip && !gripElm) return null;
 
-		const from = handleElm || ev.target;
+		const from = gripElm || ev.target;
 		const elm = target ? closestIn(contextElm, from, target) : contextElm;
 		if (!elm || (target && elm === contextElm)) return null;
 
-		return {elm, handle: handleElm || elm};
+		return {elm, grip: gripElm || elm};
 	};
 };
 
@@ -181,13 +181,13 @@ export function drag<const O extends DragInstanceOptions = object> (
 	};
 
 	const emit = (name: DragEventName, ev: PointerEvent, resolved: Active, pos: DragPosition) => {
-		const {elm, handle, startLeft, startTop} = resolved;
+		const {elm, grip, startLeft, startTop} = resolved;
 		const move = clampMove(resolved, pos);
 
 		(handlers[name] as DragEventHandler<O> | undefined)?.({
 			ev,
 			elm,
-			handle,
+			grip,
 			...move,
 			left: startLeft + move.dx,
 			top: startTop + move.dy,
@@ -202,12 +202,12 @@ export function drag<const O extends DragInstanceOptions = object> (
 		const resolved = resolve(ev);
 		if (!resolved) return;
 
-		const {elm, handle} = resolved;
+		const {elm, grip} = resolved;
 		core.start(ev.clientX, ev.clientY);
 		const containerElm = resolveContainer(elm, opts);
 		active = {
 			elm,
-			handle,
+			grip,
 			startX: ev.clientX,
 			startY: ev.clientY,
 			startLeft: elm.offsetLeft,
@@ -277,10 +277,10 @@ export function drag<const O extends DragInstanceOptions = object> (
 
 		cancelDrag () {
 			if (!active) return instance;
-			const {elm, handle} = active;
+			const {elm, grip} = active;
 			const wasDragging = core.cancel();
 			unbind();
-			if (wasDragging) handlers.dragCancel?.({elm, handle});
+			if (wasDragging) handlers.dragCancel?.({elm, grip});
 			return instance;
 		},
 

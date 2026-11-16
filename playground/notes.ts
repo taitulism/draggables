@@ -17,7 +17,7 @@ mount((threshold) => {
 
 	const notes = drag(board, {
 		target: '.note:not(.locked)',
-		handle: '.grip, .note:not(:has(.grip))',
+		grip: '.grip, .note:not(:has(.grip))',
 		threshold,
 		container: board,
 	})

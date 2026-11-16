@@ -10,9 +10,9 @@ mount((threshold) => {
 	let side = '';
 	let anchor = {left: 0, top: 0, right: 0, bottom: 0};
 
-	const resize = drag(panel, {handle: '[data-side]', threshold, bound: 'pointer', container: stage})
+	const resize = drag(panel, {grip: '[data-side]', threshold, bound: 'pointer', container: stage})
 		.on('grab', (dragData) => {
-			side = dragData.handle.dataset.side!;
+			side = dragData.grip.dataset.side!;
 			anchor = {
 				left: panel.offsetLeft,
 				top: panel.offsetTop,

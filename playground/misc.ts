@@ -41,7 +41,7 @@ mount((threshold) => {
 	const cards = drag(cardsStage, {
 		threshold,
 		target: '.card',
-		handle: '.grip',
+		grip: '.grip',
 		container: '.stage',
 	})
 		.on('grab', grab)

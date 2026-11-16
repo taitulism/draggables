@@ -58,7 +58,7 @@ describe('drag() construct / destroy', () => {
 			mouse.moveToElm(child);
 			mouse.down().move([8, 12]).up();
 
-			expect(spy.mock.calls[0][0]).toMatchObject({elm, handle: elm, dx: 8, dy: 12});
+			expect(spy.mock.calls[0][0]).toMatchObject({elm, grip: elm, dx: 8, dy: 12});
 		});
 
 		it('`target` selector drags the closest match inside contextElm', () => {
@@ -113,11 +113,11 @@ describe('drag() construct / destroy', () => {
 		});
 	});
 
-	describe('Option: `handle`', () => {
-		it('drags the contextElm only via a handle, by default', () => {
+	describe('Option: `grip`', () => {
+		it('drags the contextElm only via a grip, by default', () => {
 			const grip = addGrip(elm);
 			const child = addChild(elm);
-			instance = drag(elm, {handle: '.grip'});
+			instance = drag(elm, {grip: '.grip'});
 			const spy = vi.fn();
 			instance.on('dragEnd', spy);
 
@@ -128,41 +128,41 @@ describe('drag() construct / destroy', () => {
 			mouse.moveToElm(grip);
 			mouse.down().move([8, 12]).up();
 			expect(spy).toHaveBeenCalledOnce();
-			expect(spy.mock.calls[0][0]).toMatchObject({elm, handle: grip, dx: 8, dy: 12});
+			expect(spy.mock.calls[0][0]).toMatchObject({elm, grip: grip, dx: 8, dy: 12});
 		});
 
-		it('handle children act as the handle', () => {
+		it('grip children act as the grip', () => {
 			const grip = addGrip(elm);
 			const gripChild = addGripChild(grip);
-			instance = drag(elm, {handle: '.grip'});
+			instance = drag(elm, {grip: '.grip'});
 			const spy = vi.fn();
 			instance.on('grab', spy);
 
 			mouse.moveToElm(gripChild);
 			mouse.down().up();
 
-			expect(spy.mock.calls[0][0]).toMatchObject({elm, handle: grip});
+			expect(spy.mock.calls[0][0]).toMatchObject({elm, grip: grip});
 		});
 
-		it('with a `target` selector, drags the target closest to the handle', () => {
+		it('with a `target` selector, drags the target closest to the grip', () => {
 			elm.classList.add('item');
 			const grip = addGrip(elm);
-			instance = drag(container, {target: '.item', handle: '.grip'});
+			instance = drag(container, {target: '.item', grip: '.grip'});
 			const spy = vi.fn();
 			instance.on('grab', spy);
 
 			mouse.moveToElm(grip);
 			mouse.down().up();
-			expect(spy.mock.calls[0][0]).toMatchObject({elm, handle: grip});
+			expect(spy.mock.calls[0][0]).toMatchObject({elm, grip: grip});
 
 			elm.classList.remove('item');
 			mouse.down().up();
 			expect(spy).toHaveBeenCalledOnce();
 		});
 
-		it('ignores handles outside contextElm', () => {
+		it('ignores grips outside contextElm', () => {
 			container.classList.add('grip');
-			instance = drag(elm, {handle: '.grip'});
+			instance = drag(elm, {grip: '.grip'});
 			const spy = vi.fn();
 			instance.on('grab', spy);
 
@@ -173,13 +173,13 @@ describe('drag() construct / destroy', () => {
 		});
 
 		it('is ignored by a `target` function', () => {
-			instance = drag(elm, {target: () => elm, handle: '.grip'});
+			instance = drag(elm, {target: () => elm, grip: '.grip'});
 			const spy = vi.fn();
 			instance.on('grab', spy);
 
 			mouse.down().up();
 
-			expect(spy.mock.calls[0][0]).toMatchObject({elm, handle: elm});
+			expect(spy.mock.calls[0][0]).toMatchObject({elm, grip: elm});
 		});
 	});
 
@@ -349,7 +349,7 @@ describe('drag() construct / destroy', () => {
 			expect(spy).toHaveBeenCalledTimes(1);
 		});
 
-		it('emits dragCancel with elm and handle', () => {
+		it('emits dragCancel with elm and grip', () => {
 			instance = drag(elm);
 			const spy = vi.fn();
 			instance.on('dragCancel', spy);
@@ -358,7 +358,7 @@ describe('drag() construct / destroy', () => {
 			instance.cancelDrag();
 
 			expect(spy).toHaveBeenCalledTimes(1);
-			expect(spy.mock.calls[0][0]).toEqual({elm, handle: elm});
+			expect(spy.mock.calls[0][0]).toEqual({elm, grip: elm});
 		});
 
 		it('does not emit dragCancel before dragStart', () => {
