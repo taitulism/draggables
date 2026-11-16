@@ -1,6 +1,6 @@
 import type {DragInstance, DragData} from '../src';
 
-const PAGES = ['core', 'notes', 'axis', 'resize', 'gesture', 'rect', 'scroller'];
+const PAGES = ['core', 'notes', 'axis', 'resize', 'gesture', 'rect', 'scroller', 'misc'];
 
 const nav = document.getElementById('nav')!;
 const thresholdInput = document.getElementById('threshold') as HTMLInputElement;
@@ -27,6 +27,14 @@ export function logOutput (name: string, dragData: DragData) {
 
 export function logCancel (elm: HTMLElement) {
 	logLine(`${'dragCancel'.padEnd(9)} ${elm.id || elm.dataset.name || elm.className}`);
+}
+
+export function lockCursor () {
+	document.body.classList.add('dragging');
+}
+
+export function unlockCursor () {
+	document.body.classList.remove('dragging');
 }
 
 export function mount (setup: (threshold: number) => DragInstance[]) {

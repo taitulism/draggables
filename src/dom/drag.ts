@@ -96,7 +96,7 @@ const toResolver = (contextElm: HTMLElement, opts: DragInstanceOptions) => {
 
 		const from = handleElm || ev.target;
 		const elm = target ? closestIn(contextElm, from, target) : contextElm;
-		if (!elm) return null;
+		if (!elm || (target && elm === contextElm)) return null;
 
 		return {elm, handle: handleElm || elm};
 	};
@@ -160,7 +160,7 @@ const assertName = (name: string) => {
 
 export function drag<const O extends DragInstanceOptions = object> (
 	contextElm: HTMLElement,
-	opts: O = {} as O,
+	opts: O & DragInstanceOptions = {} as O,
 ) {
 	const resolve = toResolver(contextElm, opts);
 	const core = new Drag({threshold: opts.threshold});

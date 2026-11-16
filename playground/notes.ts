@@ -7,7 +7,7 @@ Note: `*` + `!important` overrides descendants' own cursors (links, buttons, etc
 */
 
 import {drag} from '../src';
-import {mount, logOutput, logCancel} from './shared';
+import {mount, logOutput, logCancel, lockCursor, unlockCursor} from './shared';
 
 const board = document.getElementById('board')!;
 const tboard = document.getElementById('tboard')!;
@@ -27,8 +27,7 @@ mount((threshold) => {
 			logOutput('grab', dragData);
 		})
 		.on('dragStart', (dragData) => {
-			document.body.style.cursor = 'grab !important';
-
+			lockCursor();
 			logOutput('dragStart', dragData);
 		})
 		.on('dragging', (dragData) => {
@@ -38,11 +37,11 @@ mount((threshold) => {
 			logOutput('dragging', dragData);
 		})
 		.on('dragEnd', (dragData) => {
-			document.body.style.removeProperty('cursor');
+			unlockCursor();
 			logOutput('dragEnd', dragData)
 		})
 		.on('dragCancel', ({elm}) => {
-			document.body.style.removeProperty('cursor');
+			unlockCursor();
 			elm.style.left = start.left;
 			elm.style.top = start.top;
 

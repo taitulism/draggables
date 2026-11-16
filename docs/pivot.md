@@ -289,3 +289,4 @@ Not ported:
 
 ## TODO
 - **Dropzones** — `dropzone` selector option, opt-in, both strategies. Playground: kanban.
+
