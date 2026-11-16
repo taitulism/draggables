@@ -103,7 +103,11 @@ const toResolver = (contextElm: HTMLElement, opts: DragInstanceOptions) => {
 };
 
 const resolveContainer = (elm: HTMLElement, {container, bound}: DragInstanceOptions) => {
-	if (typeof container === 'string') return elm.parentElement?.closest<HTMLElement>(container) || null;
+	if (typeof container === 'string') {
+		const found = elm.parentElement?.closest<HTMLElement>(container) || null;
+		if (!found) console.warn(`draggable: container "${container}" matched no ancestor`);
+		return found;
+	}
 	return container || (bound === 'pointer' ? elm : null);
 };
 

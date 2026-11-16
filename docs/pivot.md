@@ -78,7 +78,7 @@ _(append decisions here as they're made, so later chats don't re-litigate them)_
   tx, ty }   // start translate + dx/dy; with `translate: true`
 ```
 
-Optional fields are typed by the options: `DragData<O>` makes them required when the matching option is passed.
+Optional fields are typed by the options: `DragData<O>` makes them required when the matching option is passed. Exception: a `container` selector that matches nothing leaves the container fields `undefined` (see [Clamping](#clamping)).
 
 No incremental delta (since-last-move): it bakes clamping into the state it reads next frame, and it's derivable as `dx - prevDx`.
 
@@ -115,7 +115,7 @@ No id — the consumer reads whatever it needs off the element. Consumers derive
 - `translate: true` option — reads the computed `translate` on grab, adds `tx/ty`.
 - `clamp(n, min, max)` — exported for everything else: a splitter, min/max sizes.
 
-`container` is an element or a selector (matched against the dragged element's ancestors). No match → the unclamped value.
+`container` is an element or a selector (matched against the dragged element's ancestors). No match → a `console.warn` on grab, and the unclamped value.
 
 Rects are cached on grab — the dragged element's and the container's — so moves do no DOM reads (a rect read after the consumer writes `left`/`top` forces a reflow per move). The dragged element is never re-measured mid-drag: its rect would include the movement. One container per drag; to span several, use their common parent. `dragData.clampTo()` and `clampPointTo()` are removed.
 
@@ -280,7 +280,6 @@ Not ported:
 
 TODOs
 -----
-- **Open: unmatched `container` selector** (see [Clamping](#clamping), [Move event payload](#move-event-payload)) — a selector that matches nothing conflicts with the strict `DragData` type, which promises `containerX`/`startContainerX` (and Y) as numbers whenever `container` or `bound: 'pointer'` is passed, while at runtime they're `undefined`. Options: throw, fall back to the element, or keep it (the type is slightly wrong).
 - **Rename**: handle to grip. not to be confused with event handlers
 - **Update README**
 - **Touch** (see [Structure](#structure)) — README: tell users to set `touch-action: none` on their draggables (or handles). Without it the browser claims touch drags as page scrolls in any direction the page can scroll. User's job, not the library's: it must be in place before the touch starts, and with a `target` function the library can't know the draggables up front. `pointercancel` is handled as `dragCancel`.
