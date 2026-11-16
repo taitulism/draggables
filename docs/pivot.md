@@ -281,11 +281,13 @@ Not ported:
 TODOs
 -----
 - **Open: unmatched `container` selector** (see [Clamping](#clamping), [Move event payload](#move-event-payload)) — a selector that matches nothing conflicts with the strict `DragData` type, which promises `containerX`/`startContainerX` (and Y) as numbers whenever `container` or `bound: 'pointer'` is passed, while at runtime they're `undefined`. Options: throw, fall back to the element, or keep it (the type is slightly wrong).
-- **Touch** (see [Structure](#structure)) — library sets `touch-action: none` on grab and removes it on drag end — not permanently in CSS, which would kill scrolling for anyone swiping over a draggable. Without it the browser claims vertical touch drags as page scrolls. Also listen for `pointercancel` and treat it as `dragCancel`; today it leaves listeners bound and `active` set, so the next `pointerdown` is ignored.
+- **Rename**: handle to grip. not to be confused with event handlers
+- **Update README**
+- **Touch** (see [Structure](#structure)) — README: tell users to set `touch-action: none` on their draggables (or handles). Without it the browser claims touch drags as page scrolls in any direction the page can scroll. User's job, not the library's: it must be in place before the touch starts, and with a `target` function the library can't know the draggables up front. `pointercancel` is handled as `dragCancel`.
 - **Dropzones** — `dropzone` selector option, opt-in, both strategies. Playground: kanban.
 
 
-### Thinkabouts
+### Later, Maybeas
 - **Helpers** — e.g. a pointer's distance from the element's edges, for padding / corner zones in a `target` function. Maybe more helpers of this kind.
 - **Missed release** — releasing while away (Ctrl+Tab, alt-tab) sends no `pointerup`; back on the page the drag follows the mouse until the next click. Library's job (users have no way to end the drag). Fix: on `pointermove`, `ev.buttons === 0` → end or cancel the drag.
 - **`setPointerCapture`** — probably not wanted. Window listeners already survive a release outside the window or over devtools. Capture only helps with iframes. Cost: no hover / `:hover` on other elements mid-drag (e.g.

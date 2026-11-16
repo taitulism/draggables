@@ -286,6 +286,34 @@ describe('drag() construct / destroy', () => {
 		});
 	});
 
+	describe('pointercancel', () => {
+		const cancel = () => window.dispatchEvent(new Event('pointercancel'));
+
+		it('emits dragCancel', () => {
+			instance = drag(elm);
+			const spy = vi.fn();
+			instance.on('dragCancel', spy);
+
+			mouse.down().move([5, 5]);
+			cancel();
+
+			expect(spy).toHaveBeenCalledOnce();
+		});
+
+		it('stops the drag', () => {
+			instance = drag(elm);
+			const spy = vi.fn();
+			instance.on('dragging', spy);
+
+			mouse.down().move([5, 5]);
+			cancel();
+			spy.mockClear();
+			mouse.move([10, 10]).up();
+
+			expect(spy).not.toHaveBeenCalled();
+		});
+	});
+
 	describe('.cancelDrag()', () => {
 		it('mid-drag stops emitting', () => {
 			instance = drag(elm);

@@ -170,6 +170,7 @@ export function drag<const O extends DragInstanceOptions = object> (
 	const unbind = () => {
 		window.removeEventListener('pointermove', onMove);
 		window.removeEventListener('pointerup', onUp);
+		window.removeEventListener('pointercancel', onCancel);
 		window.removeEventListener('keydown', onKey);
 		if (active) document.body.style.removeProperty('user-select');
 		active = undefined;
@@ -216,6 +217,7 @@ export function drag<const O extends DragInstanceOptions = object> (
 
 		window.addEventListener('pointermove', onMove);
 		window.addEventListener('pointerup', onUp);
+		window.addEventListener('pointercancel', onCancel);
 		if (opts.cancelOnEsc ?? true) window.addEventListener('keydown', onKey);
 
 		emit('grab', ev, active, {dx: 0, dy: 0, x: ev.clientX, y: ev.clientY});
@@ -239,6 +241,10 @@ export function drag<const O extends DragInstanceOptions = object> (
 		const pos = core.end(ev.clientX, ev.clientY);
 		unbind();
 		if (pos) emit('dragEnd', ev, resolved, pos);
+	};
+
+	const onCancel = () => {
+		instance.cancelDrag();
 	};
 
 	const onKey = (ev: KeyboardEvent) => {
