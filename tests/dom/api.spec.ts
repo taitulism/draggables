@@ -48,5 +48,7 @@ describe('API', () => {
 	it('throws on unknown event names', () => {
 		// @ts-expect-error testing a bad name
 		expect(() => instance.on('nope', () => {})).toThrow();
+		// @ts-expect-error testing a bad name
+		expect(() => instance.off('nope')).toThrow();
 	});
 });

@@ -154,5 +154,21 @@ describe('Events', () => {
 			mouse.down().move([5, 5]).up();
 			expect(spy).toHaveBeenCalledTimes(2);
 		});
+
+		it('stops listening to `dragCancel` events', () => {
+			const spy = vi.fn();
+			instance.on('dragCancel', spy);
+
+			mouse.down().move([5, 5]);
+			instance.cancelDrag();
+			mouse.up();
+			expect(spy).toHaveBeenCalledTimes(1);
+
+			instance.off('dragCancel');
+			mouse.down().move([5, 5]);
+			instance.cancelDrag();
+			mouse.up();
+			expect(spy).toHaveBeenCalledTimes(1);
+		});
 	});
 });

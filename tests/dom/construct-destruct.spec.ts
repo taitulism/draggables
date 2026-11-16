@@ -300,6 +300,14 @@ describe('drag() construct / destroy', () => {
 			expect(document.body.style.userSelect).toBe('');
 		});
 
+		it('is chainable', () => {
+			instance = drag(elm);
+			mouse.down().move([5, 5]);
+			expect(instance.cancelDrag()).toBe(instance);
+			mouse.up();
+			expect(instance.cancelDrag()).toBe(instance);
+		});
+
 		it('allows the next drag', () => {
 			instance = drag(elm);
 			const spy = vi.fn();

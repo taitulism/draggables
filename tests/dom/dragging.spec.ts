@@ -146,6 +146,20 @@ describe('Dragging Around', () => {
 			expect(spy.mock.calls[0][0]).toMatchObject({dx: 0, dy: 0});
 		});
 
+		it('ignores a second pointerdown mid-drag', () => {
+			const grab = vi.fn();
+			const end = vi.fn();
+			instance.on('grab', grab).on('dragEnd', end);
+
+			mouse.down().move([5, 5]);
+			const [x, y] = mouse.currentPosition;
+			elm.dispatchEvent(Object.assign(new Event('pointerdown', {bubbles: true}), {clientX: x, clientY: y, button: 0}));
+			mouse.move([5, 5]).up();
+
+			expect(grab).toHaveBeenCalledOnce();
+			expect(end.mock.calls[0][0]).toMatchObject({dx: 10, dy: 10});
+		});
+
 		it('clears `user-select` on drop even when threshold never broke', () => {
 			mouse.down();
 			expect(document.body.style.userSelect).toBe('none');

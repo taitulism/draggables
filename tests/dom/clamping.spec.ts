@@ -104,6 +104,39 @@ describe('Clamping', () => {
 			mouse.up();
 			expect(dragData).toMatchObject({dx: 450, dy: 250});
 		});
+
+		it('refreshContainerBounds is a chainable no-op without an active drag', () => {
+			placeAt(50, 50);
+			dragWithin(container);
+			container.style.width = '600px';
+			expect(instance.refreshContainerBounds()).toBe(instance);
+			container.style.width = '400px';
+			dragBy([1000, 1000]);
+			expect(dragData).toMatchObject({dx: 250, dy: 250});
+		});
+
+		it('clamps `dragStart` and `dragging` too', () => {
+			placeAt(50, 50);
+			dragWithin(container);
+			const starts: DragData[] = [];
+			const moves: DragData[] = [];
+			instance.on('dragStart', (data) => starts.push(data)).on('dragging', (data) => moves.push(data));
+			mouse.down([1, 1]).move([1000, 1000]).move([10, 10]);
+			mouse.up();
+			expect(starts[0]).toMatchObject({dx: 250, dy: 250});
+			expect(moves[0]).toMatchObject({dx: 250, dy: 250});
+		});
+
+		it('stops at the container padding box, inside its border', () => {
+			container.style.border = '10px solid';
+			placeAt(50, 50);
+			dragWithin(container);
+			dragBy([1000, 1000]);
+			expect(dragData).toMatchObject({dx: 230, dy: 230});
+			placeAt(50, 50);
+			dragBy([-1000, -1000]);
+			expect(dragData).toMatchObject({dx: -50, dy: -50});
+		});
 	});
 
 	describe('bound: pointer', () => {
