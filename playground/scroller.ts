@@ -1,5 +1,5 @@
 import {drag} from '../src';
-import {mount, logOutput} from './shared';
+import {mount, logOutput, logCancel} from './shared';
 
 const viewport = document.getElementById('viewport')!;
 const content = document.getElementById('content')!;
@@ -37,6 +37,13 @@ mount((threshold) => {
 			viewport.classList.remove('panning');
 
 			logOutput('dragEnd', dragData);
+		})
+		.on('dragCancel', ({elm}) => {
+			viewport.classList.remove('panning');
+			viewport.scrollLeft = startLeft;
+			viewport.scrollTop = startTop;
+
+			logCancel(elm);
 		});
 
 	return [pan];

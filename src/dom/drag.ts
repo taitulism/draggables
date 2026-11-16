@@ -11,6 +11,7 @@ export type DragInstanceOptions = {
 	container?: HTMLElement | string
 	bound?: 'element' | 'pointer'
 	translate?: boolean
+	cancelOnEsc?: boolean
 }
 
 type ContainerData = {
@@ -49,11 +50,12 @@ type Handlers<O extends DragInstanceOptions> = {
 	dragStart?: DragEventHandler<O>
 	dragging?: DragEventHandler<O>
 	dragEnd?: DragEventHandler<O>
+	dragCancel?: (data: Resolved) => void
 }
 
 export type DragEventName = keyof Handlers<DragInstanceOptions>
 
-const EVENT_NAMES: DragEventName[] = ['grab', 'dragStart', 'dragging', 'dragEnd'];
+const EVENT_NAMES: DragEventName[] = ['grab', 'dragStart', 'dragging', 'dragEnd', 'dragCancel'];
 
 type Resolved = {elm: HTMLElement, handle: HTMLElement}
 
@@ -168,6 +170,7 @@ export function drag<const O extends DragInstanceOptions = object> (
 	const unbind = () => {
 		window.removeEventListener('pointermove', onMove);
 		window.removeEventListener('pointerup', onUp);
+		window.removeEventListener('keydown', onKey);
 		if (active) document.body.style.removeProperty('user-select');
 		active = undefined;
 	};
@@ -176,7 +179,7 @@ export function drag<const O extends DragInstanceOptions = object> (
 		const {elm, handle, startLeft, startTop} = resolved;
 		const move = clampMove(resolved, pos);
 
-		handlers[name]?.({
+		(handlers[name] as DragEventHandler<O> | undefined)?.({
 			ev,
 			elm,
 			handle,
@@ -213,6 +216,7 @@ export function drag<const O extends DragInstanceOptions = object> (
 
 		window.addEventListener('pointermove', onMove);
 		window.addEventListener('pointerup', onUp);
+		if (opts.cancelOnEsc ?? true) window.addEventListener('keydown', onKey);
 
 		emit('grab', ev, active, {dx: 0, dy: 0, x: ev.clientX, y: ev.clientY});
 		ev.stopPropagation();
@@ -237,10 +241,14 @@ export function drag<const O extends DragInstanceOptions = object> (
 		if (pos) emit('dragEnd', ev, resolved, pos);
 	};
 
+	const onKey = (ev: KeyboardEvent) => {
+		if (ev.key === 'Escape') instance.cancelDrag();
+	};
+
 	contextElm.addEventListener('pointerdown', onDown);
 
 	const instance = {
-		on (name: DragEventName, handler: DragEventHandler<O>) {
+		on<N extends DragEventName> (name: N, handler: NonNullable<Handlers<O>[N]>) {
 			assertName(name);
 			handlers[name] = handler;
 			return instance;
@@ -257,8 +265,17 @@ export function drag<const O extends DragInstanceOptions = object> (
 			return instance;
 		},
 
-		destroy () {
+		cancelDrag () {
+			if (!active) return instance;
+			const {elm, handle} = active;
+			const wasDragging = core.cancel();
 			unbind();
+			if (wasDragging) handlers.dragCancel?.({elm, handle});
+			return instance;
+		},
+
+		destroy () {
+			instance.cancelDrag();
 			contextElm.removeEventListener('pointerdown', onDown);
 			handlers = {};
 		},

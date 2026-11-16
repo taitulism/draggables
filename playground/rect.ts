@@ -1,5 +1,5 @@
 import {drag} from '../src';
-import {mount, logOutput} from './shared';
+import {mount, logOutput, logCancel} from './shared';
 
 const canvas = document.getElementById('canvas')!;
 const clearCanvasBtn = document.getElementById('clear-canvas')!;
@@ -31,6 +31,11 @@ mount((threshold) => {
 			rect.classList.remove('drawing');
 
 			logOutput('dragEnd', dragData);
+		})
+		.on('dragCancel', ({elm}) => {
+			rect.remove();
+
+			logCancel(elm);
 		});
 
 	return [draw];

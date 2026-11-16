@@ -234,5 +234,111 @@ describe('drag() construct / destroy', () => {
 			expect(spy).not.toHaveBeenCalled();
 			expect(document.body.style.userSelect).toBe('');
 		});
+
+		it('mid-drag emits dragCancel', () => {
+			instance = drag(elm);
+			const spy = vi.fn();
+			instance.on('dragCancel', spy);
+
+			mouse.down().move([5, 5]);
+			instance.destroy();
+			mouse.up();
+
+			expect(spy).toHaveBeenCalledOnce();
+		});
+	});
+
+	describe('Option: `cancelOnEsc`', () => {
+		const esc = () => window.dispatchEvent(new KeyboardEvent('keydown', {key: 'Escape'}));
+
+		it('cancels on Esc by default', () => {
+			instance = drag(elm);
+			const spy = vi.fn();
+			instance.on('dragCancel', spy);
+
+			mouse.down().move([5, 5]);
+			esc();
+
+			expect(spy).toHaveBeenCalledOnce();
+		});
+
+		it('Esc after drop does not emit dragCancel', () => {
+			instance = drag(elm);
+			const spy = vi.fn();
+			instance.on('dragCancel', spy);
+
+			mouse.down().move([5, 5]).up();
+			esc();
+
+			expect(spy).not.toHaveBeenCalled();
+		});
+
+		it('`false` ignores Esc', () => {
+			instance = drag(elm, {cancelOnEsc: false});
+			const spy = vi.fn();
+			instance.on('dragCancel', spy);
+
+			mouse.down().move([5, 5]);
+			esc();
+			mouse.up();
+
+			expect(spy).not.toHaveBeenCalled();
+		});
+	});
+
+	describe('.cancelDrag()', () => {
+		it('mid-drag stops emitting', () => {
+			instance = drag(elm);
+			const spy = vi.fn();
+			instance.on('dragging', spy).on('dragEnd', spy);
+
+			mouse.down().move([5, 5]);
+			instance.cancelDrag();
+			mouse.move([5, 5]).up();
+
+			expect(spy).not.toHaveBeenCalled();
+			expect(document.body.style.userSelect).toBe('');
+		});
+
+		it('allows the next drag', () => {
+			instance = drag(elm);
+			const spy = vi.fn();
+			instance.on('dragEnd', spy);
+
+			mouse.down().move([5, 5]);
+			instance.cancelDrag();
+			mouse.up();
+			mouse.down().move([5, 5]).up();
+
+			expect(spy).toHaveBeenCalledTimes(1);
+		});
+
+		it('emits dragCancel with elm and handle', () => {
+			instance = drag(elm);
+			const spy = vi.fn();
+			instance.on('dragCancel', spy);
+
+			mouse.down().move([5, 5]);
+			instance.cancelDrag();
+
+			expect(spy).toHaveBeenCalledTimes(1);
+			expect(spy.mock.calls[0][0]).toEqual({elm, handle: elm});
+		});
+
+		it('does not emit dragCancel before dragStart', () => {
+			instance = drag(elm);
+			const spy = vi.fn();
+			instance.on('dragCancel', spy);
+
+			mouse.down();
+			instance.cancelDrag();
+
+			expect(spy).not.toHaveBeenCalled();
+		});
+
+		it('is a no-op without an active drag', () => {
+			instance = drag(elm);
+			expect(() => instance.cancelDrag()).not.toThrow();
+		});
 	});
 });

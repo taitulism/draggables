@@ -17,8 +17,6 @@ describe('Clamping', () => {
 
 		elm = createDraggableElm();
 		elm.style.position = 'absolute';
-		elm.style.left = '50px';
-		elm.style.top = '50px';
 		container.appendChild(elm);
 
 		mouse = createMouseSimulator();
@@ -33,6 +31,13 @@ describe('Clamping', () => {
 
 	const dragWith = (target: HTMLElement, opts?: DragInstanceOptions) => {
 		instance = drag(target, opts).on('dragEnd', (data) => dragData = data);
+	};
+
+	const placeAt = (left: number, top: number) => {
+		elm.style.left = `${left}px`;
+		elm.style.top = `${top}px`;
+		mouse.reset();
+		mouse.moveToElm(elm);
 	};
 
 	const dragBy = (move: [number, number]) => {
@@ -52,18 +57,21 @@ describe('Clamping', () => {
 		});
 
 		it('stops at the far edges', () => {
+			placeAt(50, 50);
 			dragWithin(container);
 			dragBy([1000, 1000]);
 			expect(dragData).toMatchObject({dx: 250, dy: 250});
 		});
 
 		it('stops at the near edges', () => {
+			placeAt(50, 50);
 			dragWithin(container);
 			dragBy([-1000, -1000]);
 			expect(dragData).toMatchObject({dx: -50, dy: -50});
 		});
 
 		it('accepts a selector', () => {
+			placeAt(50, 50);
 			dragWithin('#test-dom-container');
 			dragBy([1000, 1000]);
 			expect(dragData).toMatchObject({dx: 250, dy: 250});
@@ -87,6 +95,7 @@ describe('Clamping', () => {
 		});
 
 		it('refreshContainerBounds re-reads the container mid-drag', () => {
+			placeAt(50, 50);
 			dragWithin(container);
 			mouse.down([1, 1]);
 			container.style.width = '600px';
@@ -99,6 +108,7 @@ describe('Clamping', () => {
 
 	describe('bound: pointer', () => {
 		it('returns the pointer relative to the container', () => {
+			placeAt(50, 50);
 			dragWith(container, {bound: 'pointer'});
 			dragBy([20, 30]);
 			expect(dragData).toMatchObject({startContainerX: 51, startContainerY: 51});
@@ -106,18 +116,21 @@ describe('Clamping', () => {
 		});
 
 		it('stops at the far edges', () => {
+			placeAt(50, 50);
 			dragWith(container, {bound: 'pointer'});
 			dragBy([1000, 1000]);
 			expect(dragData).toMatchObject({dx: 349, dy: 349, containerX: 400, containerY: 400});
 		});
 
 		it('stops at the near edges', () => {
+			placeAt(50, 50);
 			dragWith(container, {bound: 'pointer'});
 			dragBy([-1000, -1000]);
 			expect(dragData).toMatchObject({dx: -51, dy: -51, containerX: 0, containerY: 0});
 		});
 
 		it('keeps the pointer inside a given container', () => {
+			placeAt(50, 50);
 			dragWith(elm, {bound: 'pointer', container});
 			dragBy([1000, 1000]);
 			expect(dragData).toMatchObject({dx: 349, dy: 349, containerX: 400, containerY: 400});
@@ -133,6 +146,7 @@ describe('Clamping', () => {
 
 	describe('container points', () => {
 		it('follows the clamped delta in element mode', () => {
+			placeAt(50, 50);
 			dragWith(elm, {container});
 			dragBy([1000, 1000]);
 			expect(dragData).toMatchObject({startContainerX: 51, startContainerY: 51});
@@ -149,12 +163,14 @@ describe('Clamping', () => {
 
 	describe('left & top', () => {
 		it('returns the start offset plus the delta', () => {
+			placeAt(50, 50);
 			dragWith(elm);
 			dragBy([20, 30]);
 			expect(dragData).toMatchObject({left: 70, top: 80});
 		});
 
 		it('follows the clamped delta', () => {
+			placeAt(50, 50);
 			dragWith(elm, {container});
 			dragBy([1000, 1000]);
 			expect(dragData).toMatchObject({left: 300, top: 300});
@@ -162,16 +178,21 @@ describe('Clamping', () => {
 	});
 
 	describe('translate option', () => {
-		beforeEach(() => {
+		it('returns the start translate plus the delta', () => {
 			elm.style.translate = '10px 20px';
 			mouse.reset();
 			mouse.moveToElm(elm);
-		});
-
-		it('returns the start translate plus the delta', () => {
 			dragWith(elm, {translate: true});
 			dragBy([20, 30]);
 			expect(dragData).toMatchObject({tx: 30, ty: 50});
+		});
+
+		it('accumulates across drags when written back', () => {
+			dragWith(elm, {translate: true});
+			dragBy([20, 30]);
+			elm.style.translate = `${dragData.tx}px ${dragData.ty}px`;
+			dragBy([5, 5]);
+			expect(dragData).toMatchObject({tx: 25, ty: 35});
 		});
 
 		it('is off by default', () => {

@@ -25,6 +25,10 @@ export function logOutput (name: string, dragData: DragData) {
 	logLine(`${name.padEnd(9)} ${id} dx:${dragData.dx} dy:${dragData.dy} x:${dragData.x} y:${dragData.y}`);
 }
 
+export function logCancel (elm: HTMLElement) {
+	logLine(`${'dragCancel'.padEnd(9)} ${elm.id || elm.dataset.name || elm.className}`);
+}
+
 export function mount (setup: (threshold: number) => DragInstance[]) {
 	let instances: DragInstance[] = [];
 

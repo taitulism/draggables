@@ -1,5 +1,5 @@
 import {drag} from '../src';
-import {mount, logOutput} from './shared';
+import {mount, logOutput, logCancel} from './shared';
 
 const MIN_DISTANCE = 30;
 
@@ -40,6 +40,12 @@ mount((threshold) => {
 			['x1', 'y1', 'x2', 'y2'].forEach((attr) => line.removeAttribute(attr));
 
 			logOutput('dragEnd', dragData);
+		})
+		.on('dragCancel', ({elm}) => {
+			result.textContent = 'cancelled';
+			['x1', 'y1', 'x2', 'y2'].forEach((attr) => line.removeAttribute(attr));
+
+			logCancel(elm);
 		});
 
 	return [gesture];

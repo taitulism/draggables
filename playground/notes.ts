@@ -7,13 +7,25 @@ Note: `*` + `!important` overrides descendants' own cursors (links, buttons, etc
 */
 
 import {drag} from '../src';
-import {mount, logOutput} from './shared';
+import {mount, logOutput, logCancel} from './shared';
 
 const board = document.getElementById('board')!;
+const tboard = document.getElementById('tboard')!;
 
 mount((threshold) => {
-	const notes = drag(board, {target: '.note:not(.locked)', handle: '.grip, .note:not(:has(.grip))', threshold, container: board})
-		.on('grab', (dragData) => logOutput('grab', dragData))
+	let start = {left: '', top: '', translate: ''};
+
+	const notes = drag(board, {
+		target: '.note:not(.locked)',
+		handle: '.grip, .note:not(:has(.grip))',
+		threshold,
+		container: board,
+	})
+		.on('grab', (dragData) => {
+			start = {...start, left: dragData.elm.style.left, top: dragData.elm.style.top};
+
+			logOutput('grab', dragData);
+		})
 		.on('dragStart', (dragData) => {
 			document.body.style.cursor = 'grab !important';
 
@@ -28,7 +40,35 @@ mount((threshold) => {
 		.on('dragEnd', (dragData) => {
 			document.body.style.removeProperty('cursor');
 			logOutput('dragEnd', dragData)
+		})
+		.on('dragCancel', ({elm}) => {
+			document.body.style.removeProperty('cursor');
+			elm.style.left = start.left;
+			elm.style.top = start.top;
+
+			logCancel(elm);
 		});
 
-	return [notes];
+	// t = translate
+	const tnotes = drag(tboard, {
+		target: '.note',
+		threshold,
+		container: tboard,
+		translate: true,
+	})
+		.on('grab', (dragData) => {
+			start = {...start, translate: dragData.elm.style.translate};
+		})
+		.on('dragging', (dragData) => {
+			dragData.elm.style.translate = `${dragData.tx}px ${dragData.ty}px`;
+
+			logOutput('dragging', dragData);
+		})
+		.on('dragCancel', ({elm}) => {
+			elm.style.translate = start.translate;
+
+			logCancel(elm);
+		});
+
+	return [notes, tnotes];
 });

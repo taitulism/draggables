@@ -1,5 +1,5 @@
 import {drag} from '../src';
-import {mount, logOutput} from './shared';
+import {mount, logOutput, logCancel} from './shared';
 
 const MIN = 60;
 
@@ -44,7 +44,15 @@ mount((threshold) => {
 
 			logOutput('dragging', dragData);
 		})
-		.on('dragEnd', (dragData) => logOutput('dragEnd', dragData));
+		.on('dragEnd', (dragData) => logOutput('dragEnd', dragData))
+		.on('dragCancel', ({elm}) => {
+			panel.style.left = `${anchor.left}px`;
+			panel.style.top = `${anchor.top}px`;
+			panel.style.width = `${anchor.right - anchor.left}px`;
+			panel.style.height = `${anchor.bottom - anchor.top}px`;
+
+			logCancel(elm);
+		});
 
 	return [resize];
 });

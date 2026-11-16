@@ -1,5 +1,5 @@
 import {drag, clamp} from '../src';
-import {mount, logOutput} from './shared';
+import {mount, logOutput, logCancel} from './shared';
 
 const track = document.getElementById('track')!;
 const value = document.getElementById('value')!;
@@ -8,8 +8,16 @@ const topPane = document.getElementById('top-pane')!;
 const panes = document.getElementById('panes')!;
 
 mount((threshold) => {
+	let startThumbLeft = '';
+	let startValue = '';
+
 	const slider = drag(track, {target: '.thumb', threshold, container: track})
-		.on('grab', (dragData) => logOutput('grab', dragData))
+		.on('grab', (dragData) => {
+			startThumbLeft = dragData.elm.style.left;
+			startValue = value.textContent!;
+
+			logOutput('grab', dragData);
+		})
 		.on('dragging', (dragData) => {
 			const max = track.clientWidth - dragData.elm.offsetWidth;
 			dragData.elm.style.left = `${dragData.left}px`;
@@ -17,7 +25,13 @@ mount((threshold) => {
 
 			logOutput('dragging', dragData);
 		})
-		.on('dragEnd', (dragData) => logOutput('dragEnd', dragData));
+		.on('dragEnd', (dragData) => logOutput('dragEnd', dragData))
+		.on('dragCancel', ({elm}) => {
+			elm.style.left = startThumbLeft;
+			value.textContent = startValue;
+
+			logCancel(elm);
+		});
 
 	let startHeight = 0;
 
@@ -33,7 +47,12 @@ mount((threshold) => {
 
 			logOutput('dragging', dragData);
 		})
-		.on('dragEnd', (dragData) => logOutput('dragEnd', dragData));
+		.on('dragEnd', (dragData) => logOutput('dragEnd', dragData))
+		.on('dragCancel', ({elm}) => {
+			topPane.style.height = `${startHeight}px`;
+
+			logCancel(elm);
+		});
 
 	return [slider, split];
 });
