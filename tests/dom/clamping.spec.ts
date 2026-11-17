@@ -1,4 +1,4 @@
-import {beforeEach, afterEach, describe, it, expect} from 'vitest';
+import {beforeEach, afterEach, describe, it, expect, vi} from 'vitest';
 import {drag, type DragData, type DragInstance, type DragInstanceOptions} from '../../src';
 import {createContainerElm, createDraggableElm} from '../dom-utils';
 import {createMouseSimulator} from '../mouse-simulator';
@@ -78,9 +78,12 @@ describe('Clamping', () => {
 		});
 
 		it('returns the unclamped delta when the selector matches nothing', () => {
+			const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 			dragWithin('#nothing');
 			dragBy([1000, 1000]);
 			expect(dragData).toMatchObject({dx: 1000, dy: 1000});
+			expect(warn).toHaveBeenCalledWith('draggable: container "#nothing" matched no ancestor');
+			warn.mockRestore();
 		});
 
 		it('works with translate positioning', () => {
@@ -187,10 +190,13 @@ describe('Clamping', () => {
 		});
 
 		it('returns the unclamped delta when the selector matches nothing', () => {
+			const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 			dragWith(elm, {bound: 'pointer', container: '#nothing'});
 			dragBy([1000, 1000]);
 			expect(dragData).toMatchObject({dx: 1000, dy: 1000});
 			expect(dragData.containerX).toBeUndefined();
+			expect(warn).toHaveBeenCalledWith('draggable: container "#nothing" matched no ancestor');
+			warn.mockRestore();
 		});
 	});
 
