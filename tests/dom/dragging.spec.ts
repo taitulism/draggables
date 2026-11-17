@@ -153,7 +153,9 @@ describe('Dragging Around', () => {
 
 			mouse.down().move([5, 5]);
 			const [x, y] = mouse.currentPosition;
-			elm.dispatchEvent(Object.assign(new Event('pointerdown', {bubbles: true}), {clientX: x, clientY: y, button: 0}));
+			const event = new Event('pointerdown', {bubbles: true});
+			elm.dispatchEvent(Object.assign(event, {clientX: x, clientY: y, button: 0}));
+
 			mouse.move([5, 5]).up();
 
 			expect(grab).toHaveBeenCalledOnce();

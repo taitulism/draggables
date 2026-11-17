@@ -47,8 +47,9 @@ export const resolveContainer = (
 	if (typeof container === 'string') {
 		const found = elm.parentElement?.closest<HTMLElement>(container) || null;
 
+		// eslint-disable-next-line no-console
 		if (!found) console.warn(`draggable: container "${container}" matched no ancestor`);
-		
+
 		return found;
 	}
 
