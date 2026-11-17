@@ -151,6 +151,13 @@ describe('Clamping', () => {
 			expect(dragData).toMatchObject({dx: 250, dy: 250, containerX: 301, containerY: 301});
 		});
 
+		it('is none when a target function returns the context element', () => {
+			placeAt(50, 50);
+			dragWith(elm, {target: () => elm});
+			dragBy([1000, 1000]);
+			expect(dragData).toMatchObject({dx: 1000, dy: 1000});
+		});
+
 		it('is none without a target', () => {
 			placeAt(50, 50);
 			dragWith(elm);

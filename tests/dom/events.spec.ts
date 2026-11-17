@@ -91,6 +91,47 @@ describe('Events', () => {
 
 			expect(spy).toHaveBeenCalledTimes(1);
 		});
+
+		it('emits `release` with elm and grip on a click', () => {
+			const spy = vi.fn();
+			instance.on('release', spy);
+
+			mouse.down().up();
+
+			expect(spy).toHaveBeenCalledTimes(1);
+			expect(spy).toHaveBeenCalledWith({elm, grip: elm});
+		});
+
+		it('emits `release` after `dragEnd`', () => {
+			const calls: string[] = [];
+			instance.on('dragEnd', () => calls.push('dragEnd')).on('release', () => calls.push('release'));
+
+			mouse.down().move([5, 5]).up();
+
+			expect(calls).toEqual(['dragEnd', 'release']);
+		});
+
+		it('emits `release` after `dragCancel`', () => {
+			const calls: string[] = [];
+			instance.on('dragCancel', () => calls.push('dragCancel')).on('release', () => calls.push('release'));
+
+			mouse.down().move([5, 5]);
+			instance.cancelDrag();
+			mouse.up();
+
+			expect(calls).toEqual(['dragCancel', 'release']);
+		});
+
+		it('emits `release` on a cancel before the threshold', () => {
+			const spy = vi.fn();
+			instance.on('release', spy);
+
+			mouse.down();
+			instance.cancelDrag();
+			mouse.up();
+
+			expect(spy).toHaveBeenCalledTimes(1);
+		});
 	});
 
 	it('passes `ev` and `elm` to every event handler', () => {
@@ -169,6 +210,15 @@ describe('Events', () => {
 			instance.cancelDrag();
 			mouse.up();
 			expect(spy).toHaveBeenCalledTimes(1);
+		});
+
+		it('stops listening to `release` events', () => {
+			const spy = vi.fn();
+			instance.on('release', spy).off('release');
+
+			mouse.down().up();
+
+			expect(spy).not.toHaveBeenCalled();
 		});
 	});
 });

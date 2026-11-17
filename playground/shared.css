@@ -63,3 +63,5 @@ body:has(#log) {
 }
 
 body.dragging * { cursor: grab !important }
+
+body { user-select: none; }

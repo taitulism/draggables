@@ -305,6 +305,7 @@ TODOs
 
 
 ### Later, Maybeas
+- Multi touch points support
 - **Helpers** — e.g. a pointer's distance from the element's edges, for padding / corner zones in a `target` function. Maybe more helpers of this kind.
 - **Missed release** — releasing while away (Ctrl+Tab, alt-tab) sends no `pointerup`; back on the page the drag follows the mouse until the next click. Library's job (users have no way to end the drag). Fix: on `pointermove`, `ev.buttons === 0` → end or cancel the drag.
 - **`setPointerCapture`** — probably not wanted. Window listeners already survive a release outside the window or over devtools. Capture only helps with iframes. Cost: no hover / `:hover` on other elements mid-drag (e.g.

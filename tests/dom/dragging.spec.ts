@@ -107,14 +107,6 @@ describe('Dragging Around', () => {
 			expect(spy).not.toHaveBeenCalled();
 		});
 
-		it('blocks text selection while dragging', () => {
-			mouse.down();
-			expect(document.body.style.userSelect).toBe('none');
-
-			mouse.move([5, 5]).up();
-			expect(document.body.style.userSelect).toBe('');
-		});
-
 		it('`dragging` dx/dy track the pointer across moves, back to 0 at the origin', () => {
 			const spy = vi.fn();
 			instance.on('dragging', spy);
@@ -160,14 +152,6 @@ describe('Dragging Around', () => {
 
 			expect(grab).toHaveBeenCalledOnce();
 			expect(end.mock.calls[0][0]).toMatchObject({dx: 10, dy: 10});
-		});
-
-		it('clears `user-select` on drop even when threshold never broke', () => {
-			mouse.down();
-			expect(document.body.style.userSelect).toBe('none');
-
-			mouse.up();
-			expect(document.body.style.userSelect).toBe('');
 		});
 	});
 });

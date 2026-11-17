@@ -26,7 +26,6 @@ export function drag<const O extends DragInstanceOptions = object> (
 		window.removeEventListener('pointerup', onUp);
 		window.removeEventListener('pointercancel', onCancel);
 		window.removeEventListener('keydown', onKey);
-		if (active) document.body.style.removeProperty('user-select');
 		active = undefined;
 	};
 
@@ -58,6 +57,7 @@ export function drag<const O extends DragInstanceOptions = object> (
 		active = {
 			elm,
 			grip,
+			pointerId: ev.pointerId,
 			startX: ev.clientX,
 			startY: ev.clientY,
 			startLeft: elm.offsetLeft,
@@ -67,7 +67,6 @@ export function drag<const O extends DragInstanceOptions = object> (
 			containerElm,
 			containerBBox: containerElm && measureBBox(containerElm),
 		};
-		document.body.style.setProperty('user-select', 'none');
 
 		window.addEventListener('pointermove', onMove);
 		window.addEventListener('pointerup', onUp);
@@ -78,7 +77,7 @@ export function drag<const O extends DragInstanceOptions = object> (
 	};
 
 	const onMove = (ev: PointerEvent) => {
-		if (!active) return;
+		if (!active || ev.pointerId !== active.pointerId) return;
 
 		const move = core.move(ev.clientX, ev.clientY);
 		if (!move) return;
@@ -88,12 +87,13 @@ export function drag<const O extends DragInstanceOptions = object> (
 	};
 
 	const onUp = (ev: PointerEvent) => {
-		if (!active) return;
+		if (!active || ev.pointerId !== active.pointerId) return;
 
 		const resolved = active;
 		const pos = core.end(ev.clientX, ev.clientY);
 		unbind();
 		if (pos) emit('dragEnd', ev, resolved, pos);
+		handlers.release?.({elm: resolved.elm, grip: resolved.grip});
 	};
 
 	const onCancel = () => {
@@ -130,6 +130,7 @@ export function drag<const O extends DragInstanceOptions = object> (
 			const wasDragging = core.cancel();
 			unbind();
 			if (wasDragging) handlers.dragCancel?.({elm, grip});
+			handlers.release?.({elm, grip});
 			return instance;
 		},
 

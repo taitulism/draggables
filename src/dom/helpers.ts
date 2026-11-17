@@ -2,7 +2,7 @@ import type {DragPosition} from '../core/Drag';
 import {clamp} from '../utils/clamp';
 import type {Active, BBox, DragEventName, DragInstanceOptions, Point, Resolved} from './types';
 
-export const EVENT_NAMES: DragEventName[] = ['grab', 'dragStart', 'dragging', 'dragEnd', 'dragCancel'];
+export const EVENT_NAMES: DragEventName[] = ['grab', 'dragStart', 'dragging', 'dragEnd', 'dragCancel', 'release'];
 
 export const assertName = (name: string) => {
 	if (!EVENT_NAMES.includes(name as DragEventName)) throw new Error('No such event name');
@@ -54,7 +54,7 @@ export const resolveContainer = (
 	}
 
 	if (container) return container;
-	if (target) return contextElm;
+	if (target && elm !== contextElm) return contextElm;
 
 	return bound === 'pointer' ? elm : null;
 };

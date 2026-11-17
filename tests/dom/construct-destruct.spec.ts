@@ -245,7 +245,6 @@ describe('drag() construct / destroy', () => {
 			mouse.move([5, 5]).up();
 
 			expect(spy).not.toHaveBeenCalled();
-			expect(document.body.style.userSelect).toBe('');
 		});
 
 		it('mid-drag emits dragCancel', () => {
@@ -338,7 +337,6 @@ describe('drag() construct / destroy', () => {
 			mouse.move([5, 5]).up();
 
 			expect(spy).not.toHaveBeenCalled();
-			expect(document.body.style.userSelect).toBe('');
 		});
 
 		it('is chainable', () => {

@@ -23,7 +23,7 @@ type TranslateData = {
 	ty: number
 }
 
-type HasContainer = {container: HTMLElement | string} | {target: string | TargetResolver} | {bound: 'pointer'}
+type HasContainer = {container: HTMLElement | string} | {target: string} | {bound: 'pointer'}
 
 export type DragData<O extends DragInstanceOptions = DragInstanceOptions> = {
 	ev: PointerEvent
@@ -48,6 +48,7 @@ export type Handlers<O extends DragInstanceOptions> = {
 	dragging?: DragEventHandler<O>
 	dragEnd?: DragEventHandler<O>
 	dragCancel?: (data: Resolved) => void
+	release?: (data: Resolved) => void
 }
 
 export type DragEventName = keyof Handlers<DragInstanceOptions>
@@ -59,6 +60,7 @@ export type BBox = {left: number, top: number, right: number, bottom: number}
 export type Point = {x: number, y: number}
 
 export type Active = Resolved & {
+	pointerId: number
 	startX: number
 	startY: number
 	startLeft: number

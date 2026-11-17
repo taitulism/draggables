@@ -35,7 +35,7 @@ drag(board, {target: '.note'})
 * [Context Element](#context-element)
 * [Target & Grip](#target--grip)
 * [Containing](#containing)
-* [Touch](#touch)
+* [Caveats](#caveats)
 * [Options](#options)
 * Instance API:
 	* [Creation](#dragcontextelement-options)
@@ -88,7 +88,7 @@ drag(board, {target: (ev) => HTMLElement | null});  // escape hatch
 
 
 ### Containing
-Pass a `container` (element or ancestor selector) and `dx`/`dy` arrive clamped, so the dragged element stays inside the container's padding box. With a `target`, the container defaults to the context element. To drag out of it, call `drag()` on a higher element.
+Pass a `container` (element or ancestor selector) and `dx`/`dy` arrive clamped, so the dragged element stays inside the container's padding box. With a `target`, the container defaults to the context element (unless the target *is* the context element). To drag out of it, call `drag()` on a higher element.
 
 ```js
 drag(board, {target: '.note'});
@@ -100,14 +100,31 @@ For drawing and resizing, use `bound: 'pointer'` to clamp the pointer instead of
 > Rects are measured once, on grab. If the container scrolls or resizes mid-drag, call [`.refreshContainerBounds()`](#refreshcontainerbounds).
 
 
-### Touch
+### Caveats
+#### Touch
 Set `touch-action: none` on your draggables (or grips). Without it, the browser claims touch drags as page scrolls.
+
+#### Images & Links
+Dragging an `<img>` or `<a>` starts the browser's native drag, which cancels yours. Either set `draggable="false"` on them (or CSS `-webkit-user-drag: none`), or prevent it for the whole context element:
+
+```js
+board.addEventListener('dragstart', (ev) => ev.preventDefault());
+```
 
 ```css
 .note { touch-action: none; }
 ```
 
 If the browser cancels the pointer (`pointercancel`), the drag ends with `dragCancel`.
+
+#### Text Selection
+Dragging selects text. Block it with CSS (`.note { user-select: none; }`), or only while dragging:
+
+```js
+drag(board, {target: '.note'})
+   .on('grab', () => document.body.classList.add('no-select'))
+   .on('release', () => document.body.classList.remove('no-select'));
+```
 
 ## Options
 
@@ -188,7 +205,7 @@ If the browser cancels the pointer (`pointercancel`), the drag ends with `dragCa
 <!-- translate -->
 <details>
    <summary><code>translate</code></summary><br />
-   Reads the element's computed CSS <code>translate</code> on grab and adds <code>tx</code>/<code>ty</code> (start translate + <code>dx</code>/<code>dy</code>). Handy for moving with <code>translate</code> across drags.
+   Reads the element's computed CSS <code>translate</code> on grab and adds <code>tx</code>/<code>ty</code> (start translate + <code>dx</code>/<code>dy</code>). Handy for moving with <code>translate</code> across drags. Pixels only (<code>%</code> is read as <code>px</code>).
 
 ----------
 </details>
@@ -242,6 +259,7 @@ Start and stop listening to drag events:
 * **`'dragging'`** - fires on every `pointermove` after that.
 * **`'dragEnd'`** - fires on `pointerup`, only if the drag started.
 * **`'dragCancel'`** - the drag was aborted (Esc, `pointercancel`, `.cancelDrag()`, `.destroy()`). Revert what you moved.
+* **`'release'`** - always closes a `grab`: after a click, `dragEnd` or `dragCancel`.
 
 An instance holds a single handler per event (unlike an EventEmitter):
 
@@ -267,7 +285,7 @@ Handlers get called with a `DragData` object:
 | `containerX`, `containerY`<br />`startContainerX`, `startContainerY` | pointer relative to the container. With `container` or `bound: 'pointer'` |
 | `tx`, `ty`   | start `translate` + `dx`/`dy`. With `translate: true`         |
 
-> `dragCancel` handlers only get `{elm, grip}`.  
+> `dragCancel` and `release` handlers only get `{elm, grip}`.  
 Values are raw, not rounded. Optional fields are typed by the options you pass.
 
 ```js
