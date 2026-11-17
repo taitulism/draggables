@@ -61,6 +61,12 @@ Each instance binds a *single* event listener to it.
 
 With no `target` option, the context element itself is the dragged element (a splitter, a canvas, a scroller).
 
+Nested context elements both drag. To drag only the inner one, stop propagation on its `grab`:
+
+```js
+drag(inner).on('grab', ({ev}) => ev.stopPropagation());
+```
+
 
 ### Target & Grip
 Plain selectors decide what gets dragged. No magic attributes.

@@ -32,7 +32,7 @@ describe('drag() construct / destroy', () => {
 	});
 
 	describe('When one context element contains another', () => {
-		it('only triggers the inner one', () => {
+		it('triggers both', () => {
 			instance = drag(elm);
 			const outer = drag(container);
 			const outerSpy = vi.fn();
@@ -43,8 +43,21 @@ describe('drag() construct / destroy', () => {
 			mouse.down().up();
 			outer.destroy();
 
-			expect(outerSpy).not.toHaveBeenCalled();
+			expect(outerSpy).toHaveBeenCalledOnce();
 			expect(innerSpy).toHaveBeenCalledOnce();
+		});
+
+		it('only triggers the inner one when it stops propagation on grab', () => {
+			instance = drag(elm);
+			const outer = drag(container);
+			const outerSpy = vi.fn();
+			outer.on('grab', outerSpy);
+			instance.on('grab', ({ev}) => ev.stopPropagation());
+
+			mouse.down().up();
+			outer.destroy();
+
+			expect(outerSpy).not.toHaveBeenCalled();
 		});
 	});
 

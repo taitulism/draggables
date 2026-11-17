@@ -75,7 +75,6 @@ export function drag<const O extends DragInstanceOptions = object> (
 		if (opts.cancelOnEsc ?? true) window.addEventListener('keydown', onKey);
 
 		emit('grab', ev, active, {dx: 0, dy: 0, x: ev.clientX, y: ev.clientY});
-		ev.stopPropagation();
 	};
 
 	const onMove = (ev: PointerEvent) => {

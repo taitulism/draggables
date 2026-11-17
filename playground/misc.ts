@@ -79,7 +79,10 @@ mount((threshold) => {
 		threshold,
 		target: '.box',
 	})
-		.on('grab', grab)
+		.on('grab', (dragData) => {
+			dragData.ev.stopPropagation();
+			grab(dragData);
+		})
 		.on('dragging', move)
 		.on('dragCancel', ({elm}) => restore(elm, start));
 
