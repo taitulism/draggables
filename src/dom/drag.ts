@@ -26,7 +26,7 @@ type TranslateData = {
 	ty: number
 }
 
-type HasContainer = {container: HTMLElement | string} | {bound: 'pointer'}
+type HasContainer = {container: HTMLElement | string} | {target: string | TargetResolver} | {bound: 'pointer'}
 
 export type DragData<O extends DragInstanceOptions = DragInstanceOptions> = {
 	ev: PointerEvent
@@ -102,13 +102,15 @@ const toResolver = (contextElm: HTMLElement, opts: DragInstanceOptions) => {
 	};
 };
 
-const resolveContainer = (elm: HTMLElement, {container, bound}: DragInstanceOptions) => {
+const resolveContainer = (contextElm: HTMLElement, elm: HTMLElement, {container, target, bound}: DragInstanceOptions) => {
 	if (typeof container === 'string') {
 		const found = elm.parentElement?.closest<HTMLElement>(container) || null;
 		if (!found) console.warn(`draggable: container "${container}" matched no ancestor`);
 		return found;
 	}
-	return container || (bound === 'pointer' ? elm : null);
+	if (container) return container;
+	if (target) return contextElm;
+	return bound === 'pointer' ? elm : null;
 };
 
 const readTranslate = (elm: HTMLElement): Point => {
@@ -204,7 +206,7 @@ export function drag<const O extends DragInstanceOptions = object> (
 
 		const {elm, grip} = resolved;
 		core.start(ev.clientX, ev.clientY);
-		const containerElm = resolveContainer(elm, opts);
+		const containerElm = resolveContainer(contextElm, elm, opts);
 		active = {
 			elm,
 			grip,

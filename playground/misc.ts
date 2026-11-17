@@ -28,7 +28,6 @@ mount((threshold) => {
 
 	const fn = drag(fnStage, {
 		threshold,
-		container: fnStage,
 		target: (ev) => {
 			if (!(ev.target instanceof Element)) return null;
 			return ev.target.closest<HTMLElement>('#fn-stage .box:not(.locked)');
@@ -56,7 +55,6 @@ mount((threshold) => {
 	const grow = drag(growing, {
 		threshold,
 		target: '.box',
-		container: growing,
 	})
 		.on('grab', grab)
 		.on('dragging', (dragData) => {
@@ -72,7 +70,6 @@ mount((threshold) => {
 	const outerDrag = drag(nestedStage, {
 		threshold,
 		target: '#outer',
-		container: nestedStage,
 	})
 		.on('grab', grab)
 		.on('dragging', move)
@@ -81,7 +78,6 @@ mount((threshold) => {
 	const innerDrag = drag(outer, {
 		threshold,
 		target: '.box',
-		container: outer,
 	})
 		.on('grab', grab)
 		.on('dragging', move)

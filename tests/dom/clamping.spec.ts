@@ -139,6 +139,23 @@ describe('Clamping', () => {
 		});
 	});
 
+	describe('default container', () => {
+		it('is the context element when a target is set', () => {
+			elm.classList.add('item');
+			placeAt(50, 50);
+			dragWith(container, {target: '.item'});
+			dragBy([1000, 1000]);
+			expect(dragData).toMatchObject({dx: 250, dy: 250, containerX: 301, containerY: 301});
+		});
+
+		it('is none without a target', () => {
+			placeAt(50, 50);
+			dragWith(elm);
+			dragBy([1000, 1000]);
+			expect(dragData).toMatchObject({dx: 1000, dy: 1000});
+		});
+	});
+
 	describe('bound: pointer', () => {
 		it('returns the pointer relative to the container', () => {
 			placeAt(50, 50);

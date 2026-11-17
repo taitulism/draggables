@@ -11,7 +11,7 @@ mount((threshold) => {
 	let startThumbLeft = '';
 	let startValue = '';
 
-	const slider = drag(track, {target: '.thumb', threshold, container: track})
+	const slider = drag(track, {target: '.thumb', threshold})
 		.on('grab', (dragData) => {
 			startThumbLeft = dragData.elm.style.left;
 			startValue = value.textContent!;

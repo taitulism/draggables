@@ -19,7 +19,6 @@ mount((threshold) => {
 		target: '.note:not(.locked)',
 		grip: '.grip, .note:not(:has(.grip))',
 		threshold,
-		container: board,
 	})
 		.on('grab', (dragData) => {
 			start = {...start, left: dragData.elm.style.left, top: dragData.elm.style.top};
@@ -52,7 +51,6 @@ mount((threshold) => {
 	const tnotes = drag(tboard, {
 		target: '.note',
 		threshold,
-		container: tboard,
 		translate: true,
 	})
 		.on('grab', (dragData) => {
