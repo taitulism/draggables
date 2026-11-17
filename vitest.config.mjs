@@ -27,7 +27,7 @@ export default defineConfig({
 		}],
 		coverage: {
 			enabled: false,
-			include: ['src'],
+			include: ['src/**/*.ts'],
 			reporter: ['text', 'html'],
 		},
 	},

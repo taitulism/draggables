@@ -1,5 +1,5 @@
 import type {DragPosition} from '../core/Drag';
-import {clamp} from '../clamp';
+import {clamp} from '../utils/clamp';
 import type {Active, BBox, DragEventName, DragInstanceOptions, Point, Resolved} from './types';
 
 export const EVENT_NAMES: DragEventName[] = ['grab', 'dragStart', 'dragging', 'dragEnd', 'dragCancel'];

@@ -16,6 +16,22 @@
 		.note:nth-child(3) { background-color: #8fc1ec }
 		.note.locked { opacity: 0.5 }
 
+		.note { z-index: 1 }
+
+		.trash {
+			position: absolute;
+			right: 20px;
+			bottom: 20px;
+			width: 120px;
+			height: 100px;
+			display: grid;
+			place-items: center;
+			border: 2px dashed #a33;
+			color: #a33;
+		}
+
+		.trash.over { background-color: #e88 }
+
 		.grip {
 			width: 100%;
 			height: 20px;
@@ -39,6 +55,7 @@
 			grip only
 		</div>
 		<div class="note locked" data-name="disabled" style="left: 580px; top: 100px">disabled</div>
+		<div class="trash">trash</div>
 	</div>
 	<div id="tboard" class="stage" style="margin-top: 16px">
 		<div class="note" data-name="translate A" style="left: 20px; top: 20px">translate A</div>

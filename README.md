@@ -45,6 +45,7 @@ drag(board, {target: '.note'})
 	* [Refresh Container Bounds](#refreshcontainerbounds)
 	* [Destruction](#destroy)
 * [`clamp()`](#clampn-min-max)
+* [Dropzones](#dropzones)
 
 
 ### The Idea
@@ -296,6 +297,24 @@ import {drag, clamp} from 'draggables';
 drag(splitter).on('dragging', ({dy}) => {
    pane.style.height = `${clamp(startHeight + dy, 100, 600)}px`;
 });
+```
+
+
+### Dropzones
+Helpers to find the zone under the pointer. Each returns the zone element or `null`. Pass the dragged element as `exclude` to skip it and its descendants. Nested zones: the innermost wins.
+
+* `measureZones(selector, exclude?)` + `hitZone(zones, x, y)` - measure once, then no DOM reads per move. Call `measureZones` again if zones render, scroll or resize mid-drag. Ignores `z-index`.
+* `findDropzone(x, y, selector, exclude?)` - reads the DOM on every call. Respects `z-index` and catches new zones, but forces a reflow per move.
+
+```js
+import {drag, measureZones, hitZone} from 'draggables';
+
+let zones;
+drag(board, {target: '.note'})
+   .on('dragStart', ({elm}) => zones = measureZones('.trash', elm))
+   .on('dragEnd', ({elm, x, y}) => {
+      if (hitZone(zones, x, y)) elm.remove();
+   });
 ```
 
 

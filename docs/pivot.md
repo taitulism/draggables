@@ -88,12 +88,32 @@ Every drag starts at `dx: 0`. The old computed-`translate` read on grab goes —
 
 `relPos` is deleted — it was the accumulated CSS translate. Resolves Bug #5.
 
-`DragEventWrapper` becomes one `DragData` type for all events: `{ev, elm, handle, ...payload}`. The `dropzone` field only appears when the `dropzone` option is set. Named `DragData`, not `DragEvent`, to avoid shadowing the DOM's global `DragEvent`, and so handler params are named `dragData` (not `ev`, which made `ev.ev`).
+`DragEventWrapper` becomes one `DragData` type for all events: `{ev, elm, handle, ...payload}`. Named `DragData`, not `DragEvent`, to avoid shadowing the DOM's global `DragEvent`, and so handler params are named `dragData` (not `ev`, which made `ev.ev`).
 
 Values are raw, not rounded. `clientX/Y` are fractional under page zoom or OS scaling; rounding is the consumer's call.
 
 
 ### Drop targets
+**Superseded:** not an option — exported helpers in `src/utils/dropzones.ts`, next to `clamp`. The lib reports the gesture; hit-testing is the consumer's, from `x/y`. The consumer knows when zones render, scroll or change; the lib doesn't.
+
+- `findDropzone(x, y, selector, exclude?)` — live: `elementsFromPoint`, respects stacking and zones added mid-drag. Forces a reflow per move when the consumer moves the element.
+- `measureZones(selector, exclude?)` + `hitZone(zones, x, y)` — cached: measure on `dragStart`, no DOM reads per move. Innermost wins (`findLast` in document order). Ignores `z-index`; re-call `measureZones` for zones added or scrolled mid-drag.
+
+Both return the element or `null`. `exclude` skips the dragged element and its descendants. No `overlap` strategy for now.
+
+```js
+let zones
+drag(board, {target: '.note'})
+  .on('dragStart', () => zones = measureZones('.trash'))
+  .on('dragEnd', ({x, y, elm}) => { if (hitZone(zones, x, y)) elm.remove() })
+```
+
+A container isn't a default dropzone: a clamped element is always inside it, so it would carry no info.
+
+Playground: trash zone on the notes board.
+
+#### Superseded: `dropzone` option
+
 A `dropzone` selector option, not an attribute (no magic attrs — see [Primitive](#primitive-one-contextelm--a-target-resolver)). `dragEnd` reports the target like `dragging`, re-tested at the pointerup position rather than reusing the last move's.
 
 Strategy: `'pointer' | 'overlap'` (option name open). Opt-in — no `dropzone` selector means no hit-testing and no `dropzone` field, so resize and scroller consumers pay nothing for a DOM read per move.
@@ -175,7 +195,7 @@ drag(board, {target: '.note', container: board})
 ### Structure
 `moveElm` goes — the library doesn't touch the DOM's position.
 
-`src/core/` (gesture math, no DOM) + `src/dom/` (PointerEvent listeners, target/handle resolving, `user-select`, dropzones). One package. `core/` never imports `dom/`, so a package split later is a folder move. Split when a second real consumer appears.
+`src/core/` (gesture math, no DOM) + `src/dom/` (PointerEvent listeners, target/handle resolving, `user-select`) + `src/utils/` (`clamp`, dropzone helpers). One package. `core/` never imports `dom/`, so a package split later is a folder move. Split when a second real consumer appears.
 
 Core emits `{dx, dy, x, y}`; `dom/` adds `elm` and `handle` before the consumer sees it.
 
@@ -280,8 +300,8 @@ Not ported:
 
 TODOs
 -----
-- **Improve README**
-- **Dropzones** — `dropzone` selector option, opt-in, both strategies. Playground: kanban.
+* Improve README
+* Dropzones: not in scope.
 
 
 ### Later, Maybeas

@@ -102,9 +102,13 @@ export function createMouseSimulator () {
 			return this;
 		},
 
-		up () {
+		up (offset?: Point) {
 			if (!isDown) throw new Error('Mouse is not down');
 			isDown = false;
+
+			if (offset) {
+				currentPosition = [currentPosition[0] + offset[0], currentPosition[1] + offset[1]];
+			}
 
 			const elm = getElmFromPoint(currentPosition) || document.documentElement;
 
