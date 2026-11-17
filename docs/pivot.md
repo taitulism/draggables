@@ -280,8 +280,7 @@ Not ported:
 
 TODOs
 -----
-- **Update README**
-- **Touch** (see [Structure](#structure)) — README: tell users to set `touch-action: none` on their draggables (or handles). Without it the browser claims touch drags as page scrolls in any direction the page can scroll. User's job, not the library's: it must be in place before the touch starts, and with a `target` function the library can't know the draggables up front. `pointercancel` is handled as `dragCancel`.
+- **Improve README**
 - **Dropzones** — `dropzone` selector option, opt-in, both strategies. Playground: kanban.
 
 

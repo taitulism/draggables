@@ -100,6 +100,8 @@ Set `touch-action: none` on your draggables (or grips). Without it, the browser 
 .note { touch-action: none; }
 ```
 
+If the browser cancels the pointer (`pointercancel`), the drag ends with `dragCancel`.
+
 ## Options
 
 | Option         | Value                          | Default    |
