@@ -300,8 +300,20 @@ Not ported:
 
 TODOs
 -----
-* Improve README
-* Dropzones: not in scope.
+* ~~Dropzones: not in scope.~~
+* `DragData`: consider adding the container and context elements (now only `elm` and `grip`).
+* extend DragData? (e.g. `distance` field)
+* multiple event listeners (EventEmitter like)
+* compare to others
+* ctxElm selector (multi?)
+* multiple targets?
+* dragData to container ctx, container elms?
+* naming stuff:
+  - DragInstance (docs+code)
+  - drag() -> dragSetup
+  - draggables -> dragger? createDragger/dragger.on('dragStart'...)
+  - DragData to DragState?  
+* TBD: first move past the threshold fires only `dragStart`, not `dragging`. Fire both?
 
 
 ### Later, Maybeas

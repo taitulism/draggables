@@ -4,107 +4,371 @@
 
 draggables
 ==========
-Drag gestures, reported. You move things.
+Event-based drag gestures.
 
-## Basic Usage
+Each drag reports where it started, where it is now, and how far it moved - You decide what happens: move, resize, draw, etc.
 
-```sh
-$ npm install draggables
+
+### Table of Contents
+* [Quick Start](#quick-start)
+* [Installation](#installation)
+* [Setup](#setup)
+	* [Context Element](#context-element)
+	* [Options](#options)
+* Usage:
+	* [Events](#events)
+	* [Drag Data](#drag-data)
+	* [Other Methods](#other-methods)
+* [Caveats](#caveats)
+* Helper Utils:
+	* [Clamp](#clamp)
+	* [Dropzones](#dropzones)
+
+
+## Quick Start
+```js
+import {draggables} from 'draggables';
+
+// define drag elements and behavior
+const dragger = draggables(contextElm, {...options})
+
+// Listen to events and call your handlers
+dragger.on('dragStart', (dragData) => {...});
+dragger.on('dragging', (dragData) => {...});
+dragger.on('dragEnd', (dragData) => {...});
+
+/* dragData contains:
+   ------------------
+   ev     - the pointer event
+   elm    - the dragged element (not always ev.target)
+   x, y   - pointer position
+   dx, dy - distance moved since drag start
+   
+   ...and more
+*/
 ```
 
+### Example - dragging sticky notes on a board
 ```html
-<!-- HTML -->
 <div id="board">
-   <div class="note"></div>
+   <div class="sticky-note"></div>
+   <div class="sticky-note"></div>
+   <div class="sticky-note"></div>
 </div>
 ```
 
 ```js
-// js / ts
-import {drag} from 'draggables';
+import {draggables} from 'draggables';
 
-drag(board, {target: '.note'})
-   .on('dragging', ({elm, left, top}) => {
-      elm.style.left = `${left}px`;
-      elm.style.top = `${top}px`;
+const board = document.getElementById('board');
+const notesDragger = draggables(board, {target: '.sticky-note'})
+
+notesDragger.on('dragging', ({elm, left, top}) => {
+   elm.style.left = `${left}px`;
+   elm.style.top = `${top}px`;
+});
+```
+
+
+## Installation
+```sh
+$ npm install draggables
+```
+
+
+## Setup
+Configure what can be dragged and how it behaves.
+
+
+```js
+import {draggables} from 'draggables';
+
+draggables(contextElement, options);
+```
+
+* `contextElement` (`HTMLElement`, required) - The element that will get a single pointerdown listener. It can be a draggable itself or contain draggables.
+* `options` (`DragInstanceOptions`, optional) - See [Options](#options) below.
+
+The context element plays a different role depending on the `target` option:
+
+* With no `target` option, the context element itself is the dragged element (e.g. a floating dialog that can be moved freely around the page).
+* With a `target` option, the context element is a common ancestor that delegates `pointerdown` to the matching draggable targets inside it (e.g. a board with notes on it). It's also their default dragging area boundary (see [container option](#option-container)).
+
+
+
+### Options
+
+| Option         | Value                          | Default    |
+|----------------|--------------------------------|------------|
+| [`target`](#option-target) | `string` \| `(ev) => HTMLElement \| null` | context element |
+| [`grip`](#option-grip) | `string`                       | -          |
+| [`container`](#option-container) | `HTMLElement` \| `string`      | -          |
+| [`bound`](#option-bound) | `"element"` \| `"pointer"`     | `"element"`|
+| [`button`](#option-button) | `number`                       | `0`        |
+| [`translate`](#option-translate) | `boolean`                      | `false`    |
+| [`cancelOnEsc`](#option-cancelonesc) | `boolean`                      | `true`     |
+| [`threshold`](#option-threshold) | `number` (px)                  | `3`        |
+
+&nbsp;
+
+
+
+<!-- target -->
+### Option: `target`
+What to drag. A selector or a function. When omitted the context element becomes the target.
+
+**Selector** - the closest match to the pointer, inside the context element.
+
+```js
+draggables(board, {target: '.card'});
+```
+
+**Function** - gets the `pointerdown` event, returns the element to drag or `null` for no drag. To use a [grip](#option-grip), check for it inside the function.
+
+```js
+draggables(board, {target: (ev) => HTMLElement | null});
+```
+
+Use a function when the decision depends on app state a selector can't express. For example, drag only the cards the current user can edit:
+
+```js
+draggables(board, {
+   target: (ev) => {
+      const card = ev.target.closest('.card');
+      return card && canEdit(card) ? card : null;
+   }
+});
+```
+
+To toggle draggability, toggle a class on the element (e.g. ".locked") and exclude it:
+
+```js
+draggables(board, {target: '.card:not(.locked)'});
+// or:
+draggables(board, {
+   target: (ev) => ev.target.closest('.card:not(.locked)')
+});
+```
+
+
+
+<!-- grip -->
+### Option: `grip`
+The handle selector. When set, a drag only starts on a grip.
+
+The dragged element is the closest `target` to it (or the context element).
+
+For example, drag a card by grabbing its header:
+
+```js
+draggables(board, {target: '.card', grip: '.card-header'});
+```
+
+
+<!-- container -->
+### Option: `container`
+An element or a selector. The area the dragged element (or the pointer, [see `bound` option](#option-bound)) must stay in.
+A selector picks the nearest ancestor of the dragged element that matches it.
+
+The distance values reported to your handlers (`dx`/`dy`) are clamped, so the dragged element/pointer stays inside the container's padding box. Also adds the container fields to the [drag data](#drag-data).
+
+With a `target`, the container defaults to the context element. Set `container` to bound dragging to a different element instead:
+
+```js
+draggables(slider, {target: '.thumb', container: '.track'});
+```
+
+A selector that matches nothing logs a warning and the values arrive unclamped.
+
+
+
+<!-- bound -->
+### Option: `bound`
+What to keep inside the container:
+
+* `"element"` (default) - the dragged element's box.
+* `"pointer"` - the pointer. For drawing and resizing. Adds the container fields even without a `container` (then it's the dragged element).
+
+```js
+draggables(canvas, {bound: 'pointer'});
+```
+
+Example - Dragging a box against its container's right edge (`*` is the pointer):
+```
+bound: 'element'                  bound: 'pointer'
+┌─ container ─────────┐          ┌─ container ─────────┐
+│          ┌──────────┤          │              ┌──────┴──┐
+│          │  *       │          │              │      *  │
+│          └──────────┤          │              └──────┬──┘
+└─────────────────────┘          └─────────────────────┘
+ box stops at the edge,           pointer stops at the edge
+ pointer can keep going           box may overflow
+```
+
+
+
+<!-- button -->
+### Option: `button`
+The mouse button that starts a drag (`0` left, `1` middle, `2` right). Applies to every kind of `target`. Default: `0`.
+
+```js
+// right-click gesture
+draggables(surface, {button: 2});
+```
+
+
+<!-- translate -->
+### Option: `translate`
+Default: `false`. Use it to move an element with CSS `translate`. Your handlers get `tx`/`ty`, the element's new translate (its translate at grab plus `dx`/`dy`).
+
+> **Pixels only (`%` is read as `px`).**
+
+```js
+draggables(board, {target: '.card', translate: true})
+   .on('dragging', ({elm, tx, ty}) => {
+      elm.style.translate = `${tx}px ${ty}px`;
    });
 ```
 
-#### Section Links:
-* [The Idea](#the-idea)
-* [Context Element](#context-element)
-* [Target & Grip](#target--grip)
-* [Containing](#containing)
-* [Caveats](#caveats)
-* [Options](#options)
-* Instance API:
-	* [Creation](#dragcontextelement-options)
-	* [Events](#oneventname-callback--offeventname)
-	* [Drag Data](#drag-data)
-	* [Cancel](#canceldrag)
-	* [Refresh Container Bounds](#refreshcontainerbounds)
-	* [Destruction](#destroy)
-* [`clamp()`](#clampn-min-max)
-* [Dropzones](#dropzones)
+
+<!-- cancelOnEsc -->
+### Option: `cancelOnEsc`
+Pressing Esc mid-drag fires `dragCancel`. Default: `true`.
+
+```js
+draggables(board, {target: '.card', cancelOnEsc: false});
+```
 
 
-### The Idea
-The library doesn't move anything. It listens to the pointer and reports the gesture: how far, from where, to where.  
-Moving, resizing, drawing a selection rect, scrolling - that's your handler's job.
+<!-- threshold -->
+### Option: `threshold`
+Number of pixels the pointer must travel before `dragStart` fires. Below it, a release is a plain click (no `dragEnd`). Default: `3`.
 
->NOTE: Every drag starts at `dx: 0, dy: 0`. Nothing is accumulated between drags (see the [`translate`](#options) option).
+```js
+draggables(list, {target: '.item', threshold: 10});
+```
+
+&nbsp;
+
+---------------------------------------------------------
+
+## Events
+Calling `draggables()` returns a `DragInstance` <!-- TODO: a DraggerInstance? -->.
+
+A drag instance emits an event at each stage of the gesture. Each event carries a [`DragData`](#drag-data) object with coordinates, relative positions and more - everything you need to update your DOM.
+
+### Gesture Lifecycle
+| Event          | Fires                                                                 | Use for |
+|----------------|-----------------------------------------------------------------------|---------|
+| `'grab'` | on `pointerdown` on a target                         | highlight |
+| `'dragStart'` | on the first `pointermove` that crosses the [threshold](#option-threshold)                 | "dragging" class |
+| `'dragging'` | on every `pointermove` after that                                     | moving |
+| `'dragEnd'` | on `pointerup`, only if the drag started                              | saving position |
+| `'dragCancel'` | when the drag is aborted: on `Esc` keypress, on `pointercancel`, or when calling the instance's `.cancelDrag()` or `.destroy()` | reverting |
+| `'release'` | on `pointerup`, or after `dragCancel` | unhighlight |
+
+> A click (no move past the threshold) fires only `grab` and `release`.
+
+> `dragCancel` and `release` get only `{elm, grip}`, not the full [`DragData`](#drag-data).
 
 
-### Context Element
-Required. The element that listens to `pointerdown` events for everything draggable within it.
-Each instance binds a *single* event listener to it.
+### Listening to Events
+You start listening to an event by calling `.on()` with its name and a callback, and stop with `.off()`.
 
-With no `target` option, the context element itself is the dragged element (a splitter, a canvas, a scroller).
+```js
+const dragger = draggables(board);
 
+dragger.on(EVENT_NAME, doSomething)
+dragger.off(EVENT_NAME);
+```
+An instance holds a single handler per event (unlike an EventEmitter):
+
+```js
+draggables(board)
+   .on('dragStart', doSomething)     // <-- this is replaced
+   .on('dragStart', doSomethingElse) // <-- by this (same event)
+```
+
+### Drag Data
+Each event handler gets a `DragData` object describing the drag at that moment. For example:
+
+```js
+draggables(board, {target: '.card'})
+   .on('dragging', (dragData) => {
+      console.log(dragData.dx, dragData.dy);
+   });
+```
+
+
+| Property     | Description                                                   |
+|--------------|---------------------------------------------------------------|
+| `ev`         | the vanilla `PointerEvent`                                    |
+| `elm`        | the dragged element (not always `ev.target`)                  |
+| [`grip`](#option-grip) | the grabbed grip (when no `grip` option, it's `=== elm`)            |
+| `dx`, `dy`   | delta/distance since drag start. Clamped with `container`                    |
+| `x`, `y`     | current pointer, viewport px (`clientX`/`clientY`, not page)  |
+| `left`, `top`| start `offsetLeft`/`offsetTop` (from nearest positioned ancestor) + `dx`/`dy` |
+| `startContainerX`, `startContainerY` | grab point relative to the container. With `container` or `bound: 'pointer'` |
+| `containerX`, `containerY` | grab point relative to the container + `dx`/`dy` (clamped). With `container` or `bound: 'pointer'` |
+| `tx`, `ty`   | start `translate` + `dx`/`dy`. With `translate: true`         |
+
+
+> In TypeScript, optional fields appear only when you set the option that enables them (e.g. `tx`/`ty` with `translate: true`).
+
+
+
+### Other Methods
+A `DragInstance` also has the following methods:
+
+* [.cancelDrag()](#canceldrag)
+* [.refreshContainerBounds()](#refreshcontainerbounds)
+* [.destroy()](#destroy)
+
+#### **.cancelDrag()**
+Aborts the current drag. Fires `dragCancel` if the threshold was crossed. No-op when idle. This is what Esc calls when pressed (see [`cancelOnEsc` option](#option-cancelonesc)).
+
+```js
+window.addEventListener('blur', () => dragger.cancelDrag());
+```
+
+
+#### **.refreshContainerBounds()**
+Sometimes the container moves or resizes during a drag (e.g. the page scrolls). Call this to re-read its rect, so clamping matches its new edges. No-op when idle.
+
+```js
+list.addEventListener('scroll', () => dragger.refreshContainerBounds());
+```
+
+
+#### **.destroy()**
+Kills the instance for good: cancels an active drag, unbinds event listeners, drops handlers. Use it when the context element is removed from the DOM.
+
+```js
+// Vanilla 
+const cardDragger = draggables(board, {target: '.card'});
+cardDragger.destroy();
+```
+
+```js
+// React
+useEffect(() => {
+   const cardDragger = draggables(boardRef.current, {target: '.card'});
+   return () => cardDragger.destroy();
+}, []);
+```
+
+## Caveats
+### Nested Context Elements
 Nested context elements both drag. To drag only the inner one, stop propagation on its `grab`:
 
 ```js
-drag(inner).on('grab', ({ev}) => ev.stopPropagation());
+draggables(inner).on('grab', ({ev}) => ev.stopPropagation());
 ```
 
-
-### Target & Grip
-Plain selectors decide what gets dragged. No magic attributes.
-
-```js
-drag(canvas);                                       // the context element itself
-drag(board, {target: '.note:not(.locked)'});        // disabling is just `:not(...)`
-drag(board, {target: '.card', grip: '.card-title'});// drag only by the grip
-drag(panel, {grip: '[data-side]'});                 // resize - read `dragData.grip`
-drag(area, {button: 2});                            // right-click gesture
-drag(board, {target: (ev) => HTMLElement | null});  // escape hatch
-```
-
-* `target` selector - the closest match to the pointer, inside the context element.
-* `grip` selector - a drag only starts on a grip. The dragged element is the closest `target` to it (or the context element).
-* `target` function - gets the `pointerdown` event, returns the element to drag or `null` for no drag. Replaces both (`grip` is ignored).
-
-> To toggle draggability, toggle a class and exclude it in the `target` selector.
-
-
-### Containing
-Pass a `container` (element or ancestor selector) and `dx`/`dy` arrive clamped, so the dragged element stays inside the container's padding box. With a `target`, the container defaults to the context element (unless the target *is* the context element). To drag out of it, call `drag()` on a higher element.
-
-```js
-drag(board, {target: '.note'});
-drag(slider, {target: '.thumb', container: '.track'});
-```
-
-For drawing and resizing, use `bound: 'pointer'` to clamp the pointer instead of the element's box. Without a `container` or a `target`, the container is the dragged element itself.
-
-> Rects are measured once, on grab. If the container scrolls or resizes mid-drag, call [`.refreshContainerBounds()`](#refreshcontainerbounds).
-
-
-### Caveats
-#### Touch
+### Touch
 Set `touch-action: none` on your draggables (or grips). Without it, the browser claims touch drags as page scrolls.
 
-#### Images & Links
+### Images & Links
 Dragging an `<img>` or `<a>` starts the browser's native drag, which cancels yours. Either set `draggable="false"` on them (or CSS `-webkit-user-drag: none`), or prevent it for the whole context element:
 
 ```js
@@ -112,232 +376,77 @@ board.addEventListener('dragstart', (ev) => ev.preventDefault());
 ```
 
 ```css
-.note { touch-action: none; }
+.card { touch-action: none; }
 ```
 
 If the browser cancels the pointer (`pointercancel`), the drag ends with `dragCancel`.
 
-#### Text Selection
-Dragging selects text. Block it with CSS (`.note { user-select: none; }`), or only while dragging:
+### Text Selection
+Dragging selects text. Block it with CSS (`.card { user-select: none; }`), or only while dragging:
 
 ```js
-drag(board, {target: '.note'})
+draggables(board, {target: '.card'})
    .on('grab', () => document.body.classList.add('no-select'))
    .on('release', () => document.body.classList.remove('no-select'));
 ```
 
-## Options
-
-| Option         | Value                          | Default    |
-|----------------|--------------------------------|------------|
-| `target`       | `string` \| `(ev) => HTMLElement \| null` | context element |
-| `grip`         | `string`                       | -          |
-| `button`       | `number`                       | `0`        |
-| `threshold`    | `number` (px)                  | `3`        |
-| `container`    | `HTMLElement` \| `string`      | -          |
-| `bound`        | `"element"` \| `"pointer"`     | `"element"`|
-| `translate`    | `boolean`                      | `false`    |
-| `cancelOnEsc`  | `boolean`                      | `true`     |
-
-&nbsp;
-
-### Details
-#### Click to expand:
-
-<!-- target -->
-<details>
-   <summary><code>target</code></summary><br />
-   What to drag. A selector (closest match inside the context element) or a function that gets the <code>pointerdown</code> event and returns the element to drag, or <code>null</code>.
-   See <a href="#target--grip">Target & Grip</a>.
-
-----------
-</details>
-
-
-<!-- grip -->
-<details>
-   <summary><code>grip</code></summary><br />
-   A selector. When set, a drag only starts when grabbed by a grip. Exposed as <code>dragData.grip</code> (same as <code>elm</code> when unset). Ignored when <code>target</code> is a function.
-
-----------
-</details>
-
-
-<!-- button -->
-<details>
-   <summary><code>button</code></summary><br />
-   The mouse button that starts a drag (<code>0</code> left, <code>1</code> middle, <code>2</code> right). Applies to every kind of <code>target</code>.
-
-----------
-</details>
-
-
-<!-- threshold -->
-<details>
-   <summary><code>threshold</code></summary><br />
-   Pixels the pointer must travel before <code>dragStart</code> fires. Below it, a release is a plain click (no <code>dragEnd</code>).
-
-----------
-</details>
-
-
-<!-- container -->
-<details>
-   <summary><code>container</code></summary><br />
-   An element, or a selector matched against the dragged element's ancestors. Clamps <code>dx</code>/<code>dy</code> to keep the dragged element inside it, and adds the container fields to the <a href="#drag-data">drag data</a>. Defaults to the context element when <code>target</code> is set.<br />
-   A selector that matches nothing logs a warning and the values arrive unclamped.
-
-----------
-</details>
-
-
-<!-- bound -->
-<details>
-   <summary><code>bound</code>="element" | "pointer"</summary><br />
-
-   * `"element"` - keep the dragged element's box inside the container.
-   * `"pointer"` - keep the pointer inside the container. Adds the container fields even without a `container` (then it's the dragged element).
-
-----------
-</details>
-
-
-<!-- translate -->
-<details>
-   <summary><code>translate</code></summary><br />
-   Reads the element's computed CSS <code>translate</code> on grab and adds <code>tx</code>/<code>ty</code> (start translate + <code>dx</code>/<code>dy</code>). Handy for moving with <code>translate</code> across drags. Pixels only (<code>%</code> is read as <code>px</code>).
-
-----------
-</details>
-
-
-<!-- cancelOnEsc -->
-<details>
-   <summary><code>cancelOnEsc</code></summary><br />
-   Pressing Esc mid-drag fires <code>dragCancel</code>.
-
-----------
-</details>
-
-&nbsp;
-
-### Example:
-```js
-drag(board, {
-   target: '.card:not(.locked)',
-   grip: '.card-title',
-   container: board,
-   translate: true,
-})
-   .on('dragging', ({elm, tx, ty}) => {
-      elm.style.translate = `${tx}px ${ty}px`;
-   })
-   .on('dragCancel', ({elm}) => {
-      // revert
-   });
-```
----------------------------------------------------------
-
-## Instance API
-
-### `drag(contextElement, options)`
-#### arguments
-* contextElement: `HTMLElement` = required. See [Context Element](#context-element).
-* options: `DragInstanceOptions` = optional. See [Options](#options).
-
-Returns a `DragInstance`:
-```js
-const d = drag(board);
-```
-
-It has the following methods:
-
-### **.on(eventName, callback) / .off(eventName)**
-Start and stop listening to drag events:
-* **`'grab'`** - fires on `pointerdown` on a target (`dx: 0, dy: 0`).
-* **`'dragStart'`** - fires on the first `pointermove` that crosses the threshold.
-* **`'dragging'`** - fires on every `pointermove` after that.
-* **`'dragEnd'`** - fires on `pointerup`, only if the drag started.
-* **`'dragCancel'`** - the drag was aborted (Esc, `pointercancel`, `.cancelDrag()`, `.destroy()`). Revert what you moved.
-* **`'release'`** - always closes a `grab`: after a click, `dragEnd` or `dragCancel`.
-
-An instance holds a single handler per event (unlike an EventEmitter):
-
-```js
-drag(board)
-   .on('dragStart', doSomething)     // <-- this is replaced
-   .on('dragStart', doSomethingElse) // <-- by this (same event)
-   .on('dragEnd', stopDoingThing)
-   .off('dragStart');
-```
-
-### Drag Data
-Handlers get called with a `DragData` object:
-
-| Property     | Description                                                   |
-|--------------|---------------------------------------------------------------|
-| `ev`         | the vanilla `PointerEvent`                                    |
-| `elm`        | the dragged element (not always `ev.target`)                  |
-| `grip`       | the grabbed grip (`=== elm` when no `grip` option)            |
-| `dx`, `dy`   | since drag start. Clamped with `container`                    |
-| `x`, `y`     | current pointer, client px                                    |
-| `left`, `top`| start `offsetLeft`/`offsetTop` + `dx`/`dy`                    |
-| `containerX`, `containerY`<br />`startContainerX`, `startContainerY` | pointer relative to the container. With `container` or `bound: 'pointer'` |
-| `tx`, `ty`   | start `translate` + `dx`/`dy`. With `translate: true`         |
-
-> `dragCancel` and `release` handlers only get `{elm, grip}`.  
-Values are raw, not rounded. Optional fields are typed by the options you pass.
-
-```js
-drag(board, {target: '.note', grip: '.grip'}).on('dragging', (dragData) => {
-   console.log(
-      dragData.elm,     // e.g. <div class="note">
-      dragData.grip,    // e.g. <div class="grip">
-      dragData.dx,      // e.g. 3 (on 'grab' events it's always 0)
-   );
-});
-```
-
-
-### **.cancelDrag()**
-Aborts the current drag. Fires `dragCancel` if the threshold was crossed. No-op when idle.
-
-
-### **.refreshContainerBounds()**
-Re-reads the container's rect mid-drag (after a scroll or resize). No-op when idle.
-
-
-### **.destroy()**
-Kills the instance for good: cancels an active drag, unbinds event listeners, drops handlers. Use it when the context element is removed from the DOM.
-
 -----
 
-### `clamp(n, min, max)`
-Exported for everything `container` doesn't cover - a splitter, min/max sizes.
+## Helper Utils
+Small functions for common drag tasks, so you don't have to write them yourself. Not required, just convenient. 
 
+### Clamp
+A trivial one-liner, exported for everything `container` doesn't cover.
+
+* `clamp(n, min, max)` - returns `n` limited to the `min`-`max` range.
+
+#### Example
+Limiting a resizable panel's height:
 ```js
-import {drag, clamp} from 'draggables';
+import {draggables, clamp} from 'draggables';
 
-drag(splitter).on('dragging', ({dy}) => {
-   pane.style.height = `${clamp(startHeight + dy, 100, 600)}px`;
+const MIN = 100
+const MAX = 500
+let startHeight = 300
+
+draggables(splitter).on('dragging', ({dy}) => {
+   // `dy` = Y axis delta 
+   const newValue = startHeight + dy;
+   const clampedValue = clamp(newValue, MIN, MAX);
+
+   panel.style.height = `${clampedValue}px`;
 });
 ```
 
 
 ### Dropzones
-Helpers to find the zone under the pointer. Each returns the zone element or `null`. Pass the dragged element as `exclude` to skip it and its descendants. Nested zones: the innermost wins.
+Find which of your dropzones (elements matching a selector you pass) is under the pointer. Each helper returns the zone element or `null`.
 
-* `measureZones(selector, exclude?)` + `hitZone(zones, x, y)` - measure once, then no DOM reads per move. Call `measureZones` again if zones render, scroll or resize mid-drag. Ignores `z-index`.
-* `findDropzone(x, y, selector, exclude?)` - reads the DOM on every call. Respects `z-index` and catches new zones, but forces a reflow per move.
+Pass the dragged element as `exclude` so it doesn't count as a zone. With nested zones, the innermost wins.
+
+#### Measure Once
+Measure all zones once when the drag starts (`measureZones`), then check the pointer against them on each move (`hitZone`). Measure again if zones move or show up mid-drag.
 
 ```js
-import {drag, measureZones, hitZone} from 'draggables';
+import {draggables, measureZones, hitZone} from 'draggables';
 
 let zones;
-drag(board, {target: '.note'})
+draggables(board, {target: '.card'})
    .on('dragStart', ({elm}) => zones = measureZones('.trash', elm))
    .on('dragEnd', ({elm, x, y}) => {
       if (hitZone(zones, x, y)) elm.remove();
+   });
+```
+
+#### Check Live
+Ask the browser what's under the pointer on each move (`findDropzone`). Slower, but it respects `z-index`. Calling it only on `dragEnd` is cheap. On every move it may cause jank on heavy pages.
+
+```js
+import {draggables, findDropzone} from 'draggables';
+
+draggables(board, {target: '.card'})
+   .on('dragEnd', ({elm, x, y}) => {
+      if (findDropzone(x, y, '.trash', elm)) elm.remove();
    });
 ```
 
