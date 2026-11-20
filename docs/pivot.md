@@ -59,7 +59,7 @@ Old code only gets deleted or archived.
       3. locking an axis (was `axis`)
          **Done.** Slider writes only `left`; splitter reads only `dy`.
       4. accumulating position across drags (was `relPos`)
-         **Done.** Covered by `translate: true` (`tx/ty`); tested in `clamping.spec.ts`.
+         **Done.** Covered by `translate: true` (`tx/ty`); tested in `container.spec.ts`.
 
 7. **`button` option** — `drag(el, {button: 2})`, default `0`, applies to every target kind. **Done.**
 
@@ -301,19 +301,18 @@ Not ported:
 TODOs
 -----
 * ~~Dropzones: not in scope.~~
-* `DragData`: consider adding the container and context elements (now only `elm` and `grip`).
 * extend DragData? (e.g. `distance` field)
-* multiple event listeners (EventEmitter like)
-* compare to others
 * ctxElm selector (multi?)
 * multiple targets?
 * dragData to container ctx, container elms?
+* compare to others
 * naming stuff:
   - DragInstance (docs+code)
   - drag() -> dragSetup
   - draggables -> dragger? createDragger/dragger.on('dragStart'...)
   - DragData to DragState?  
-* TBD: first move past the threshold fires only `dragStart`, not `dragging`. Fire both?
+* multiple event listeners (EventEmitter like)
+* TBD (inconclusive, keeping as-is): First move past the threshold fires only `dragStart`, not `dragging`. Fire both? fire `dragging` with a `firstMove` bool?
 
 
 ### Later, Maybeas

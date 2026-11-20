@@ -308,6 +308,7 @@ draggables(board, {target: '.card'})
 | `dx`, `dy`   | delta/distance since drag start. Clamped with `container`                    |
 | `x`, `y`     | current pointer, viewport px (`clientX`/`clientY`, not page)  |
 | `left`, `top`| start `offsetLeft`/`offsetTop` (from nearest positioned ancestor) + `dx`/`dy` |
+| `container`  | the container element. With `container` or `bound: 'pointer'` |
 | `startContainerX`, `startContainerY` | grab point relative to the container. With `container` or `bound: 'pointer'` |
 | `containerX`, `containerY` | grab point relative to the container + `dx`/`dy` (clamped). With `container` or `bound: 'pointer'` |
 | `tx`, `ty`   | start `translate` + `dx`/`dy`. With `translate: true`         |

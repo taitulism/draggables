@@ -96,12 +96,13 @@ export const clampMove = ({clampBox, containerBBox}: Active, pos: DragPosition):
 	};
 };
 
-export const toContainerPoints = ({startX, startY, containerBBox}: Active, {dx, dy}: DragPosition) => {
-	if (!containerBBox) return {};
+export const toContainerPoints = ({startX, startY, containerElm, containerBBox}: Active, {dx, dy}: DragPosition) => {
+	if (!containerElm || !containerBBox) return {};
 
 	const startContainerX = startX - containerBBox.left;
 	const startContainerY = startY - containerBBox.top;
 	return {
+		container: containerElm,
 		startContainerX,
 		startContainerY,
 		containerX: startContainerX + dx,

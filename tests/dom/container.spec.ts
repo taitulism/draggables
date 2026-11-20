@@ -3,7 +3,7 @@ import {drag, type DragData, type DragInstance, type DragInstanceOptions} from '
 import {createContainerElm, createDraggableElm} from '../dom-utils';
 import {createMouseSimulator} from '../mouse-simulator';
 
-describe('Clamping', () => {
+describe('Container', () => {
 	let elm: HTMLElement;
 	let container: HTMLElement;
 	let instance: DragInstance;
@@ -221,6 +221,47 @@ describe('Clamping', () => {
 			dragBy([20, 30]);
 			expect(dragData.containerX).toBeUndefined();
 			expect(dragData.startContainerX).toBeUndefined();
+		});
+	});
+
+	describe('container element', () => {
+		it('is the given element', () => {
+			dragWith(elm, {container});
+			dragBy([20, 30]);
+			expect(dragData.container).toBe(container);
+		});
+
+		it('is the element matched by a selector', () => {
+			dragWith(elm, {container: '#test-dom-container'});
+			dragBy([20, 30]);
+			expect(dragData.container).toBe(container);
+		});
+
+		it('is the context element when a target is set', () => {
+			elm.classList.add('item');
+			dragWith(container, {target: '.item'});
+			dragBy([20, 30]);
+			expect(dragData.container).toBe(container);
+		});
+
+		it('is the dragged element with bound: pointer and no container', () => {
+			dragWith(container, {bound: 'pointer'});
+			dragBy([20, 30]);
+			expect(dragData.container).toBe(container);
+		});
+
+		it('is undefined when the selector matches nothing', () => {
+			const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+			dragWith(elm, {container: '#nothing'});
+			dragBy([20, 30]);
+			expect(dragData.container).toBeUndefined();
+			warn.mockRestore();
+		});
+
+		it('is undefined without a container', () => {
+			dragWith(elm);
+			dragBy([20, 30]);
+			expect(dragData.container).toBeUndefined();
 		});
 	});
 

@@ -12,6 +12,7 @@ export type DragInstanceOptions = {
 }
 
 type ContainerData = {
+	container: HTMLElement
 	containerX: number
 	containerY: number
 	startContainerX: number
