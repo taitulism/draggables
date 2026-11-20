@@ -22,6 +22,7 @@ Each drag reports where it started, where it is now, and how far it moved - You 
 * [Caveats](#caveats)
 * Helper Utils:
 	* [Clamp](#clamp)
+	* [Edge Proximity](#edge-proximity)
 	* [Dropzones](#dropzones)
 
 
@@ -415,6 +416,28 @@ createDragger(splitter).on('dragging', ({dy}) => {
    const clampedValue = clamp(newValue, MIN, MAX);
 
    panel.style.height = `${clampedValue}px`;
+});
+```
+
+
+### Edge Proximity
+How far an element or the pointer is from each edge of a container (its padding box). Useful for auto-scroll or edge highlighting.
+
+* `getEdgeProximity(container, rect)` - for an element. Pass its `getBoundingClientRect()`.
+* `getEdgeProximity(container, x, y)` - for the pointer.
+
+Returns `{top, right, bottom, left}` in px. Negative means outside.
+
+Highlighting the board edges a note is near:
+```js
+import {createDragger, getEdgeProximity} from 'draggables';
+
+createDragger(board, {target: '.note'}).on('dragging', ({elm}) => {
+   const edges = getEdgeProximity(board, elm.getBoundingClientRect());
+
+   for (const [edge, distance] of Object.entries(edges)) {
+      board.classList.toggle(`near-${edge}`, distance <= 10);
+   }
 });
 ```
 

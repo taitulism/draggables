@@ -49,4 +49,6 @@ export function mount (setup: (threshold: number) => Dragger[]) {
 
 	run();
 	thresholdInput.addEventListener('change', run);
+
+	return run;
 }

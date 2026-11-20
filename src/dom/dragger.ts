@@ -110,6 +110,7 @@ export function createDragger<const O extends DraggerOptions = object> (
 		on<N extends DragEventName> (name: N, handler: NonNullable<Handlers<O>[N]>) {
 			assertName(name);
 			handlers[name] = handler;
+
 			return instance;
 		},
 
@@ -121,16 +122,21 @@ export function createDragger<const O extends DraggerOptions = object> (
 
 		refreshContainerBounds () {
 			if (active?.containerElm) active.containerBBox = measureBBox(active.containerElm);
+			
 			return instance;
 		},
 
 		cancelDrag () {
 			if (!active) return instance;
+
 			const {elm, grip} = active;
 			const wasDragging = core.cancel();
+
 			unbind();
+			
 			if (wasDragging) handlers.dragCancel?.({elm, grip});
 			handlers.release?.({elm, grip});
+			
 			return instance;
 		},
 

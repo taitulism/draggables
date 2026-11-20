@@ -32,6 +32,12 @@
 
 		.trash.over { background-color: #e88 }
 
+		#board { border: 4px solid transparent }
+		#board.near-top { border-top-color: #e33 }
+		#board.near-right { border-right-color: #e33 }
+		#board.near-bottom { border-bottom-color: #e33 }
+		#board.near-left { border-left-color: #e33 }
+
 		.grip {
 			width: 100%;
 			height: 20px;
@@ -44,6 +50,13 @@
 	<nav id="nav"></nav>
 	<div id="controls">
 		<label>threshold <input id="threshold" type="number" value="3" min="0" style="width: 60px" /></label>
+		<label>near edge
+			<select id="near">
+				<option value="element">element</option>
+				<option value="pointer">pointer</option>
+			</select>
+			≤ 10px
+		</label>
 		<button id="clear-log">Clear log</button>
 	</div>
 	<div id="board" class="stage">

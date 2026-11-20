@@ -300,13 +300,20 @@ Not ported:
 
 TODOs
 -----
+* readme title newline spacing
+* remove threshold from PGs except core
+* auto-scroll: export `getEdgeProximity(container, rect)` (pointer = zero-size rect). Support bound: element|pointer
+* long-press delay: `delay` option (+ `tolerance` px, maybe touch-only) so touch pages can still scroll
+* dragState.container.x?
+* add DragState `rawDx`/`rawDy` (unclamped) for rubber-band, auto-scroll speed
+* DragState velocity (`vx`, `vy`) — flick/throw; consumers can't derive it without tracking state
+* a12y/keyboard: add instance methods to control drag (with events)
+------------------------------
+* TBD (inconclusive, keeping as-is): First move past the threshold fires only `dragStart`, not `dragging`. Fire both? fire `dragging` with a `firstMove` bool?
+* multiple event listeners (EventEmitter like) - when the need arises.
 * ~~Dropzones:~~ not in scope.
 * ~~ctxElm selector (multi?)~~ rare case
-* compare to others
-* extend DragData? (e.g. `distance` field)
-* ~~multiple target selectors (array) and dragData.selector?~~ consumer can pass `traget: '.aaa, .bbb'` and check `elm.matches('.aaa')` in event handlers. 
-* multiple event listeners (EventEmitter like)
-* TBD (inconclusive, keeping as-is): First move past the threshold fires only `dragStart`, not `dragging`. Fire both? fire `dragging` with a `firstMove` bool?
+* ~~multiple target selectors (array) and dragState.selector?~~ consumer can pass `traget: '.aaa, .bbb'` and check `elm.matches('.aaa')` in event handlers. 
 
 
 ### Later, Maybeas
