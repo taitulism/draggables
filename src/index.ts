@@ -1,10 +1,10 @@
-export {drag} from './dom/drag';
+export {createDragger} from './dom/dragger';
 export {clamp} from './utils/clamp';
 export {findDropzone, measureZones, hitZone, type Zone} from './utils/dropzones';
-export type {DragInstance} from './dom/drag';
+export type {Dragger} from './dom/dragger';
 export type {
-	DragInstanceOptions,
-	DragData,
+	DraggerOptions,
+	DragState,
 	DragEventHandler,
 	DragEventName,
 	TargetResolver,

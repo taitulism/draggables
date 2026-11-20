@@ -1,4 +1,4 @@
-import {drag} from '../src';
+import {createDragger} from '../src';
 import {mount, logOutput, logCancel} from './shared';
 
 const MIN = 60;
@@ -10,9 +10,9 @@ mount((threshold) => {
 	let side = '';
 	let anchor = {left: 0, top: 0, right: 0, bottom: 0};
 
-	const resize = drag(panel, {grip: '[data-side]', threshold, bound: 'pointer', container: stage})
-		.on('grab', (dragData) => {
-			side = dragData.grip.dataset.side!;
+	const resize = createDragger(panel, {grip: '[data-side]', threshold, bound: 'pointer', container: stage})
+		.on('grab', (dragState) => {
+			side = dragState.grip.dataset.side!;
 			anchor = {
 				left: panel.offsetLeft,
 				top: panel.offsetTop,
@@ -20,10 +20,10 @@ mount((threshold) => {
 				bottom: panel.offsetTop + panel.offsetHeight,
 			};
 
-			logOutput('grab', dragData);
+			logOutput('grab', dragState);
 		})
-		.on('dragging', (dragData) => {
-			const {containerX, containerY} = dragData;
+		.on('dragging', (dragState) => {
+			const {containerX, containerY} = dragState;
 
 			if (side.includes('e')) {
 				panel.style.width = `${Math.max(containerX - anchor.left, MIN)}px`;
@@ -42,9 +42,9 @@ mount((threshold) => {
 				panel.style.top = `${anchor.bottom - height}px`;
 			}
 
-			logOutput('dragging', dragData);
+			logOutput('dragging', dragState);
 		})
-		.on('dragEnd', (dragData) => logOutput('dragEnd', dragData))
+		.on('dragEnd', (dragState) => logOutput('dragEnd', dragState))
 		.on('dragCancel', ({elm}) => {
 			panel.style.left = `${anchor.left}px`;
 			panel.style.top = `${anchor.top}px`;

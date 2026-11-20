@@ -16,7 +16,7 @@ d.move(20, 10);    // --> {isStart: true, dx: 10, dy: 0, x: 20, y: 10}
 d.end(25, 12);     // --> {dx: 15, dy: 2, x: 25, y: 12}
 ```
 
->NOTE: Core is a private helper of `drag()` - not exported from the package (yet).
+>NOTE: Core is a private helper of `createDragger()` - not exported from the package (yet).
 
 #### Section Links:
 * [The Idea](#the-idea)

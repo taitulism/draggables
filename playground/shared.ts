@@ -1,4 +1,4 @@
-import type {DragInstance, DragData} from '../src';
+import type {Dragger, DragState} from '../src';
 
 const PAGES = ['core', 'notes', 'axis', 'resize', 'gesture', 'rect', 'scroller', 'misc'];
 
@@ -21,10 +21,10 @@ export function logLine (line: string) {
 	log.textContent = `${line}\n${log.textContent}`;
 }
 
-export function logOutput (name: string, dragData: DragData) {
-	const id = dragData.elm.id || dragData.elm.dataset.name || dragData.elm.className;
+export function logOutput (name: string, dragState: DragState) {
+	const id = dragState.elm.id || dragState.elm.dataset.name || dragState.elm.className;
 	
-	logLine(`${name.padEnd(9)} ${id} dx:${dragData.dx} dy:${dragData.dy} x:${dragData.x} y:${dragData.y}`);
+	logLine(`${name.padEnd(9)} ${id} dx:${dragState.dx} dy:${dragState.dy} x:${dragState.x} y:${dragState.y}`);
 }
 
 export function logCancel (elm: HTMLElement) {
@@ -39,8 +39,8 @@ export function unlockCursor () {
 	document.body.classList.remove('dragging');
 }
 
-export function mount (setup: (threshold: number) => DragInstance[]) {
-	let instances: DragInstance[] = [];
+export function mount (setup: (threshold: number) => Dragger[]) {
+	let instances: Dragger[] = [];
 
 	const run = () => {
 		instances.forEach((instance) => instance.destroy());

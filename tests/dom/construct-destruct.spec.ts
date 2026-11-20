@@ -1,12 +1,12 @@
 import {beforeAll, beforeEach, afterEach, afterAll, describe, it, expect, vi} from 'vitest';
-import {drag, type DragInstance} from '../../src';
+import {createDragger, type Dragger} from '../../src';
 import {createContainerElm, createDraggableElm, addChild, addGrip, addGripChild} from '../dom-utils';
 import {createMouseSimulator} from '../mouse-simulator';
 
-describe('drag() construct / destroy', () => {
+describe('createDragger() construct / destroy', () => {
 	let elm: HTMLElement;
 	let container: HTMLElement;
-	let instance: DragInstance;
+	let instance: Dragger;
 	let mouse: ReturnType<typeof createMouseSimulator>;
 
 	beforeAll(() => {
@@ -33,8 +33,8 @@ describe('drag() construct / destroy', () => {
 
 	describe('When one context element contains another', () => {
 		it('triggers both', () => {
-			instance = drag(elm);
-			const outer = drag(container);
+			instance = createDragger(elm);
+			const outer = createDragger(container);
 			const outerSpy = vi.fn();
 			const innerSpy = vi.fn();
 			outer.on('grab', outerSpy);
@@ -48,8 +48,8 @@ describe('drag() construct / destroy', () => {
 		});
 
 		it('only triggers the inner one when it stops propagation on grab', () => {
-			instance = drag(elm);
-			const outer = drag(container);
+			instance = createDragger(elm);
+			const outer = createDragger(container);
 			const outerSpy = vi.fn();
 			outer.on('grab', outerSpy);
 			instance.on('grab', ({ev}) => ev.stopPropagation());
@@ -64,7 +64,7 @@ describe('drag() construct / destroy', () => {
 	describe('Option: `target`', () => {
 		it('defaults to the contextElm, also when grabbed by a child', () => {
 			const child = addChild(elm);
-			instance = drag(elm);
+			instance = createDragger(elm);
 			const spy = vi.fn();
 			instance.on('dragEnd', spy);
 
@@ -77,7 +77,7 @@ describe('drag() construct / destroy', () => {
 		it('`target` selector drags the closest match inside contextElm', () => {
 			const child = addChild(elm);
 			child.classList.add('item');
-			instance = drag(container, {target: '.item'});
+			instance = createDragger(container, {target: '.item'});
 			const spy = vi.fn();
 			instance.on('grab', spy);
 
@@ -92,7 +92,7 @@ describe('drag() construct / destroy', () => {
 
 		it('`target` selector ignores matches outside contextElm', () => {
 			container.classList.add('item');
-			instance = drag(elm, {target: '.item'});
+			instance = createDragger(elm, {target: '.item'});
 			const spy = vi.fn();
 			instance.on('grab', spy);
 
@@ -104,7 +104,7 @@ describe('drag() construct / destroy', () => {
 
 		it('`target` function gets the pointerdown event and returns the element to drag', () => {
 			const resolver = vi.fn(() => container);
-			instance = drag(elm, {target: resolver});
+			instance = createDragger(elm, {target: resolver});
 			const spy = vi.fn();
 			instance.on('grab', spy);
 
@@ -116,7 +116,7 @@ describe('drag() construct / destroy', () => {
 		});
 
 		it('`target` function returning null skips the drag', () => {
-			instance = drag(elm, {target: () => null});
+			instance = createDragger(elm, {target: () => null});
 			const spy = vi.fn();
 			instance.on('grab', spy);
 
@@ -130,7 +130,7 @@ describe('drag() construct / destroy', () => {
 		it('drags the contextElm only via a grip, by default', () => {
 			const grip = addGrip(elm);
 			const child = addChild(elm);
-			instance = drag(elm, {grip: '.grip'});
+			instance = createDragger(elm, {grip: '.grip'});
 			const spy = vi.fn();
 			instance.on('dragEnd', spy);
 
@@ -147,7 +147,7 @@ describe('drag() construct / destroy', () => {
 		it('grip children act as the grip', () => {
 			const grip = addGrip(elm);
 			const gripChild = addGripChild(grip);
-			instance = drag(elm, {grip: '.grip'});
+			instance = createDragger(elm, {grip: '.grip'});
 			const spy = vi.fn();
 			instance.on('grab', spy);
 
@@ -160,7 +160,7 @@ describe('drag() construct / destroy', () => {
 		it('with a `target` selector, drags the target closest to the grip', () => {
 			elm.classList.add('item');
 			const grip = addGrip(elm);
-			instance = drag(container, {target: '.item', grip: '.grip'});
+			instance = createDragger(container, {target: '.item', grip: '.grip'});
 			const spy = vi.fn();
 			instance.on('grab', spy);
 
@@ -175,7 +175,7 @@ describe('drag() construct / destroy', () => {
 
 		it('ignores grips outside contextElm', () => {
 			container.classList.add('grip');
-			instance = drag(elm, {grip: '.grip'});
+			instance = createDragger(elm, {grip: '.grip'});
 			const spy = vi.fn();
 			instance.on('grab', spy);
 
@@ -186,7 +186,7 @@ describe('drag() construct / destroy', () => {
 		});
 
 		it('is ignored by a `target` function', () => {
-			instance = drag(elm, {target: () => elm, grip: '.grip'});
+			instance = createDragger(elm, {target: () => elm, grip: '.grip'});
 			const spy = vi.fn();
 			instance.on('grab', spy);
 
@@ -201,7 +201,7 @@ describe('drag() construct / destroy', () => {
 			elm.dispatchEvent(Object.assign(new Event('pointerdown', {bubbles: true}), {button}));
 
 		it('only the given button grabs', () => {
-			instance = drag(elm, {button: 2});
+			instance = createDragger(elm, {button: 2});
 			const spy = vi.fn();
 			instance.on('grab', spy);
 
@@ -215,7 +215,7 @@ describe('drag() construct / destroy', () => {
 
 		it('applies to a `target` function too', () => {
 			const resolver = vi.fn(() => elm);
-			instance = drag(elm, {target: resolver});
+			instance = createDragger(elm, {target: resolver});
 
 			pointerdown(2);
 
@@ -225,7 +225,7 @@ describe('drag() construct / destroy', () => {
 
 	describe('.destroy()', () => {
 		it('stops emitting', () => {
-			instance = drag(elm);
+			instance = createDragger(elm);
 			const spy = vi.fn();
 			instance.on('grab', spy).on('dragEnd', spy);
 			instance.destroy();
@@ -236,7 +236,7 @@ describe('drag() construct / destroy', () => {
 		});
 
 		it('mid-drag unbinds the window listeners', () => {
-			instance = drag(elm);
+			instance = createDragger(elm);
 			const spy = vi.fn();
 			instance.on('dragging', spy).on('dragEnd', spy);
 
@@ -248,7 +248,7 @@ describe('drag() construct / destroy', () => {
 		});
 
 		it('mid-drag emits dragCancel', () => {
-			instance = drag(elm);
+			instance = createDragger(elm);
 			const spy = vi.fn();
 			instance.on('dragCancel', spy);
 
@@ -264,7 +264,7 @@ describe('drag() construct / destroy', () => {
 		const esc = () => window.dispatchEvent(new KeyboardEvent('keydown', {key: 'Escape'}));
 
 		it('cancels on Esc by default', () => {
-			instance = drag(elm);
+			instance = createDragger(elm);
 			const spy = vi.fn();
 			instance.on('dragCancel', spy);
 
@@ -275,7 +275,7 @@ describe('drag() construct / destroy', () => {
 		});
 
 		it('Esc after drop does not emit dragCancel', () => {
-			instance = drag(elm);
+			instance = createDragger(elm);
 			const spy = vi.fn();
 			instance.on('dragCancel', spy);
 
@@ -286,7 +286,7 @@ describe('drag() construct / destroy', () => {
 		});
 
 		it('`false` ignores Esc', () => {
-			instance = drag(elm, {cancelOnEsc: false});
+			instance = createDragger(elm, {cancelOnEsc: false});
 			const spy = vi.fn();
 			instance.on('dragCancel', spy);
 
@@ -302,7 +302,7 @@ describe('drag() construct / destroy', () => {
 		const cancel = () => window.dispatchEvent(new Event('pointercancel'));
 
 		it('emits dragCancel', () => {
-			instance = drag(elm);
+			instance = createDragger(elm);
 			const spy = vi.fn();
 			instance.on('dragCancel', spy);
 
@@ -313,7 +313,7 @@ describe('drag() construct / destroy', () => {
 		});
 
 		it('stops the drag', () => {
-			instance = drag(elm);
+			instance = createDragger(elm);
 			const spy = vi.fn();
 			instance.on('dragging', spy);
 
@@ -328,7 +328,7 @@ describe('drag() construct / destroy', () => {
 
 	describe('.cancelDrag()', () => {
 		it('mid-drag stops emitting', () => {
-			instance = drag(elm);
+			instance = createDragger(elm);
 			const spy = vi.fn();
 			instance.on('dragging', spy).on('dragEnd', spy);
 
@@ -340,7 +340,7 @@ describe('drag() construct / destroy', () => {
 		});
 
 		it('is chainable', () => {
-			instance = drag(elm);
+			instance = createDragger(elm);
 			mouse.down().move([5, 5]);
 			expect(instance.cancelDrag()).toBe(instance);
 			mouse.up();
@@ -348,7 +348,7 @@ describe('drag() construct / destroy', () => {
 		});
 
 		it('allows the next drag', () => {
-			instance = drag(elm);
+			instance = createDragger(elm);
 			const spy = vi.fn();
 			instance.on('dragEnd', spy);
 
@@ -361,7 +361,7 @@ describe('drag() construct / destroy', () => {
 		});
 
 		it('emits dragCancel with elm and grip', () => {
-			instance = drag(elm);
+			instance = createDragger(elm);
 			const spy = vi.fn();
 			instance.on('dragCancel', spy);
 
@@ -373,7 +373,7 @@ describe('drag() construct / destroy', () => {
 		});
 
 		it('does not emit dragCancel before dragStart', () => {
-			instance = drag(elm);
+			instance = createDragger(elm);
 			const spy = vi.fn();
 			instance.on('dragCancel', spy);
 
@@ -384,7 +384,7 @@ describe('drag() construct / destroy', () => {
 		});
 
 		it('is a no-op without an active drag', () => {
-			instance = drag(elm);
+			instance = createDragger(elm);
 			expect(() => instance.cancelDrag()).not.toThrow();
 		});
 	});

@@ -1,4 +1,4 @@
-import {drag, clamp} from '../src';
+import {createDragger, clamp} from '../src';
 import {mount, logOutput, logCancel} from './shared';
 
 const track = document.getElementById('track')!;
@@ -11,21 +11,21 @@ mount((threshold) => {
 	let startThumbLeft = '';
 	let startValue = '';
 
-	const slider = drag(track, {target: '.thumb', threshold})
-		.on('grab', (dragData) => {
-			startThumbLeft = dragData.elm.style.left;
+	const slider = createDragger(track, {target: '.thumb', threshold})
+		.on('grab', (dragState) => {
+			startThumbLeft = dragState.elm.style.left;
 			startValue = value.textContent!;
 
-			logOutput('grab', dragData);
+			logOutput('grab', dragState);
 		})
-		.on('dragging', (dragData) => {
-			const max = track.clientWidth - dragData.elm.offsetWidth;
-			dragData.elm.style.left = `${dragData.left}px`;
-			value.textContent = String(Math.round(dragData.left / max * 100));
+		.on('dragging', (dragState) => {
+			const max = track.clientWidth - dragState.elm.offsetWidth;
+			dragState.elm.style.left = `${dragState.left}px`;
+			value.textContent = String(Math.round(dragState.left / max * 100));
 
-			logOutput('dragging', dragData);
+			logOutput('dragging', dragState);
 		})
-		.on('dragEnd', (dragData) => logOutput('dragEnd', dragData))
+		.on('dragEnd', (dragState) => logOutput('dragEnd', dragState))
 		.on('dragCancel', ({elm}) => {
 			elm.style.left = startThumbLeft;
 			value.textContent = startValue;
@@ -35,19 +35,19 @@ mount((threshold) => {
 
 	let startHeight = 0;
 
-	const split = drag(splitter, {threshold})
-		.on('grab', (dragData) => {
+	const split = createDragger(splitter, {threshold})
+		.on('grab', (dragState) => {
 			startHeight = topPane.offsetHeight;
 
-			logOutput('grab', dragData);
+			logOutput('grab', dragState);
 		})
-		.on('dragging', (dragData) => {
+		.on('dragging', (dragState) => {
 			const max = panes.clientHeight - splitter.offsetHeight - 30;
-			topPane.style.height = `${clamp(startHeight + dragData.dy, 30, max)}px`;
+			topPane.style.height = `${clamp(startHeight + dragState.dy, 30, max)}px`;
 
-			logOutput('dragging', dragData);
+			logOutput('dragging', dragState);
 		})
-		.on('dragEnd', (dragData) => logOutput('dragEnd', dragData))
+		.on('dragEnd', (dragState) => logOutput('dragEnd', dragState))
 		.on('dragCancel', ({elm}) => {
 			topPane.style.height = `${startHeight}px`;
 

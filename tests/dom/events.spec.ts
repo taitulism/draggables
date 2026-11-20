@@ -1,12 +1,12 @@
 import {beforeAll, beforeEach, afterEach, afterAll, describe, it, expect, vi} from 'vitest';
-import {drag, type DragInstance} from '../../src';
+import {createDragger, type Dragger} from '../../src';
 import {createContainerElm, createDraggableElm} from '../dom-utils';
 import {createMouseSimulator} from '../mouse-simulator';
 
 describe('Events', () => {
 	let elm: HTMLElement;
 	let container: HTMLElement;
-	let instance: DragInstance;
+	let instance: Dragger;
 	let mouse: ReturnType<typeof createMouseSimulator>;
 
 	beforeAll(() => {
@@ -19,7 +19,7 @@ describe('Events', () => {
 		elm = createDraggableElm();
 		container.appendChild(elm);
 		mouse.moveToElm(elm);
-		instance = drag(elm);
+		instance = createDragger(elm);
 	});
 
 	afterEach(() => {

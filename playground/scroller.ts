@@ -1,4 +1,4 @@
-import {drag} from '../src';
+import {createDragger} from '../src';
 import {mount, logOutput, logCancel} from './shared';
 
 const viewport = document.getElementById('viewport')!;
@@ -15,28 +15,28 @@ mount((threshold) => {
 	let startLeft = 0;
 	let startTop = 0;
 
-	const pan = drag(viewport, {threshold})
-		.on('grab', (dragData) => {
+	const pan = createDragger(viewport, {threshold})
+		.on('grab', (dragState) => {
 			startLeft = viewport.scrollLeft;
 			startTop = viewport.scrollTop;
 
-			logOutput('grab', dragData);
+			logOutput('grab', dragState);
 		})
-		.on('dragStart', (dragData) => {
+		.on('dragStart', (dragState) => {
 			viewport.classList.add('panning');
 
-			logOutput('dragStart', dragData);
+			logOutput('dragStart', dragState);
 		})
-		.on('dragging', (dragData) => {
-			viewport.scrollLeft = startLeft - dragData.dx;
-			viewport.scrollTop = startTop - dragData.dy;
+		.on('dragging', (dragState) => {
+			viewport.scrollLeft = startLeft - dragState.dx;
+			viewport.scrollTop = startTop - dragState.dy;
 
-			logOutput('dragging', dragData);
+			logOutput('dragging', dragState);
 		})
-		.on('dragEnd', (dragData) => {
+		.on('dragEnd', (dragState) => {
 			viewport.classList.remove('panning');
 
-			logOutput('dragEnd', dragData);
+			logOutput('dragEnd', dragState);
 		})
 		.on('dragCancel', ({elm}) => {
 			viewport.classList.remove('panning');

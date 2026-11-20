@@ -1,5 +1,5 @@
 import {Drag, type DragPosition} from '../core/Drag';
-import type {DragData, DragEventHandler, DragEventName, DragInstanceOptions, Handlers, Active} from './types';
+import type {DragState, DragEventHandler, DragEventName, DraggerOptions, Handlers, Active} from './types';
 import {
 	assertName,
 	clampMove,
@@ -12,9 +12,9 @@ import {
 	toTranslate,
 } from './helpers';
 
-export function drag<const O extends DragInstanceOptions = object> (
+export function createDragger<const O extends DraggerOptions = object> (
 	contextElm: HTMLElement,
-	opts: O & DragInstanceOptions = {} as O,
+	opts: O & DraggerOptions = {} as O,
 ) {
 	const resolve = toResolver(contextElm, opts);
 	const core = new Drag({threshold: opts.threshold});
@@ -42,7 +42,7 @@ export function drag<const O extends DragInstanceOptions = object> (
 			top: startTop + move.dy,
 			...toContainerPoints(resolved, move),
 			...toTranslate(resolved, move),
-		} as DragData<O>);
+		} as DragState<O>);
 	};
 
 	const onDown = (ev: PointerEvent) => {
@@ -144,4 +144,4 @@ export function drag<const O extends DragInstanceOptions = object> (
 	return instance;
 }
 
-export type DragInstance = ReturnType<typeof drag>
+export type Dragger = ReturnType<typeof createDragger>

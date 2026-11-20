@@ -1,6 +1,6 @@
 export type TargetResolver = (ev: PointerEvent) => HTMLElement | null
 
-export type DragInstanceOptions = {
+export type DraggerOptions = {
 	target?: string | TargetResolver
 	grip?: string
 	button?: number
@@ -26,7 +26,7 @@ type TranslateData = {
 
 type HasContainer = {container: HTMLElement | string} | {target: string} | {bound: 'pointer'}
 
-export type DragData<O extends DragInstanceOptions = DragInstanceOptions> = {
+export type DragState<O extends DraggerOptions = DraggerOptions> = {
 	ev: PointerEvent
 	elm: HTMLElement
 	grip: HTMLElement
@@ -40,10 +40,10 @@ export type DragData<O extends DragInstanceOptions = DragInstanceOptions> = {
 	& (O extends HasContainer ? ContainerData : Partial<ContainerData>)
 	& (O extends {translate: true} ? TranslateData : Partial<TranslateData>)
 
-export type DragEventHandler<O extends DragInstanceOptions = DragInstanceOptions> =
-	(dragData: DragData<O>) => void
+export type DragEventHandler<O extends DraggerOptions = DraggerOptions> =
+	(dragState: DragState<O>) => void
 
-export type Handlers<O extends DragInstanceOptions> = {
+export type Handlers<O extends DraggerOptions> = {
 	grab?: DragEventHandler<O>
 	dragStart?: DragEventHandler<O>
 	dragging?: DragEventHandler<O>
@@ -52,7 +52,7 @@ export type Handlers<O extends DragInstanceOptions> = {
 	release?: (data: Resolved) => void
 }
 
-export type DragEventName = keyof Handlers<DragInstanceOptions>
+export type DragEventName = keyof Handlers<DraggerOptions>
 
 export type Resolved = {elm: HTMLElement, grip: HTMLElement}
 

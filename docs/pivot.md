@@ -46,11 +46,11 @@ Old code only gets deleted or archived.
         - resize: `.handle` is like a grip. consider data-attr. The real issue is passing the `target` option bypasses the `draggable/grip/disabled` attrs handling, which i'm now thinking about removing completly. That's a big change and it means the user will have to write their own target resolver.
           **Resolved:** attrs dropped; `handle` option + `ev.handle`. See [Primitive](#primitive-one-contextelm--a-target-resolver).
         - i'm not loving 'drag's event shape `ev.ev`
-          **Resolved:** type renamed `DragData`, handler param `dragData` → `dragData.ev`.
+          **Resolved:** type renamed `DragState`, handler param `dragState` → `dragState.ev`.
         - resize: can escape container. how to contain?
           **Resolved:** exported `clamp(n, min, max)`. See [Clamping](#clamping).
         - axis/notes: clamp/max/containment is on `onDragging`. Add parent selector?
-          **Resolved:** ~~`dragData.clampTo(container)`~~ `container` option, element or selector. See [Clamping](#clamping).
+          **Resolved:** ~~`dragState.clampTo(container)`~~ `container` option, element or selector. See [Clamping](#clamping).
 
    6. **Recipes** — consumer-side playground examples for the deleted features. One sub-step each, approval after each:
       1. ~~moving the element (was `moveElm`)~~ **Deprecated.**
@@ -78,7 +78,7 @@ _(append decisions here as they're made, so later chats don't re-litigate them)_
   tx, ty }   // start translate + dx/dy; with `translate: true`
 ```
 
-Optional fields are typed by the options: `DragData<O>` makes them required when the matching option is passed. Exception: a `container` selector that matches nothing leaves the container fields `undefined` (see [Clamping](#clamping)).
+Optional fields are typed by the options: `DragState<O>` makes them required when the matching option is passed. Exception: a `container` selector that matches nothing leaves the container fields `undefined` (see [Clamping](#clamping)).
 
 No incremental delta (since-last-move): it bakes clamping into the state it reads next frame, and it's derivable as `dx - prevDx`.
 
@@ -88,7 +88,7 @@ Every drag starts at `dx: 0`. The old computed-`translate` read on grab goes —
 
 `relPos` is deleted — it was the accumulated CSS translate. Resolves Bug #5.
 
-`DragEventWrapper` becomes one `DragData` type for all events: `{ev, elm, handle, ...payload}`. Named `DragData`, not `DragEvent`, to avoid shadowing the DOM's global `DragEvent`, and so handler params are named `dragData` (not `ev`, which made `ev.ev`).
+`DragEventWrapper` becomes one `DragState` type for all events: `{ev, elm, handle, ...payload}`. Named `DragState`, not `DragEvent`, to avoid shadowing the DOM's global `DragEvent`, and so handler params are named `dragState` (not `ev`, which made `ev.ev`).
 
 Values are raw, not rounded. `clientX/Y` are fractional under page zoom or OS scaling; rounding is the consumer's call.
 
@@ -128,7 +128,7 @@ No id — the consumer reads whatever it needs off the element. Consumers derive
 
 
 ### Clamping
-- `container` option — `drag(el, {container})`. `dragData.dx`/`dy` arrive clamped so the dragged element stays inside `container`'s padding box. For moving things: notes, a slider thumb. Works with `left`/`top` and `translate` alike, since it's a delta.
+- `container` option — `drag(el, {container})`. `dragState.dx`/`dy` arrive clamped so the dragged element stays inside `container`'s padding box. For moving things: notes, a slider thumb. Works with `left`/`top` and `translate` alike, since it's a delta.
 - `instance.refreshContainerBounds()` — re-reads the container's rect mid-drag (scroll, resize).
   No-op without an active drag.
 - `bound: 'pointer'` option — clamps the pointer instead of the element's box, and adds `containerX/Y` / `startContainerX/Y` (pointer relative to the container). Without `container`, the container is the dragged element itself. For drawing and resizing: a selection rect, a gesture line, resize handles.
@@ -137,7 +137,7 @@ No id — the consumer reads whatever it needs off the element. Consumers derive
 
 `container` is an element or a selector (matched against the dragged element's ancestors). No match → a `console.warn` on grab, and the unclamped value.
 
-Rects are cached on grab — the dragged element's and the container's — so moves do no DOM reads (a rect read after the consumer writes `left`/`top` forces a reflow per move). The dragged element is never re-measured mid-drag: its rect would include the movement. One container per drag; to span several, use their common parent. `dragData.clampTo()` and `clampPointTo()` are removed.
+Rects are cached on grab — the dragged element's and the container's — so moves do no DOM reads (a rect read after the consumer writes `left`/`top` forces a reflow per move). The dragged element is never re-measured mid-drag: its rect would include the movement. One container per drag; to span several, use their common parent. `dragState.clampTo()` and `clampPointTo()` are removed.
 
 
 #### ~~Known bug: `clampTo` with a container that isn't the positioning parent~~ **Fixed** by the `container` option
@@ -300,17 +300,11 @@ Not ported:
 
 TODOs
 -----
-* ~~Dropzones: not in scope.~~
-* extend DragData? (e.g. `distance` field)
-* ctxElm selector (multi?)
-* multiple targets?
-* dragData to container ctx, container elms?
+* ~~Dropzones:~~ not in scope.
+* ~~ctxElm selector (multi?)~~ rare case
 * compare to others
-* naming stuff:
-  - DragInstance (docs+code)
-  - drag() -> dragSetup
-  - draggables -> dragger? createDragger/dragger.on('dragStart'...)
-  - DragData to DragState?  
+* extend DragData? (e.g. `distance` field)
+* ~~multiple target selectors (array) and dragData.selector?~~ consumer can pass `traget: '.aaa, .bbb'` and check `elm.matches('.aaa')` in event handlers. 
 * multiple event listeners (EventEmitter like)
 * TBD (inconclusive, keeping as-is): First move past the threshold fires only `dragStart`, not `dragging`. Fire both? fire `dragging` with a `firstMove` bool?
 

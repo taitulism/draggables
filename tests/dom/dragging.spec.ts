@@ -1,12 +1,12 @@
 import {beforeAll, beforeEach, afterEach, afterAll, describe, it, expect, vi} from 'vitest';
-import {drag, type DragInstance} from '../../src';
+import {createDragger, type Dragger} from '../../src';
 import {createContainerElm, createDraggableElm} from '../dom-utils';
 import {createMouseSimulator} from '../mouse-simulator';
 
 describe('Dragging Around', () => {
 	let elm: HTMLElement;
 	let container: HTMLElement;
-	let instance: DragInstance;
+	let instance: Dragger;
 	let mouse: ReturnType<typeof createMouseSimulator>;
 
 	beforeAll(() => {
@@ -19,7 +19,7 @@ describe('Dragging Around', () => {
 		elm = createDraggableElm();
 		container.appendChild(elm);
 		mouse.moveToElm(elm);
-		instance = drag(elm);
+		instance = createDragger(elm);
 	});
 
 	afterEach(() => {
@@ -68,7 +68,7 @@ describe('Dragging Around', () => {
 
 		it('`threshold` sets the start distance', () => {
 			instance.destroy();
-			instance = drag(elm, {threshold: 10});
+			instance = createDragger(elm, {threshold: 10});
 			const spy = vi.fn();
 			instance.on('dragStart', spy);
 

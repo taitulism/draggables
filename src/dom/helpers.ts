@@ -1,6 +1,6 @@
 import type {DragPosition} from '../core/Drag';
 import {clamp} from '../utils/clamp';
-import type {Active, BBox, DragEventName, DragInstanceOptions, Point, Resolved} from './types';
+import type {Active, BBox, DragEventName, DraggerOptions, Point, Resolved} from './types';
 
 export const EVENT_NAMES: DragEventName[] = ['grab', 'dragStart', 'dragging', 'dragEnd', 'dragCancel', 'release'];
 
@@ -16,7 +16,7 @@ export const closestIn = (contextElm: HTMLElement, from: EventTarget | null, sel
 	return elm && contextElm.contains(elm) ? elm : null;
 };
 
-export const toResolver = (contextElm: HTMLElement, opts: DragInstanceOptions) => {
+export const toResolver = (contextElm: HTMLElement, opts: DraggerOptions) => {
 	const {target, grip, button = 0} = opts;
 
 	return (ev: PointerEvent): Resolved | null => {
@@ -42,7 +42,7 @@ export const toResolver = (contextElm: HTMLElement, opts: DragInstanceOptions) =
 export const resolveContainer = (
 	contextElm: HTMLElement,
 	elm: HTMLElement,
-	{container, target, bound}: DragInstanceOptions,
+	{container, target, bound}: DraggerOptions,
 ) => {
 	if (typeof container === 'string') {
 		const found = elm.parentElement?.closest<HTMLElement>(container) || null;
@@ -77,7 +77,7 @@ export const measureBBox = (box: HTMLElement): BBox => {
 export const measureClampBox = (
 	elm: HTMLElement,
 	ev: PointerEvent,
-	bound: DragInstanceOptions['bound'],
+	bound: DraggerOptions['bound'],
 ): BBox => {
 	const {clientX: x, clientY: y} = ev;
 

@@ -1,4 +1,4 @@
-import {drag} from '../src';
+import {createDragger} from '../src';
 import {mount, logOutput, logCancel} from './shared';
 
 const canvas = document.getElementById('canvas')!;
@@ -9,28 +9,28 @@ clearCanvasBtn.addEventListener('click', () => canvas.replaceChildren());
 mount((threshold) => {
 	let rect: HTMLElement;
 
-	const draw = drag(canvas, {threshold, bound: 'pointer'})
-		.on('grab', (dragData) => logOutput('grab', dragData))
-		.on('dragStart', (dragData) => {
+	const draw = createDragger(canvas, {threshold, bound: 'pointer'})
+		.on('grab', (dragState) => logOutput('grab', dragState))
+		.on('dragStart', (dragState) => {
 			rect = document.createElement('div');
 			rect.className = 'rect drawing';
 			canvas.append(rect);
 
-			logOutput('dragStart', dragData);
+			logOutput('dragStart', dragState);
 		})
-		.on('dragging', (dragData) => {
-			const {startContainerX, startContainerY, containerX, containerY} = dragData;
+		.on('dragging', (dragState) => {
+			const {startContainerX, startContainerY, containerX, containerY} = dragState;
 			rect.style.left = `${Math.min(startContainerX, containerX)}px`;
 			rect.style.top = `${Math.min(startContainerY, containerY)}px`;
 			rect.style.width = `${Math.abs(containerX - startContainerX)}px`;
 			rect.style.height = `${Math.abs(containerY - startContainerY)}px`;
 
-			logOutput('dragging', dragData);
+			logOutput('dragging', dragState);
 		})
-		.on('dragEnd', (dragData) => {
+		.on('dragEnd', (dragState) => {
 			rect.classList.remove('drawing');
 
-			logOutput('dragEnd', dragData);
+			logOutput('dragEnd', dragState);
 		})
 		.on('dragCancel', ({elm}) => {
 			rect.remove();

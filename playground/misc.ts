@@ -1,4 +1,4 @@
-import {drag, type DragData} from '../src';
+import {createDragger, type DragState} from '../src';
 import {mount, logOutput, logCancel, lockCursor, unlockCursor} from './shared';
 
 const fnStage = document.getElementById('fn-stage')!;
@@ -7,10 +7,10 @@ const growing = document.getElementById('growing')!;
 const nestedStage = document.getElementById('nested-stage')!;
 const outer = document.getElementById('outer')!;
 
-const move = (dragData: DragData) => {
-	dragData.elm.style.left = `${dragData.left}px`;
-	dragData.elm.style.top = `${dragData.top}px`;
-	logOutput('dragging', dragData);
+const move = (dragState: DragState) => {
+	dragState.elm.style.left = `${dragState.left}px`;
+	dragState.elm.style.top = `${dragState.top}px`;
+	logOutput('dragging', dragState);
 };
 
 const restore = (elm: HTMLElement, start: {left: string, top: string}) => {
@@ -21,12 +21,12 @@ const restore = (elm: HTMLElement, start: {left: string, top: string}) => {
 
 mount((threshold) => {
 	let start = {left: '', top: ''};
-	const grab = (dragData: DragData) => {
-		start = {left: dragData.elm.style.left, top: dragData.elm.style.top};
-		logOutput('grab', dragData);
+	const grab = (dragState: DragState) => {
+		start = {left: dragState.elm.style.left, top: dragState.elm.style.top};
+		logOutput('grab', dragState);
 	};
 
-	const fn = drag(fnStage, {
+	const fn = createDragger(fnStage, {
 		threshold,
 		target: (ev) => {
 			if (!(ev.target instanceof Element)) return null;
@@ -37,7 +37,7 @@ mount((threshold) => {
 		.on('dragging', move)
 		.on('dragCancel', ({elm}) => restore(elm, start));
 
-	const cards = drag(cardsStage, {
+	const cards = createDragger(cardsStage, {
 		threshold,
 		target: '.card',
 		grip: '.grip',
@@ -52,14 +52,14 @@ mount((threshold) => {
 			restore(elm, start);
 		});
 
-	const grow = drag(growing, {
+	const grow = createDragger(growing, {
 		threshold,
 		target: '.box',
 	})
 		.on('grab', grab)
-		.on('dragging', (dragData) => {
-			move(dragData);
-			const bottom = dragData.top + dragData.elm.offsetHeight;
+		.on('dragging', (dragState) => {
+			move(dragState);
+			const bottom = dragState.top + dragState.elm.offsetHeight;
 			if (bottom > growing.clientHeight - 10) {
 				growing.style.height = `${growing.clientHeight + 20}px`;
 				grow.refreshContainerBounds();
@@ -67,7 +67,7 @@ mount((threshold) => {
 		})
 		.on('dragCancel', ({elm}) => restore(elm, start));
 
-	const outerDrag = drag(nestedStage, {
+	const outerDrag = createDragger(nestedStage, {
 		threshold,
 		target: '#outer',
 	})
@@ -75,13 +75,13 @@ mount((threshold) => {
 		.on('dragging', move)
 		.on('dragCancel', ({elm}) => restore(elm, start));
 
-	const innerDrag = drag(outer, {
+	const innerDrag = createDragger(outer, {
 		threshold,
 		target: '.box',
 	})
-		.on('grab', (dragData) => {
-			dragData.ev.stopPropagation();
-			grab(dragData);
+		.on('grab', (dragState) => {
+			dragState.ev.stopPropagation();
+			grab(dragState);
 		})
 		.on('dragging', move)
 		.on('dragCancel', ({elm}) => restore(elm, start));

@@ -6,7 +6,7 @@ Fix: during a drag, cursor must be fixed. add a `dragging` class to <body>, with
 Note: `*` + `!important` overrides descendants' own cursors (links, buttons, etc.), which inheritance from <body> can't.
 */
 
-import {drag, measureZones, hitZone, type Zone} from '../src';
+import {createDragger, measureZones, hitZone, type Zone} from '../src';
 import {mount, logOutput, logCancel, lockCursor, unlockCursor} from './shared';
 
 const board = document.getElementById('board')!;
@@ -17,33 +17,33 @@ mount((threshold) => {
 	let start = {left: '', top: '', translate: ''};
 	let zones: Zone[] = [];
 
-	const notes = drag(board, {
+	const notes = createDragger(board, {
 		target: '.note:not(.locked)',
 		grip: '.grip, .note:not(:has(.grip))',
 		threshold,
 	})
-		.on('grab', (dragData) => {
-			start = {...start, left: dragData.elm.style.left, top: dragData.elm.style.top};
+		.on('grab', (dragState) => {
+			start = {...start, left: dragState.elm.style.left, top: dragState.elm.style.top};
 
-			logOutput('grab', dragData);
+			logOutput('grab', dragState);
 		})
-		.on('dragStart', (dragData) => {
+		.on('dragStart', (dragState) => {
 			lockCursor();
 			zones = measureZones('.trash');
-			logOutput('dragStart', dragData);
+			logOutput('dragStart', dragState);
 		})
-		.on('dragging', (dragData) => {
-			dragData.elm.style.left = `${dragData.left}px`;
-			dragData.elm.style.top = `${dragData.top}px`;
-			trash.classList.toggle('over', hitZone(zones, dragData.x, dragData.y) === trash);
+		.on('dragging', (dragState) => {
+			dragState.elm.style.left = `${dragState.left}px`;
+			dragState.elm.style.top = `${dragState.top}px`;
+			trash.classList.toggle('over', hitZone(zones, dragState.x, dragState.y) === trash);
 
-			logOutput('dragging', dragData);
+			logOutput('dragging', dragState);
 		})
-		.on('dragEnd', (dragData) => {
+		.on('dragEnd', (dragState) => {
 			unlockCursor();
 			trash.classList.remove('over');
-			if (hitZone(zones, dragData.x, dragData.y) === trash) dragData.elm.remove();
-			logOutput('dragEnd', dragData)
+			if (hitZone(zones, dragState.x, dragState.y) === trash) dragState.elm.remove();
+			logOutput('dragEnd', dragState)
 		})
 		.on('dragCancel', ({elm}) => {
 			unlockCursor();
@@ -55,18 +55,18 @@ mount((threshold) => {
 		});
 
 	// t = translate
-	const tnotes = drag(tboard, {
+	const tnotes = createDragger(tboard, {
 		target: '.note',
 		threshold,
 		translate: true,
 	})
-		.on('grab', (dragData) => {
-			start = {...start, translate: dragData.elm.style.translate};
+		.on('grab', (dragState) => {
+			start = {...start, translate: dragState.elm.style.translate};
 		})
-		.on('dragging', (dragData) => {
-			dragData.elm.style.translate = `${dragData.tx}px ${dragData.ty}px`;
+		.on('dragging', (dragState) => {
+			dragState.elm.style.translate = `${dragState.tx}px ${dragState.ty}px`;
 
-			logOutput('dragging', dragData);
+			logOutput('dragging', dragState);
 		})
 		.on('dragCancel', ({elm}) => {
 			elm.style.translate = start.translate;
