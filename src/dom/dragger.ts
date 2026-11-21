@@ -122,7 +122,7 @@ export function createDragger<const O extends DraggerOptions = object> (
 
 		refreshContainerBounds () {
 			if (active?.containerElm) active.containerBBox = measureBBox(active.containerElm);
-			
+
 			return instance;
 		},
 
@@ -133,10 +133,10 @@ export function createDragger<const O extends DraggerOptions = object> (
 			const wasDragging = core.cancel();
 
 			unbind();
-			
+
 			if (wasDragging) handlers.dragCancel?.({elm, grip});
 			handlers.release?.({elm, grip});
-			
+
 			return instance;
 		},
 

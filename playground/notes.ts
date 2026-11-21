@@ -7,17 +7,17 @@ Note: `*` + `!important` overrides descendants' own cursors (links, buttons, etc
 */
 
 import {createDragger, measureZones, hitZone, getEdgeProximity, type Zone, type DragState} from '../src';
-import {mount, logOutput, logCancel, lockCursor, unlockCursor} from './shared';
+import {logOutput, logCancel, lockCursor, unlockCursor} from './shared';
 
 const board = document.getElementById('board')!;
 const tboard = document.getElementById('tboard')!;
 const trash = board.querySelector<HTMLElement>('.trash')!;
-const near = document.getElementById('near') as HTMLSelectElement;
+const bound = document.getElementById('bound') as HTMLSelectElement;
 
 const NEAR_EDGE = 10;
 
 const markEdges = ({elm, x, y}: DragState) => {
-	const edges = near.value === 'pointer'
+	const edges = bound.value === 'pointer'
 		? getEdgeProximity(board, x, y)
 		: getEdgeProximity(board, elm.getBoundingClientRect());
 
@@ -28,72 +28,71 @@ const markEdges = ({elm, x, y}: DragState) => {
 
 const clearEdges = () => board.classList.remove('near-top', 'near-right', 'near-bottom', 'near-left');
 
-const remount = mount((threshold) => {
-	let start = {left: '', top: '', translate: ''};
-	let zones: Zone[] = [];
+let start = {left: '', top: '', translate: ''};
+let zones: Zone[] = [];
 
-	const notes = createDragger(board, {
-		target: '.note:not(.locked)',
-		grip: '.grip, .note:not(:has(.grip))',
-		bound: near.value as 'element' | 'pointer',
-		threshold,
+const createNotes = () => createDragger(board, {
+	target: '.note:not(.locked)',
+	grip: '.grip, .note:not(:has(.grip))',
+	bound: bound.value as 'element' | 'pointer',
+})
+	.on('grab', (dragState) => {
+		start = {...start, left: dragState.elm.style.left, top: dragState.elm.style.top};
+
+		logOutput('grab', dragState);
 	})
-		.on('grab', (dragState) => {
-			start = {...start, left: dragState.elm.style.left, top: dragState.elm.style.top};
-
-			logOutput('grab', dragState);
-		})
-		.on('dragStart', (dragState) => {
-			lockCursor();
-			zones = measureZones('.trash');
-			logOutput('dragStart', dragState);
-		})
-		.on('dragging', (dragState) => {
-			dragState.elm.style.left = `${dragState.left}px`;
-			dragState.elm.style.top = `${dragState.top}px`;
-			trash.classList.toggle('over', hitZone(zones, dragState.x, dragState.y) === trash);
-			markEdges(dragState);
-
-			logOutput('dragging', dragState);
-		})
-		.on('dragEnd', (dragState) => {
-			unlockCursor();
-			trash.classList.remove('over');
-			clearEdges();
-			if (hitZone(zones, dragState.x, dragState.y) === trash) dragState.elm.remove();
-			logOutput('dragEnd', dragState)
-		})
-		.on('dragCancel', ({elm}) => {
-			unlockCursor();
-			trash.classList.remove('over');
-			clearEdges();
-			elm.style.left = start.left;
-			elm.style.top = start.top;
-
-			logCancel(elm);
-		});
-
-	// t = translate
-	const tnotes = createDragger(tboard, {
-		target: '.note',
-		threshold,
-		translate: true,
+	.on('dragStart', (dragState) => {
+		lockCursor();
+		zones = measureZones('.trash');
+		logOutput('dragStart', dragState);
 	})
-		.on('grab', (dragState) => {
-			start = {...start, translate: dragState.elm.style.translate};
-		})
-		.on('dragging', (dragState) => {
-			dragState.elm.style.translate = `${dragState.tx}px ${dragState.ty}px`;
+	.on('dragging', (dragState) => {
+		dragState.elm.style.left = `${dragState.left}px`;
+		dragState.elm.style.top = `${dragState.top}px`;
+		trash.classList.toggle('over', hitZone(zones, dragState.x, dragState.y) === trash);
+		markEdges(dragState);
 
-			logOutput('dragging', dragState);
-		})
-		.on('dragCancel', ({elm}) => {
-			elm.style.translate = start.translate;
+		logOutput('dragging', dragState);
+	})
+	.on('dragEnd', (dragState) => {
+		unlockCursor();
+		trash.classList.remove('over');
+		clearEdges();
+		if (hitZone(zones, dragState.x, dragState.y) === trash) dragState.elm.remove();
+		logOutput('dragEnd', dragState)
+	})
+	.on('dragCancel', ({elm}) => {
+		unlockCursor();
+		trash.classList.remove('over');
+		clearEdges();
+		elm.style.left = start.left;
+		elm.style.top = start.top;
 
-			logCancel(elm);
-		});
+		logCancel(elm);
+	});
 
-	return [notes, tnotes];
+let notes = createNotes();
+
+bound.addEventListener('change', () => {
+	notes.destroy();
+	notes = createNotes();
 });
 
-near.addEventListener('change', remount);
+// t = translate
+createDragger(tboard, {
+	target: '.note',
+	translate: true,
+})
+	.on('grab', (dragState) => {
+		start = {...start, translate: dragState.elm.style.translate};
+	})
+	.on('dragging', (dragState) => {
+		dragState.elm.style.translate = `${dragState.tx}px ${dragState.ty}px`;
+
+		logOutput('dragging', dragState);
+	})
+	.on('dragCancel', ({elm}) => {
+		elm.style.translate = start.translate;
+
+		logCancel(elm);
+	});

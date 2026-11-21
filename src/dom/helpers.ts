@@ -2,7 +2,9 @@ import type {DragPosition} from '../core/Drag';
 import {clamp} from '../utils/clamp';
 import type {Active, BBox, DragEventName, DraggerOptions, Point, Resolved} from './types';
 
-export const EVENT_NAMES: DragEventName[] = ['grab', 'dragStart', 'dragging', 'dragEnd', 'dragCancel', 'release'];
+export const EVENT_NAMES: DragEventName[] = [
+	'grab', 'dragStart', 'dragging', 'dragEnd', 'dragCancel', 'release',
+];
 
 export const assertName = (name: string) => {
 	if (!EVENT_NAMES.includes(name as DragEventName)) throw new Error('No such event name');
@@ -96,7 +98,10 @@ export const clampMove = ({clampBox, containerBBox}: Active, pos: DragPosition):
 	};
 };
 
-export const toContainerPoints = ({startX, startY, containerElm, containerBBox}: Active, {dx, dy}: DragPosition) => {
+export const toContainerPoints = (
+	{startX, startY, containerElm, containerBBox}: Active,
+	{dx, dy}: DragPosition,
+) => {
 	if (!containerElm || !containerBBox) return {};
 
 	const startContainerX = startX - containerBBox.left;

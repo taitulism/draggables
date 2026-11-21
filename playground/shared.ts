@@ -1,9 +1,8 @@
-import type {Dragger, DragState} from '../src';
+import type {DragState} from '../src';
 
 const PAGES = ['core', 'notes', 'axis', 'resize', 'gesture', 'rect', 'scroller', 'misc'];
 
 const nav = document.getElementById('nav')!;
-const thresholdInput = document.getElementById('threshold') as HTMLInputElement;
 const clearLogBtn = document.getElementById('clear-log')!;
 const log = document.getElementById('log')!;
 
@@ -37,18 +36,4 @@ export function lockCursor () {
 
 export function unlockCursor () {
 	document.body.classList.remove('dragging');
-}
-
-export function mount (setup: (threshold: number) => Dragger[]) {
-	let instances: Dragger[] = [];
-
-	const run = () => {
-		instances.forEach((instance) => instance.destroy());
-		instances = setup(Number(thresholdInput.value));
-	};
-
-	run();
-	thresholdInput.addEventListener('change', run);
-
-	return run;
 }

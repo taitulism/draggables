@@ -2,6 +2,7 @@
 ![ts](https://badgen.net/badge/Built%20With/TypeScript/blue)
 ![Build Status](https://github.com/taitulism/draggables/actions/workflows/ci.yml/badge.svg)
 
+
 draggables
 ==========
 Event-based drag gestures.
@@ -26,7 +27,8 @@ Each drag reports where it started, where it is now, and how far it moved - You 
 	* [Dropzones](#dropzones)
 
 
-## Quick Start
+Quick Start
+-----------
 ```js
 import {createDragger} from 'draggables';
 
@@ -48,6 +50,7 @@ dragger.on('dragEnd', (dragState) => {...});
    ...and more
 */
 ```
+
 
 ### Example - dragging sticky notes on a board
 ```html
@@ -71,13 +74,15 @@ notesDragger.on('dragging', ({elm, left, top}) => {
 ```
 
 
-## Installation
+Installation
+------------
 ```sh
 $ npm install draggables
 ```
 
 
-## Setup
+Setup
+-----
 Configure what can be dragged and how it behaves.
 
 
@@ -96,9 +101,7 @@ The context element plays a different role depending on the `target` option:
 * With a `target` option, the context element is a common ancestor that delegates `pointerdown` to the matching draggable targets inside it (e.g. a board with notes on it). It's also their default dragging area boundary (see [container option](#option-container)).
 
 
-
 ### Options
-
 | Option         | Value                          | Default    |
 |----------------|--------------------------------|------------|
 | [`target`](#option-target) | `string` \| `(ev) => HTMLElement \| null` | context element |
@@ -113,8 +116,6 @@ The context element plays a different role depending on the `target` option:
 &nbsp;
 
 
-
-<!-- target -->
 ### Option: `target`
 What to drag. A selector or a function. When omitted the context element becomes the target.
 
@@ -152,8 +153,6 @@ createDragger(board, {
 ```
 
 
-
-<!-- grip -->
 ### Option: `grip`
 The handle selector. When set, a drag only starts on a grip.
 
@@ -166,7 +165,6 @@ createDragger(board, {target: '.card', grip: '.card-header'});
 ```
 
 
-<!-- container -->
 ### Option: `container`
 An element or a selector. The area the dragged element (or the pointer, [see `bound` option](#option-bound)) must stay in.
 A selector picks the nearest ancestor of the dragged element that matches it.
@@ -182,8 +180,6 @@ createDragger(slider, {target: '.thumb', container: '.track'});
 A selector that matches nothing logs a warning and the values arrive unclamped.
 
 
-
-<!-- bound -->
 ### Option: `bound`
 What to keep inside the container:
 
@@ -207,7 +203,6 @@ bound: 'element'                  bound: 'pointer'
 ```
 
 
-<!-- button -->
 ### Option: `button`
 The mouse button that starts a drag (`0` left, `1` middle, `2` right). Applies to every kind of `target`. Default: `0`.
 
@@ -217,7 +212,6 @@ createDragger(surface, {button: 2});
 ```
 
 
-<!-- translate -->
 ### Option: `translate`
 Default: `false`. Use it to move an element with CSS `translate`. Your handlers get `tx`/`ty`, the element's new translate (its translate at grab plus `dx`/`dy`).
 
@@ -231,7 +225,6 @@ createDragger(board, {target: '.card', translate: true})
 ```
 
 
-<!-- cancelOnEsc -->
 ### Option: `cancelOnEsc`
 Pressing Esc mid-drag fires `dragCancel`. Default: `true`.
 
@@ -240,7 +233,6 @@ createDragger(board, {target: '.card', cancelOnEsc: false});
 ```
 
 
-<!-- threshold -->
 ### Option: `threshold`
 Number of pixels the pointer must travel before `dragStart` fires. Below it, a release is a plain click (no `dragEnd`). Default: `3`.
 
@@ -252,10 +244,13 @@ createDragger(list, {target: '.item', threshold: 10});
 
 ---------------------------------------------------------
 
-## Events
+
+Events
+------
 Calling `createDragger()` returns a `Dragger` instance.
 
 A dragger instance emits an event at each stage of the gesture. Each event carries a [`DragState`](#drag-state) object with coordinates, relative positions and more - everything you need to update your DOM.
+
 
 ### Gesture Lifecycle
 | Event          | Fires                                                                 | Use for |
@@ -289,6 +284,7 @@ createDragger(board)
    .on('dragStart', doSomethingElse) // <-- by this (same event)
 ```
 
+
 ### Drag State
 Each event handler gets a `DragState` object describing the drag at that moment. For example:
 
@@ -317,13 +313,13 @@ createDragger(board, {target: '.card'})
 > In TypeScript, optional fields appear only when you set the option that enables them (e.g. `tx`/`ty` with `translate: true`).
 
 
-
 ### Other Methods
 A `Dragger` also has the following methods:
 
 * [.cancelDrag()](#canceldrag)
 * [.refreshContainerBounds()](#refreshcontainerbounds)
 * [.destroy()](#destroy)
+
 
 #### **.cancelDrag()**
 Aborts the current drag. Fires `dragCancel` if the threshold was crossed. No-op when idle. This is what Esc calls when pressed (see [`cancelOnEsc` option](#option-cancelonesc)).
@@ -358,7 +354,9 @@ useEffect(() => {
 }, []);
 ```
 
-## Caveats
+
+Caveats
+-------
 ### Nested Context Elements
 Nested context elements both drag. To drag only the inner one, stop propagation on its `grab`:
 
@@ -366,8 +364,10 @@ Nested context elements both drag. To drag only the inner one, stop propagation 
 createDragger(inner).on('grab', ({ev}) => ev.stopPropagation());
 ```
 
+
 ### Touch
 Set `touch-action: none` on your draggables (or grips). Without it, the browser claims touch drags as page scrolls.
+
 
 ### Images & Links
 Dragging an `<img>` or `<a>` starts the browser's native drag, which cancels yours. Either set `draggable="false"` on them (or CSS `-webkit-user-drag: none`), or prevent it for the whole context element:
@@ -382,6 +382,7 @@ board.addEventListener('dragstart', (ev) => ev.preventDefault());
 
 If the browser cancels the pointer (`pointercancel`), the drag ends with `dragCancel`.
 
+
 ### Text Selection
 Dragging selects text. Block it with CSS (`.card { user-select: none; }`), or only while dragging:
 
@@ -393,13 +394,17 @@ createDragger(board, {target: '.card'})
 
 -----
 
-## Helper Utils
+
+Helper Utils
+------------
 Small functions for common drag tasks, so you don't have to write them yourself. Not required, just convenient. 
+
 
 ### Clamp
 A trivial one-liner, exported for everything `container` doesn't cover.
 
 * `clamp(n, min, max)` - returns `n` limited to the `min`-`max` range.
+
 
 #### Example
 Limiting a resizable panel's height:
@@ -447,6 +452,7 @@ Find which of your dropzones (elements matching a selector you pass) is under th
 
 Pass the dragged element as `exclude` so it doesn't count as a zone. With nested zones, the innermost wins.
 
+
 #### Measure Once
 Measure all zones once when the drag starts (`measureZones`), then check the pointer against them on each move (`hitZone`). Measure again if zones move or show up mid-drag.
 
@@ -460,6 +466,7 @@ createDragger(board, {target: '.card'})
       if (hitZone(zones, x, y)) elm.remove();
    });
 ```
+
 
 #### Check Live
 Ask the browser what's under the pointer on each move (`findDropzone`). Slower, but it respects `z-index`. Calling it only on `dragEnd` is cheap. On every move it may cause jank on heavy pages.

@@ -113,7 +113,9 @@ describe('Events', () => {
 
 		it('emits `release` after `dragCancel`', () => {
 			const calls: string[] = [];
-			instance.on('dragCancel', () => calls.push('dragCancel')).on('release', () => calls.push('release'));
+			instance
+				.on('dragCancel', () => calls.push('dragCancel'))
+				.on('release', () => calls.push('release'));
 
 			mouse.down().move([5, 5]);
 			instance.cancelDrag();

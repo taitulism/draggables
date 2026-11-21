@@ -300,8 +300,6 @@ Not ported:
 
 TODOs
 -----
-* readme title newline spacing
-* remove threshold from PGs except core
 * auto-scroll: export `getEdgeProximity(container, rect)` (pointer = zero-size rect). Support bound: element|pointer
 * long-press delay: `delay` option (+ `tolerance` px, maybe touch-only) so touch pages can still scroll
 * dragState.container.x?
