@@ -116,7 +116,7 @@ Playground: trash zone on the notes board.
 
 A `dropzone` selector option, not an attribute (no magic attrs — see [Primitive](#primitive-one-contextelm--a-target-resolver)). `dragEnd` reports the target like `dragging`, re-tested at the pointerup position rather than reusing the last move's.
 
-Strategy: `'pointer' | 'overlap'` (option name open). Opt-in — no `dropzone` selector means no hit-testing and no `dropzone` field, so resize and scroller consumers pay nothing for a DOM read per move.
+Strategy: `'pointer' | 'overlap'` (option name open). Opt-in — no `dropzone` selector means no hit-testing and no `dropzone` field, so resize and viewport-pan consumers pay nothing for a DOM read per move.
 
 - `pointer` — `elementsFromPoint(x, y)` (plural), first `dropzone` match that isn't the dragged element. Plural avoids mutating `pointer-events` on the dragged element, and survives consumer overlays sitting on top.
 - `overlap` — dragged element's box against each dropzone; largest overlap area wins (not DOM order — that would let a 2px overlap earlier in the markup beat the intended zone).
@@ -240,7 +240,7 @@ Zeroing them, or re-origining at the break, trades that invisible jump for a per
 One primitive for every case (notes, kanban, resize, mouse gesture, rect drawing). Free-hand drawing is out of scope; rect drawing is in — it needs only the start and current point, not a path.
 
 ```js
-drag(canvas)                                    // contextElm is the dragged thing (rect, scroller, splitter)
+drag(canvas)                                    // contextElm is the dragged thing (rect, viewport-pan, splitter)
 drag(area, {button: 2})                         // gesture
 drag(board, {target: '.note:not(.locked)', handle: '.grip'})
 drag(panel, {handle: '[data-side]'})            // resize; reads ev.handle
@@ -300,7 +300,6 @@ Not ported:
 
 TODOs
 -----
-* dragState.container.x?
 * add DragState `rawDx`/`rawDy` (unclamped) for rubber-band, auto-scroll speed
 * DragState velocity (`vx`, `vy`) — flick/throw; consumers can't derive it without tracking state
 * long-press delay: `delay` option (+ `tolerance` px, maybe touch-only) so touch pages can still scroll

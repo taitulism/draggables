@@ -44,7 +44,6 @@
 <body>
 	<nav id="nav"></nav>
 	<div id="controls">
-		<button id="clear-log">Clear log</button>
 	</div>
 
 	<h4>target as a function (skips .locked)</h4>
@@ -71,7 +70,10 @@
 			<div class="box" data-name="inner" style="left: 10px; top: 30px">inner</div>
 		</div>
 	</div>
-	<div id="log"></div>
+	<aside id="log-panel">
+		<button id="clear-log">Clear log</button>
+		<div id="log"></div>
+	</aside>
 
 	<script type="module" src="./misc.ts"></script>
 </body>

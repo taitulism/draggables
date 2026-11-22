@@ -37,7 +37,6 @@
 <body>
 	<nav id="nav"></nav>
 	<div id="controls">
-		<button id="clear-log">Clear log</button>
 	</div>
 	<div class="stage">
 		<div id="panel">
@@ -52,7 +51,10 @@
 			<div data-side="sw"></div>
 		</div>
 	</div>
-	<div id="log"></div>
+	<aside id="log-panel">
+		<button id="clear-log">Clear log</button>
+		<div id="log"></div>
+	</aside>
 
 	<script type="module" src="./resize.ts"></script>
 </body>

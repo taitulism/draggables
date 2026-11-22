@@ -1,7 +1,7 @@
 <html>
 <head>
 	<meta charset="UTF-8">
-	<title>scroller — createDragger() Playground</title>
+	<title>viewport-pan — createDragger() Playground</title>
 	<link rel="stylesheet" href="./shared.css" />
 	<style type="text/css">
 		#viewport {
@@ -23,26 +23,30 @@
 
 		.tile {
 			height: 120px;
-			background-color: #f5d76e;
+			background-color: #ffe066;
+			border: 1px solid #999;
+			box-shadow: 0 2px 6px #0003;
 			display: flex;
 			align-items: center;
 			justify-content: center;
 		}
 
-		.tile:nth-child(3n) { background-color: #9fd8a0 }
-		.tile:nth-child(3n + 1) { background-color: #8fc1ec }
+		.tile:nth-child(3n) { background-color: #ff9a6b }
+		.tile:nth-child(3n + 1) { background-color: #74c0fc }
 	</style>
 </head>
 <body>
 	<nav id="nav"></nav>
 	<div id="controls">
-		<button id="clear-log">Clear log</button>
 	</div>
 	<div id="viewport" class="stage">
 		<div id="content"></div>
 	</div>
-	<div id="log"></div>
+	<aside id="log-panel">
+		<button id="clear-log">Clear log</button>
+		<div id="log"></div>
+	</aside>
 
-	<script type="module" src="./scroller.ts"></script>
+	<script type="module" src="./viewport-pan.ts"></script>
 </body>
 </html>

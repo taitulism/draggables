@@ -1,6 +1,6 @@
 import type {DragState} from '../src';
 
-const PAGES = ['core', 'notes', 'axis', 'resize', 'gesture', 'rect', 'scroller', 'misc'];
+const PAGES = ['core', 'notes', 'axis', 'resize', 'gesture', 'rect', 'viewport-pan', 'misc'];
 
 const nav = document.getElementById('nav')!;
 const clearLogBtn = document.getElementById('clear-log')!;

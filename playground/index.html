@@ -23,14 +23,16 @@
 	<nav id="nav"></nav>
 	<div id="controls">
 		<label>threshold <input id="threshold" type="number" value="3" min="0" style="width: 60px" /></label>
-		<button id="clear-log">Clear log</button>
 		<span>Esc cancels</span>
 		<span id="status">idle</span>
 	</div>
 	<div id="stage" class="stage">
 		<div id="box">drag me</div>
 	</div>
-	<div id="log"></div>
+	<aside id="log-panel">
+		<button id="clear-log">Clear log</button>
+		<div id="log"></div>
+	</aside>
 
 	<script type="module" src="./core.ts"></script>
 </body>

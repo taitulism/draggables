@@ -27,13 +27,15 @@
 <body>
 	<nav id="nav"></nav>
 	<div id="controls">
-		<button id="clear-log">Clear log</button>
 	</div>
 	<div id="area" class="stage">
 		<svg id="trail"><line id="line" stroke="#6850d4" stroke-width="3" /></svg>
 		<div id="result"></div>
 	</div>
-	<div id="log"></div>
+	<aside id="log-panel">
+		<button id="clear-log">Clear log</button>
+		<div id="log"></div>
+	</aside>
 
 	<script type="module" src="./gesture.ts"></script>
 </body>

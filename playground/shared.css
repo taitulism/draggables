@@ -42,24 +42,40 @@ body {
 .stage {
 	position: relative;
 	height: 300px;
-	background-color: #c9c9c9;
+	background-color: #dadada;
 	touch-action: none;
 }
 
-body:has(#log) {
-	padding-right: calc(30% + 20px);
+html:has(#log-panel) {
+	height: 100%;
+	overflow: hidden;
 }
 
-#log {
+body:has(#log-panel) {
+	height: 100%;
+	width: 70%;
+	overflow: auto;
+}
+
+#log-panel {
 	position: fixed;
 	top: 0;
 	right: 0;
 	bottom: 0;
 	width: 30%;
-	overflow: auto;
-	white-space: pre;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 8px;
 	background-color: #f3f3f3;
 	padding: 8px;
+}
+
+#log {
+	flex: 1;
+	align-self: stretch;
+	overflow: auto;
+	white-space: pre;
 }
 
 body.dragging * { cursor: grab !important }
