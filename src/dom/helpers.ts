@@ -1,6 +1,6 @@
 import type {DragPosition} from '../core/Drag';
 import {clamp} from '../utils/clamp';
-import type {Active, BBox, DragEventName, DraggerOptions, Point, Resolved} from './types';
+import type {Active, BBox, DragEventName, DraggerOptions, Point, DragTarget} from './types';
 
 export const EVENT_NAMES: DragEventName[] = [
 	'grab', 'dragStart', 'dragging', 'dragEnd', 'dragCancel', 'release',
@@ -18,10 +18,10 @@ export const closestIn = (contextElm: HTMLElement, from: EventTarget | null, sel
 	return elm && contextElm.contains(elm) ? elm : null;
 };
 
-export const toResolver = (contextElm: HTMLElement, opts: DraggerOptions) => {
+export const createTargetResolver = (contextElm: HTMLElement, opts: DraggerOptions) => {
 	const {target, grip, button = 0} = opts;
 
-	return (ev: PointerEvent): Resolved | null => {
+	return (ev: PointerEvent): DragTarget | null => {
 		if (ev.button !== button) return null;
 
 		if (typeof target === 'function') {

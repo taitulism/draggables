@@ -8,7 +8,7 @@ import {
 	readTranslate,
 	resolveContainer,
 	toContainerPoints,
-	toResolver,
+	createTargetResolver,
 	toTranslate,
 } from './helpers';
 
@@ -16,7 +16,7 @@ export function createDragger<const O extends DraggerOptions = object> (
 	contextElm: HTMLElement,
 	opts: O & DraggerOptions = {} as O,
 ) {
-	const resolve = toResolver(contextElm, opts);
+	const resolveTarget = createTargetResolver(contextElm, opts);
 	const core = new Drag({threshold: opts.threshold});
 	let handlers: Handlers<O> = {};
 	let active: Active | undefined;
@@ -29,9 +29,9 @@ export function createDragger<const O extends DraggerOptions = object> (
 		active = undefined;
 	};
 
-	const emit = (name: DragEventName, ev: PointerEvent, resolved: Active, pos: DragPosition) => {
-		const {elm, grip, startLeft, startTop} = resolved;
-		const move = clampMove(resolved, pos);
+	const emit = (name: DragEventName, ev: PointerEvent, activeDrag: Active, pos: DragPosition) => {
+		const {elm, grip, startLeft, startTop} = activeDrag;
+		const move = clampMove(activeDrag, pos);
 
 		(handlers[name] as DragEventHandler<O> | undefined)?.({
 			ev,
@@ -41,18 +41,18 @@ export function createDragger<const O extends DraggerOptions = object> (
 			dy: move.dy,
 			left: startLeft + move.dx,
 			top: startTop + move.dy,
-			...toContainerPoints(resolved, move),
-			...toTranslate(resolved, move),
+			...toContainerPoints(activeDrag, move),
+			...toTranslate(activeDrag, move),
 		} as DragState<O>);
 	};
 
 	const onDown = (ev: PointerEvent) => {
 		if (active) return;
 
-		const resolved = resolve(ev);
-		if (!resolved) return;
+		const dragTarget = resolveTarget(ev);
+		if (!dragTarget) return;
 
-		const {elm, grip} = resolved;
+		const {elm, grip} = dragTarget;
 		core.start(ev.clientX, ev.clientY);
 		const containerElm = resolveContainer(contextElm, elm, opts);
 		active = {
@@ -90,11 +90,11 @@ export function createDragger<const O extends DraggerOptions = object> (
 	const onUp = (ev: PointerEvent) => {
 		if (!active || ev.pointerId !== active.pointerId) return;
 
-		const resolved = active;
+		const activeDrag = active;
 		const pos = core.end(ev.clientX, ev.clientY);
 		unbind();
-		if (pos) emit('dragEnd', ev, resolved, pos);
-		handlers.release?.({elm: resolved.elm, grip: resolved.grip});
+		if (pos) emit('dragEnd', ev, activeDrag, pos);
+		handlers.release?.({elm: activeDrag.elm, grip: activeDrag.grip});
 	};
 
 	const onCancel = () => {

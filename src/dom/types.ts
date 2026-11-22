@@ -40,19 +40,19 @@ export type Handlers<O extends DraggerOptions> = {
 	dragStart?: DragEventHandler<O>
 	dragging?: DragEventHandler<O>
 	dragEnd?: DragEventHandler<O>
-	dragCancel?: (data: Resolved) => void
-	release?: (data: Resolved) => void
+	dragCancel?: (data: DragTarget) => void
+	release?: (data: DragTarget) => void
 }
 
 export type DragEventName = keyof Handlers<DraggerOptions>
 
-export type Resolved = {elm: HTMLElement, grip: HTMLElement}
+export type DragTarget = {elm: HTMLElement, grip: HTMLElement}
 
 export type BBox = {left: number, top: number, right: number, bottom: number}
 
 export type Point = {x: number, y: number}
 
-export type Active = Resolved & {
+export type Active = DragTarget & {
 	pointerId: number
 	startX: number
 	startY: number
