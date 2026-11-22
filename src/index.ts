@@ -9,5 +9,6 @@ export type {
 	DragState,
 	DragEventHandler,
 	DragEventName,
+	ReleaseData,
 	TargetResolver,
 } from './dom/types';

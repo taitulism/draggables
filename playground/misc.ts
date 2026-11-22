@@ -1,4 +1,4 @@
-import {createDragger, autoScroll, type DragState} from '../src';
+import {createDragger, autoScroll, type DragState, type ReleaseData} from '../src';
 import {logOutput, logCancel, lockCursor, unlockCursor} from './shared';
 
 const fnStage = document.getElementById('fn-stage')!;
@@ -13,17 +13,13 @@ const move = (dragState: DragState) => {
 	logOutput('dragging', dragState);
 };
 
-const restore = (elm: HTMLElement, start: {left: string, top: string}) => {
-	elm.style.left = start.left;
-	elm.style.top = start.top;
+const restore = ({elm, startLeft, startTop}: ReleaseData) => {
+	elm.style.left = `${startLeft}px`;
+	elm.style.top = `${startTop}px`;
 	logCancel(elm);
 };
 
-let start = {left: '', top: ''};
-const grab = (dragState: DragState) => {
-	start = {left: dragState.elm.style.left, top: dragState.elm.style.top};
-	logOutput('grab', dragState);
-};
+const grab = (dragState: DragState) => logOutput('grab', dragState);
 
 createDragger(fnStage, {
 	target: (ev) => {
@@ -34,7 +30,7 @@ createDragger(fnStage, {
 })
 	.on('grab', grab)
 	.on('dragging', move)
-	.on('dragCancel', ({elm}) => restore(elm, start));
+	.on('dragCancel', restore);
 
 createDragger(cardsStage, {
 	target: '.card',
@@ -46,9 +42,9 @@ createDragger(cardsStage, {
 	.on('dragStart', () => lockCursor())
 	.on('dragging', move)
 	.on('dragEnd', () => unlockCursor())
-	.on('dragCancel', ({elm}) => {
+	.on('dragCancel', (data) => {
 		unlockCursor();
-		restore(elm, start);
+		restore(data);
 	});
 
 const growScroller = autoScroll(document.body);
@@ -67,7 +63,7 @@ const grow = createDragger(growing, {
 			grow.refreshContainerBounds().update();
 		}
 	})
-	.on('dragCancel', ({elm}) => restore(elm, start))
+	.on('dragCancel', restore)
 	.on('release', () => growScroller.stop());
 
 createDragger(nestedStage, {
@@ -76,7 +72,7 @@ createDragger(nestedStage, {
 })
 	.on('grab', grab)
 	.on('dragging', move)
-	.on('dragCancel', ({elm}) => restore(elm, start));
+	.on('dragCancel', restore);
 
 createDragger(outer, {
 	target: '.box',
@@ -87,5 +83,4 @@ createDragger(outer, {
 		grab(dragState);
 	})
 	.on('dragging', move)
-	.on('dragCancel', ({elm}) => restore(elm, start));
-
+	.on('dragCancel', restore);

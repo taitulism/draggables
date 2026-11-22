@@ -1,5 +1,5 @@
 import {Drag, type DragPosition} from '../core/Drag';
-import type {DragState, DragEventHandler, DragEventName, DraggerOptions, Handlers, Active} from './types';
+import type {DragState, DragEventHandler, DragEventName, DraggerOptions, Handlers, Active, ReleaseData} from './types';
 import {
 	assertName,
 	clampMove,
@@ -54,6 +54,14 @@ export function createDragger<const O extends DraggerOptions = object> (
 		} as DragState<O>);
 	};
 
+	const toReleaseData = ({elm, grip, startLeft, startTop, startTranslate}: Active) => ({
+		elm,
+		grip,
+		startLeft,
+		startTop,
+		...(startTranslate && {startTx: startTranslate.x, startTy: startTranslate.y}),
+	} as ReleaseData<O>);
+
 	const onDown = (ev: PointerEvent) => {
 		if (active) return;
 
@@ -107,7 +115,7 @@ export function createDragger<const O extends DraggerOptions = object> (
 		const pos = core.end(ev.clientX, ev.clientY);
 		unbind();
 		if (pos) emit('dragEnd', ev, activeDrag, pos);
-		handlers.release?.({elm: activeDrag.elm, grip: activeDrag.grip});
+		handlers.release?.(toReleaseData(activeDrag));
 	};
 
 	const onScroll = () => {
@@ -156,13 +164,13 @@ export function createDragger<const O extends DraggerOptions = object> (
 		cancelDrag () {
 			if (!active) return instance;
 
-			const {elm, grip} = active;
+			const data = toReleaseData(active);
 			const wasDragging = core.cancel();
 
 			unbind();
 
-			if (wasDragging) handlers.dragCancel?.({elm, grip});
-			handlers.release?.({elm, grip});
+			if (wasDragging) handlers.dragCancel?.(data);
+			handlers.release?.(data);
 
 			return instance;
 		},

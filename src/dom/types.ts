@@ -42,9 +42,20 @@ export type Handlers<O extends DraggerOptions> = {
 	dragStart?: DragEventHandler<O>
 	dragging?: DragEventHandler<O>
 	dragEnd?: DragEventHandler<O>
-	dragCancel?: (data: DragTarget) => void
-	release?: (data: DragTarget) => void
+	dragCancel?: (data: ReleaseData<O>) => void
+	release?: (data: ReleaseData<O>) => void
 }
+
+type StartTranslateData = {
+	startTx: number
+	startTy: number
+}
+
+export type ReleaseData<O extends DraggerOptions = DraggerOptions> = DragTarget & {
+	startLeft: number
+	startTop: number
+}
+	& (O extends {translate: true} ? StartTranslateData : Partial<StartTranslateData>)
 
 export type DragEventName = keyof Handlers<DraggerOptions>
 

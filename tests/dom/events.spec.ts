@@ -103,7 +103,51 @@ describe('Events', () => {
 			mouse.down().up();
 
 			expect(spy).toHaveBeenCalledTimes(1);
-			expect(spy).toHaveBeenCalledWith({elm, grip: elm});
+			expect(spy).toHaveBeenCalledWith({elm, grip: elm, startLeft: elm.offsetLeft, startTop: elm.offsetTop});
+		});
+
+		it('passes the start position to `dragCancel` and `release`', () => {
+			const cancelSpy = vi.fn();
+			const releaseSpy = vi.fn();
+			instance.on('dragCancel', cancelSpy).on('release', releaseSpy);
+
+			const startLeft = elm.offsetLeft;
+			const startTop = elm.offsetTop;
+			mouse.down().move([20, 30]);
+			elm.style.left = `${startLeft + 20}px`;
+			elm.style.top = `${startTop + 30}px`;
+			instance.cancelDrag();
+			mouse.up();
+
+			const expected = {elm, grip: elm, startLeft, startTop};
+			expect(cancelSpy).toHaveBeenCalledWith(expected);
+			expect(releaseSpy).toHaveBeenCalledWith(expected);
+		});
+
+		it('passes the start translate to `dragCancel` and `release` with `translate`', () => {
+			instance.destroy();
+			elm.style.translate = '10px 20px';
+			instance = createDragger(elm, {translate: true});
+			const cancelSpy = vi.fn();
+			const releaseSpy = vi.fn();
+			instance.on('dragCancel', cancelSpy).on('release', releaseSpy);
+
+			mouse.down().move([5, 5]);
+			instance.cancelDrag();
+			mouse.up();
+
+			expect(cancelSpy.mock.calls[0][0]).toMatchObject({startTx: 10, startTy: 20});
+			expect(releaseSpy.mock.calls[0][0]).toMatchObject({startTx: 10, startTy: 20});
+		});
+
+		it('omits the start translate without `translate`', () => {
+			const spy = vi.fn();
+			instance.on('release', spy);
+
+			mouse.down().up();
+
+			expect(spy.mock.calls[0][0]).not.toHaveProperty('startTx');
+			expect(spy.mock.calls[0][0]).not.toHaveProperty('startTy');
 		});
 
 		it('emits `release` after `dragEnd`', () => {

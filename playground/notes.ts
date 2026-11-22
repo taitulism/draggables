@@ -28,7 +28,6 @@ const markEdges = ({elm, ev}: DragState) => {
 
 const clearEdges = () => board.classList.remove('near-top', 'near-right', 'near-bottom', 'near-left');
 
-let start = {left: '', top: '', translate: ''};
 let zones: Zone[] = [];
 
 const createNotes = () => createDragger(board, {
@@ -36,11 +35,7 @@ const createNotes = () => createDragger(board, {
 	grip: '.grip, .note:not(:has(.grip))',
 	clamp: bound.value as 'element' | 'pointer',
 })
-	.on('grab', (dragState) => {
-		start = {...start, left: dragState.elm.style.left, top: dragState.elm.style.top};
-
-		logOutput('grab', dragState);
-	})
+	.on('grab', (dragState) => logOutput('grab', dragState))
 	.on('dragStart', (dragState) => {
 		lockCursor();
 		zones = measureZones('.trash');
@@ -66,12 +61,12 @@ const createNotes = () => createDragger(board, {
 		
 		logOutput('dragEnd', dragState)
 	})
-	.on('dragCancel', ({elm}) => {
+	.on('dragCancel', ({elm, startLeft, startTop}) => {
 		unlockCursor();
 		trash.classList.remove('over');
 		clearEdges();
-		elm.style.left = start.left;
-		elm.style.top = start.top;
+		elm.style.left = `${startLeft}px`;
+		elm.style.top = `${startTop}px`;
 
 		logCancel(elm);
 	});
@@ -89,16 +84,13 @@ createDragger(tboard, {
 	clamp: 'element',
 	translate: true,
 })
-	.on('grab', (dragState) => {
-		start = {...start, translate: dragState.elm.style.translate};
-	})
 	.on('dragging', (dragState) => {
 		dragState.elm.style.translate = `${dragState.tx}px ${dragState.ty}px`;
 
 		logOutput('dragging', dragState);
 	})
-	.on('dragCancel', ({elm}) => {
-		elm.style.translate = start.translate;
+	.on('dragCancel', ({elm, startTx, startTy}) => {
+		elm.style.translate = `${startTx}px ${startTy}px`;
 
 		logCancel(elm);
 	});

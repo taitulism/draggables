@@ -271,7 +271,7 @@ A dragger instance emits an event at each stage of the gesture. Each event carri
 
 > A click (no move past the threshold) fires only `grab` and `release`.
 
-> `dragCancel` and `release` get only `{elm, grip}`, not the full [`DragState`](#drag-state).
+> `dragCancel` and `release` get only `{elm, grip, startLeft, startTop}` (plus `startTx`/`startTy` with [`translate`](#option-translate)), not the full [`DragState`](#drag-state).
 
 
 ### Listening to Events
