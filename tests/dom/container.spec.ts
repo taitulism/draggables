@@ -63,6 +63,19 @@ describe('Container', () => {
 			expect(dragState).toMatchObject({dx: 250, dy: 250});
 		});
 
+		it('reports the unclamped delta as rawDx/rawDy', () => {
+			placeAt(50, 50);
+			dragWithin(contextElm);
+			dragBy([1000, -1000]);
+			expect(dragState).toMatchObject({dx: 250, dy: -50, rawDx: 1000, rawDy: -1000});
+		});
+
+		it('rawDx/rawDy equal dx/dy when inside the container', () => {
+			dragWithin(contextElm);
+			dragBy([20, 30]);
+			expect(dragState).toMatchObject({dx: 20, dy: 30, rawDx: 20, rawDy: 30});
+		});
+
 		it('stops at the near edges', () => {
 			placeAt(50, 50);
 			dragWithin(contextElm);

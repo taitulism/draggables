@@ -23,6 +23,8 @@ export type DragState<O extends DraggerOptions = DraggerOptions> = {
 	container: HTMLElement
 	dx: number
 	dy: number
+	rawDx: number
+	rawDy: number
 	x: number
 	y: number
 	startX: number

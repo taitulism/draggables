@@ -39,6 +39,8 @@ export function createDragger<const O extends DraggerOptions = object> (
 			grip,
 			dx: move.dx,
 			dy: move.dy,
+			rawDx: pos.dx,
+			rawDy: pos.dy,
 			left: startLeft + move.dx,
 			top: startTop + move.dy,
 			...toContainerPoints(activeDrag, move),

@@ -183,7 +183,7 @@ A selector that matches nothing falls back to the context element.
 
 
 ### Option: `clamp`
-Keeps the drag inside the container's padding box by clamping the distance values reported to your handlers (`dx`/`dy`). Off by default.
+Keeps the drag inside the container's padding box by clamping the distance values reported to your handlers (`dx`/`dy`). Off by default. The unclamped values stay available as `rawDx`/`rawDy`.
 
 What to keep inside the container:
 
@@ -306,6 +306,7 @@ createDragger(board, {target: '.card'})
 | `elm`        | the dragged element (not always `ev.target`)                  |
 | [`grip`](#option-grip) | the grabbed grip (when no `grip` option, it's `=== elm`)            |
 | `dx`, `dy`   | delta/distance since drag start. Clamped with `clamp`                    |
+| `rawDx`, `rawDy` | same as `dx`/`dy`, never clamped. For rubber-band, auto-scroll speed |
 | `startX`, `startY` | grab point relative to the container |
 | `x`, `y`     | grab point relative to the container + `dx`/`dy`  |
 | `left`, `top`| start `offsetLeft`/`offsetTop` (from nearest positioned ancestor) + `dx`/`dy` |
