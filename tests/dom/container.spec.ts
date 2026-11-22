@@ -2,6 +2,7 @@ import {beforeEach, afterEach, describe, it, expect} from 'vitest';
 import {createDragger, type DragState, type Dragger, type DraggerOptions} from '../../src';
 import {createContainerElm, createDraggableElm} from '../dom-utils';
 import {createMouseSimulator} from '../mouse-simulator';
+import {readTranslate} from '../../src/dom/helpers';
 
 describe('Container', () => {
 	let elm: HTMLElement;
@@ -293,6 +294,20 @@ describe('Container', () => {
 			dragWith(elm, {translate: true});
 			dragBy([20, 30]);
 			expect(dragState).toMatchObject({tx: 30, ty: 50});
+		});
+
+		it('resolves a percent start translate against the element size', () => {
+			elm.style.translate = '50% 100%';
+			mouse.reset();
+			mouse.moveToElm(elm);
+			dragWith(elm, {translate: true});
+			dragBy([20, 30]);
+			expect(dragState).toMatchObject({tx: 70, ty: 130});
+		});
+
+		it('throws on a mixed calc start translate', () => {
+			elm.style.translate = 'calc(50% + 10px) 0px';
+			expect(() => readTranslate(elm)).toThrow('unsupported translate value');
 		});
 
 		it('accumulates across drags when written back', () => {

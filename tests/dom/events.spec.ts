@@ -127,6 +127,8 @@ describe('Events', () => {
 		it('passes the start translate to `dragCancel` and `release` with `translate`', () => {
 			instance.destroy();
 			elm.style.translate = '10px 20px';
+			mouse.reset();
+			mouse.moveToElm(elm);
 			instance = createDragger(elm, {translate: true});
 			const cancelSpy = vi.fn();
 			const releaseSpy = vi.fn();

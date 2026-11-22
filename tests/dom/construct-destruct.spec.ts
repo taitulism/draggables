@@ -369,7 +369,7 @@ describe('createDragger() construct / destroy', () => {
 			instance.cancelDrag();
 
 			expect(spy).toHaveBeenCalledTimes(1);
-			expect(spy.mock.calls[0][0]).toEqual({elm, grip: elm});
+			expect(spy.mock.calls[0][0]).toEqual({elm, grip: elm, startLeft: elm.offsetLeft, startTop: elm.offsetTop});
 		});
 
 		it('does not emit dragCancel before dragStart', () => {

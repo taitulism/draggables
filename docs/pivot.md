@@ -100,9 +100,9 @@ Core `Drag` is a private helper: it owns the state and the threshold, returns wh
 
 TODOs
 -----
-2. **`translate` silently reads `%` as `px`.** That's a quietly wrong result; it should throw or warn.
-3. **Common setup is left to the user.** Every user has to set `touch-action`, block native img/link drag and prevent text selection, or the drag breaks. Most drag libraries handle these by default and let you opt out.
-4. **Nested draggers both drag by default.** That's surprising, and the fix depends on `stopPropagation` and listener order. Expected: the innermost dragger wins by default. The lib can do this by having the first dragger to get a `pointerdown` mark the event as claimed (e.g. in a shared `WeakSet`), so outer draggers skip it. Unlike `stopPropagation`, this doesn't hide the event from the app's other listeners.
+1. **`translate` silently reads `%` as `px`.** That's a quietly wrong result; it should throw or warn.
+2. **Common setup is left to the user.** Every user has to set `touch-action`, block native img/link drag and prevent text selection, or the drag breaks. Most drag libraries handle these by default and let you opt out.
+3. **Nested draggers both drag by default.** That's surprising, and the fix depends on `stopPropagation` and listener order. Expected: the innermost dragger wins by default. The lib can do this by having the first dragger to get a `pointerdown` mark the event as claimed (e.g. in a shared `WeakSet`), so outer draggers skip it. Unlike `stopPropagation`, this doesn't hide the event from the app's other listeners.
 
 * grid snapping helper? - `snap(n, step)`
 * DragState velocity (`vx`, `vy`) — flick/throw; consumers can't derive it without tracking state (see drag-velocity branch)

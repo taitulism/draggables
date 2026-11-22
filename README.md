@@ -220,7 +220,7 @@ createDragger(surface, {button: 2});
 ### Option: `translate`
 Default: `false`. Use it to move an element with CSS `translate`. Your handlers get `tx`/`ty`, the element's new translate (its translate at grab plus `dx`/`dy`).
 
-> **Pixels only (`%` is read as `px`).**
+> A start translate in `%` is converted to pixels using the element's size. Mixed values like `calc(50% + 10px)` throw on grab.
 
 ```js
 createDragger(board, {target: '.card', translate: true})

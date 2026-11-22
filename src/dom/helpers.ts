@@ -62,11 +62,20 @@ export const resolveContainer = (
 	return container || contextElm;
 };
 
-export const readTranslate = (elm: HTMLElement): Point => {
-	const value = getComputedStyle(elm).translate;
-	const [x = 0, y = 0] = value === 'none' ? [] : value.split(' ').map(parseFloat);
+const toPx = (raw: string, size: number) =>
+	raw.endsWith('%') ? parseFloat(raw) / 100 * size : parseFloat(raw);
 
-	return {x, y};
+export const readTranslate =(elm: HTMLElement): Point => {
+	const value = getComputedStyle(elm).translate;
+
+	if (value === 'none') return {x: 0, y: 0};
+	if (value.includes('(')) throw new Error(`Draggable: unsupported translate value "${value}"`);
+
+	const [rawX = '0px', rawY = '0px'] = value.split(' ');
+	return {
+		x: toPx(rawX, elm.offsetWidth),
+		y: toPx(rawY, elm.offsetHeight),
+	};
 };
 
 export const measureBBox = (box: HTMLElement): BBox => {
