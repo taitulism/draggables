@@ -41,7 +41,8 @@ describe('Events', () => {
 			mouse.down();
 
 			expect(spy).toHaveBeenCalledTimes(1);
-			expect(spy.mock.calls[0][0]).toMatchObject({elm, dx: 0, dy: 0, x, y});
+			expect(spy.mock.calls[0][0]).toMatchObject({elm, dx: 0, dy: 0});
+			expect(spy.mock.calls[0][0].ev).toMatchObject({clientX: x, clientY: y});
 			expect(spy.mock.calls[0][0].ev).toBeInstanceOf(Event);
 			mouse.up();
 		});
@@ -56,7 +57,8 @@ describe('Events', () => {
 
 			mouse.move([3, 1]);
 			expect(spy).toHaveBeenCalledTimes(1);
-			expect(spy.mock.calls[0][0]).toMatchObject({elm, dx: 5, dy: 3, x: x + 5, y: y + 3});
+			expect(spy.mock.calls[0][0]).toMatchObject({elm, dx: 5, dy: 3});
+			expect(spy.mock.calls[0][0].ev).toMatchObject({clientX: x + 5, clientY: y + 3});
 			mouse.up();
 		});
 
@@ -68,7 +70,8 @@ describe('Events', () => {
 			mouse.down().move([5, 5]).move([7, 8]);
 
 			expect(spy).toHaveBeenCalledTimes(1);
-			expect(spy.mock.calls[0][0]).toMatchObject({elm, dx: 12, dy: 13, x: x + 12, y: y + 13});
+			expect(spy.mock.calls[0][0]).toMatchObject({elm, dx: 12, dy: 13});
+			expect(spy.mock.calls[0][0].ev).toMatchObject({clientX: x + 12, clientY: y + 13});
 			mouse.up();
 		});
 
@@ -80,7 +83,8 @@ describe('Events', () => {
 			mouse.down().move([5, 5]).up();
 
 			expect(spy).toHaveBeenCalledTimes(1);
-			expect(spy.mock.calls[0][0]).toMatchObject({elm, dx: 5, dy: 5, x: x + 5, y: y + 5});
+			expect(spy.mock.calls[0][0]).toMatchObject({elm, dx: 5, dy: 5});
+			expect(spy.mock.calls[0][0].ev).toMatchObject({clientX: x + 5, clientY: y + 5});
 		});
 
 		it('emits only `grab` on a click', () => {

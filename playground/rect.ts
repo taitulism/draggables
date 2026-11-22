@@ -8,7 +8,7 @@ clearCanvasBtn.addEventListener('click', () => canvas.replaceChildren());
 
 let rect: HTMLElement;
 
-createDragger(canvas, {bound: 'pointer'})
+createDragger(canvas, {container: canvas, clamp: 'pointer'})
 	.on('grab', (dragState) => logOutput('grab', dragState))
 	.on('dragStart', (dragState) => {
 		rect = document.createElement('div');
@@ -18,11 +18,11 @@ createDragger(canvas, {bound: 'pointer'})
 		logOutput('dragStart', dragState);
 	})
 	.on('dragging', (dragState) => {
-		const {startContainerX, startContainerY, containerX, containerY} = dragState;
-		rect.style.left = `${Math.min(startContainerX, containerX)}px`;
-		rect.style.top = `${Math.min(startContainerY, containerY)}px`;
-		rect.style.width = `${Math.abs(containerX - startContainerX)}px`;
-		rect.style.height = `${Math.abs(containerY - startContainerY)}px`;
+		const {startX, startY, x, y} = dragState;
+		rect.style.left = `${Math.min(startX, x)}px`;
+		rect.style.top = `${Math.min(startY, y)}px`;
+		rect.style.width = `${Math.abs(x - startX)}px`;
+		rect.style.height = `${Math.abs(y - startY)}px`;
 
 		logOutput('dragging', dragState);
 	})

@@ -37,7 +37,8 @@ export function createDragger<const O extends DraggerOptions = object> (
 			ev,
 			elm,
 			grip,
-			...move,
+			dx: move.dx,
+			dy: move.dy,
 			left: startLeft + move.dx,
 			top: startTop + move.dy,
 			...toContainerPoints(resolved, move),
@@ -63,9 +64,9 @@ export function createDragger<const O extends DraggerOptions = object> (
 			startLeft: elm.offsetLeft,
 			startTop: elm.offsetTop,
 			startTranslate: opts.translate ? readTranslate(elm) : null,
-			clampBox: containerElm && measureClampBox(elm, ev, opts.bound),
+			clampBox: opts.clamp ? measureClampBox(elm, ev, opts.clamp) : null,
 			containerElm,
-			containerBBox: containerElm && measureBBox(containerElm),
+			containerBBox: measureBBox(containerElm),
 		};
 
 		window.addEventListener('pointermove', onMove);
@@ -121,7 +122,7 @@ export function createDragger<const O extends DraggerOptions = object> (
 		},
 
 		refreshContainerBounds () {
-			if (active?.containerElm) active.containerBBox = measureBBox(active.containerElm);
+			if (active) active.containerBBox = measureBBox(active.containerElm);
 
 			return instance;
 		},

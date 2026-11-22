@@ -6,17 +6,9 @@ export type DraggerOptions = {
 	button?: number
 	threshold?: number
 	container?: HTMLElement | string
-	bound?: 'element' | 'pointer'
+	clamp?: 'element' | 'pointer'
 	translate?: boolean
 	cancelOnEsc?: boolean
-}
-
-type ContainerData = {
-	container: HTMLElement
-	containerX: number
-	containerY: number
-	startContainerX: number
-	startContainerY: number
 }
 
 type TranslateData = {
@@ -24,20 +16,20 @@ type TranslateData = {
 	ty: number
 }
 
-type HasContainer = {container: HTMLElement | string} | {target: string} | {bound: 'pointer'}
-
 export type DragState<O extends DraggerOptions = DraggerOptions> = {
 	ev: PointerEvent
 	elm: HTMLElement
 	grip: HTMLElement
+	container: HTMLElement
 	dx: number
 	dy: number
 	x: number
 	y: number
+	startX: number
+	startY: number
 	left: number
 	top: number
 }
-	& (O extends HasContainer ? ContainerData : Partial<ContainerData>)
 	& (O extends {translate: true} ? TranslateData : Partial<TranslateData>)
 
 export type DragEventHandler<O extends DraggerOptions = DraggerOptions> =
@@ -68,6 +60,6 @@ export type Active = Resolved & {
 	startTop: number
 	startTranslate: Point | null
 	clampBox: BBox | null
-	containerElm: HTMLElement | null
-	containerBBox: BBox | null
+	containerElm: HTMLElement
+	containerBBox: BBox
 }

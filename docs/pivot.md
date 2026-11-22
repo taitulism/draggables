@@ -300,11 +300,10 @@ Not ported:
 
 TODOs
 -----
-* auto-scroll: export `getEdgeProximity(container, rect)` (pointer = zero-size rect). Support bound: element|pointer
-* long-press delay: `delay` option (+ `tolerance` px, maybe touch-only) so touch pages can still scroll
 * dragState.container.x?
 * add DragState `rawDx`/`rawDy` (unclamped) for rubber-band, auto-scroll speed
 * DragState velocity (`vx`, `vy`) — flick/throw; consumers can't derive it without tracking state
+* long-press delay: `delay` option (+ `tolerance` px, maybe touch-only) so touch pages can still scroll
 * a12y/keyboard: add instance methods to control drag (with events)
 ------------------------------
 * TBD (inconclusive, keeping as-is): First move past the threshold fires only `dragStart`, not `dragging`. Fire both? fire `dragging` with a `firstMove` bool?

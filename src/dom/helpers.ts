@@ -44,21 +44,13 @@ export const toResolver = (contextElm: HTMLElement, opts: DraggerOptions) => {
 export const resolveContainer = (
 	contextElm: HTMLElement,
 	elm: HTMLElement,
-	{container, target, bound}: DraggerOptions,
+	{container}: DraggerOptions,
 ) => {
 	if (typeof container === 'string') {
-		const found = elm.parentElement?.closest<HTMLElement>(container) || null;
-
-		// eslint-disable-next-line no-console
-		if (!found) console.warn(`draggable: container "${container}" matched no ancestor`);
-
-		return found;
+		return elm.parentElement?.closest<HTMLElement>(container) || contextElm;
 	}
 
-	if (container) return container;
-	if (target && elm !== contextElm) return contextElm;
-
-	return bound === 'pointer' ? elm : null;
+	return container || contextElm;
 };
 
 export const readTranslate = (elm: HTMLElement): Point => {
@@ -79,17 +71,17 @@ export const measureBBox = (box: HTMLElement): BBox => {
 export const measureClampBox = (
 	elm: HTMLElement,
 	ev: PointerEvent,
-	bound: DraggerOptions['bound'],
+	clampMode: DraggerOptions['clamp'],
 ): BBox => {
 	const {clientX: x, clientY: y} = ev;
 
-	if (bound === 'pointer') return {left: x, top: y, right: x, bottom: y};
+	if (clampMode === 'pointer') return {left: x, top: y, right: x, bottom: y};
 
 	return elm.getBoundingClientRect();
 };
 
 export const clampMove = ({clampBox, containerBBox}: Active, pos: DragPosition): DragPosition => {
-	if (!clampBox || !containerBBox) return pos;
+	if (!clampBox) return pos;
 
 	return {
 		...pos,
@@ -102,16 +94,14 @@ export const toContainerPoints = (
 	{startX, startY, containerElm, containerBBox}: Active,
 	{dx, dy}: DragPosition,
 ) => {
-	if (!containerElm || !containerBBox) return {};
-
 	const startContainerX = startX - containerBBox.left;
 	const startContainerY = startY - containerBBox.top;
 	return {
 		container: containerElm,
-		startContainerX,
-		startContainerY,
-		containerX: startContainerX + dx,
-		containerY: startContainerY + dy,
+		startX: startContainerX,
+		startY: startContainerY,
+		x: startContainerX + dx,
+		y: startContainerY + dy,
 	};
 };
 

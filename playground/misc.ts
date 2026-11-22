@@ -30,6 +30,7 @@ createDragger(fnStage, {
 		if (!(ev.target instanceof Element)) return null;
 		return ev.target.closest<HTMLElement>('#fn-stage .box:not(.locked)');
 	},
+	clamp: 'element',
 })
 	.on('grab', grab)
 	.on('dragging', move)
@@ -39,6 +40,7 @@ createDragger(cardsStage, {
 	target: '.card',
 	grip: '.grip',
 	container: '.stage',
+	clamp: 'element',
 })
 	.on('grab', grab)
 	.on('dragStart', () => lockCursor())
@@ -51,6 +53,7 @@ createDragger(cardsStage, {
 
 const grow = createDragger(growing, {
 	target: '.box',
+	clamp: 'element',
 })
 	.on('grab', grab)
 	.on('dragging', (dragState) => {
@@ -65,6 +68,7 @@ const grow = createDragger(growing, {
 
 createDragger(nestedStage, {
 	target: '#outer',
+	clamp: 'element',
 })
 	.on('grab', grab)
 	.on('dragging', move)
@@ -72,6 +76,7 @@ createDragger(nestedStage, {
 
 createDragger(outer, {
 	target: '.box',
+	clamp: 'element',
 })
 	.on('grab', (dragState) => {
 		dragState.ev.stopPropagation();

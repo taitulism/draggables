@@ -7,7 +7,8 @@ const area = document.getElementById('area')!;
 const line = document.getElementById('line')!;
 const result = document.getElementById('result')!;
 
-area.addEventListener('contextmenu', (ev) => ev.preventDefault());
+// for {button: 2}
+// area.addEventListener('contextmenu', (ev) => ev.preventDefault());
 
 const direction = (dx: number, dy: number) => {
 	if (Math.max(Math.abs(dx), Math.abs(dy)) < MIN_DISTANCE) return '';
@@ -15,21 +16,21 @@ const direction = (dx: number, dy: number) => {
 	return dy > 0 ? '↓ close' : '↑ reload';
 };
 
-createDragger(area, {button: 0, bound: 'pointer'})
+createDragger(area, {container: area, clamp: 'pointer'})
 	.on('grab', (dragState) => {
-		const {containerX, containerY} = dragState;
-		line.setAttribute('x1', String(containerX));
-		line.setAttribute('y1', String(containerY));
-		line.setAttribute('x2', String(containerX));
-		line.setAttribute('y2', String(containerY));
+		const {x, y} = dragState;
+		line.setAttribute('x1', String(x));
+		line.setAttribute('y1', String(y));
+		line.setAttribute('x2', String(x));
+		line.setAttribute('y2', String(y));
 		result.textContent = '';
 
 		logOutput('grab', dragState);
 	})
 	.on('dragging', (dragState) => {
-		const {containerX, containerY} = dragState;
-		line.setAttribute('x2', String(containerX));
-		line.setAttribute('y2', String(containerY));
+		const {x, y} = dragState;
+		line.setAttribute('x2', String(x));
+		line.setAttribute('y2', String(y));
 		result.textContent = direction(dragState.dx, dragState.dy);
 
 		logOutput('dragging', dragState);

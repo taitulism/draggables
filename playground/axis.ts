@@ -10,7 +10,7 @@ const panes = document.getElementById('panes')!;
 let startThumbLeft = '';
 let startValue = '';
 
-createDragger(track, {target: '.thumb'})
+createDragger(track, {target: '.thumb', clamp: 'element'})
 	.on('grab', (dragState) => {
 		startThumbLeft = dragState.elm.style.left;
 		startValue = value.textContent!;

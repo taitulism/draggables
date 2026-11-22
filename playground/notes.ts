@@ -16,9 +16,9 @@ const bound = document.getElementById('bound') as HTMLSelectElement;
 
 const NEAR_EDGE = 10;
 
-const markEdges = ({elm, x, y}: DragState) => {
+const markEdges = ({elm, ev}: DragState) => {
 	const edges = bound.value === 'pointer'
-		? getEdgeProximity(board, x, y)
+		? getEdgeProximity(board, ev.clientX, ev.clientY)
 		: getEdgeProximity(board, elm.getBoundingClientRect());
 
 	for (const [edge, distance] of Object.entries(edges)) {
@@ -34,7 +34,7 @@ let zones: Zone[] = [];
 const createNotes = () => createDragger(board, {
 	target: '.note:not(.locked)',
 	grip: '.grip, .note:not(:has(.grip))',
-	bound: bound.value as 'element' | 'pointer',
+	clamp: bound.value as 'element' | 'pointer',
 })
 	.on('grab', (dragState) => {
 		start = {...start, left: dragState.elm.style.left, top: dragState.elm.style.top};
@@ -49,16 +49,21 @@ const createNotes = () => createDragger(board, {
 	.on('dragging', (dragState) => {
 		dragState.elm.style.left = `${dragState.left}px`;
 		dragState.elm.style.top = `${dragState.top}px`;
-		trash.classList.toggle('over', hitZone(zones, dragState.x, dragState.y) === trash);
-		markEdges(dragState);
 
+		const zone = hitZone(zones, dragState.ev.clientX, dragState.ev.clientY);
+		trash.classList.toggle('over', zone === trash);
+
+		markEdges(dragState);
 		logOutput('dragging', dragState);
 	})
 	.on('dragEnd', (dragState) => {
 		unlockCursor();
 		trash.classList.remove('over');
 		clearEdges();
-		if (hitZone(zones, dragState.x, dragState.y) === trash) dragState.elm.remove();
+		
+		const zone = hitZone(zones, dragState.ev.clientX, dragState.ev.clientY);
+		if (zone === trash) dragState.elm.remove();
+		
 		logOutput('dragEnd', dragState)
 	})
 	.on('dragCancel', ({elm}) => {
@@ -81,6 +86,7 @@ bound.addEventListener('change', () => {
 // t = translate
 createDragger(tboard, {
 	target: '.note',
+	clamp: 'element',
 	translate: true,
 })
 	.on('grab', (dragState) => {

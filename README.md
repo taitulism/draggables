@@ -92,13 +92,17 @@ import {createDragger} from 'draggables';
 createDragger(contextElement, options);
 ```
 
-* `contextElement` (`HTMLElement`, required) - The element that will get a single pointerdown listener. It can be a draggable itself or contain draggables.
+* `contextElement` (`HTMLElement`, required) - The element that will get a single pointerdown listener. It can be a drag surface or contain draggables.
 * `options` (`DraggerOptions`, optional) - See [Options](#options) below.
 
-The context element plays a different role depending on the `target` option:
+The context element never moves. It plays a different role depending on the `target` option:
 
-* With no `target` option, the context element itself is the dragged element (e.g. a floating dialog that can be moved freely around the page).
-* With a `target` option, the context element is a common ancestor that delegates `pointerdown` to the matching draggable targets inside it (e.g. a board with notes on it). It's also their default dragging area boundary (see [container option](#option-container)).
+* With no `target` option, the context element is a surface to drag on (e.g. a canvas to draw on, a viewport to pan).
+* With a `target` option, the context element is a common ancestor that delegates `pointerdown` to the matching draggable targets inside it (e.g. a board with notes on it).
+
+To move an element freely around the page (e.g. a floating dialog), use `document.body` as the context element and target the dialog.
+
+The context element is also the default [container](#option-container).
 
 
 ### Options
@@ -106,8 +110,8 @@ The context element plays a different role depending on the `target` option:
 |----------------|--------------------------------|------------|
 | [`target`](#option-target) | `string` \| `(ev) => HTMLElement \| null` | context element |
 | [`grip`](#option-grip) | `string`                       | -          |
-| [`container`](#option-container) | `HTMLElement` \| `string`      | -          |
-| [`bound`](#option-bound) | `"element"` \| `"pointer"`     | `"element"`|
+| [`container`](#option-container) | `HTMLElement` \| `string`      | context element |
+| [`clamp`](#option-clamp) | `"element"` \| `"pointer"`     | -          |
 | [`button`](#option-button) | `number`                       | `0`        |
 | [`translate`](#option-translate) | `boolean`                      | `false`    |
 | [`cancelOnEsc`](#option-cancelonesc) | `boolean`                      | `true`     |
@@ -166,33 +170,33 @@ createDragger(board, {target: '.card', grip: '.card-header'});
 
 
 ### Option: `container`
-An element or a selector. The area the dragged element (or the pointer, [see `bound` option](#option-bound)) must stay in.
+An element or a selector. The element the container fields in the [drag state](#drag-state) are relative to, and the area to stay in with [`clamp`](#option-clamp).
 A selector picks the nearest ancestor of the dragged element that matches it.
 
-The distance values reported to your handlers (`dx`/`dy`) are clamped, so the dragged element/pointer stays inside the container's padding box. Also adds the container fields to the [drag state](#drag-state).
-
-With a `target`, the container defaults to the context element. Set `container` to bound dragging to a different element instead:
+Defaults to the context element. Set it to use a different element:
 
 ```js
 createDragger(slider, {target: '.thumb', container: '.track'});
 ```
 
-A selector that matches nothing logs a warning and the values arrive unclamped.
+A selector that matches nothing falls back to the context element.
 
 
-### Option: `bound`
+### Option: `clamp`
+Keeps the drag inside the container's padding box by clamping the distance values reported to your handlers (`dx`/`dy`). Off by default.
+
 What to keep inside the container:
 
-* `"element"` (default) - the dragged element's box.
-* `"pointer"` - the pointer. For drawing and resizing. Adds the container fields even without a `container` (then it's the dragged element).
+* `"element"` - the dragged element's box.
+* `"pointer"` - the pointer. For drawing and resizing.
 
 ```js
-createDragger(canvas, {bound: 'pointer'});
+createDragger(canvas, {clamp: 'pointer'});
 ```
 
 Example - Dragging a box against its container's right edge (`*` is the pointer):
 ```
-bound: 'element'                  bound: 'pointer'
+clamp: 'element'                  clamp: 'pointer'
 ┌─ container ─────────┐          ┌─ container ─────────┐
 │          ┌──────────┤          │              ┌──────┴──┐
 │          │  *       │          │              │      *  │
@@ -301,12 +305,11 @@ createDragger(board, {target: '.card'})
 | `ev`         | the vanilla `PointerEvent`                                    |
 | `elm`        | the dragged element (not always `ev.target`)                  |
 | [`grip`](#option-grip) | the grabbed grip (when no `grip` option, it's `=== elm`)            |
-| `dx`, `dy`   | delta/distance since drag start. Clamped with `container`                    |
-| `x`, `y`     | current pointer, viewport px (`clientX`/`clientY`, not page)  |
+| `dx`, `dy`   | delta/distance since drag start. Clamped with `clamp`                    |
+| `startX`, `startY` | grab point relative to the container |
+| `x`, `y`     | grab point relative to the container + `dx`/`dy`  |
 | `left`, `top`| start `offsetLeft`/`offsetTop` (from nearest positioned ancestor) + `dx`/`dy` |
-| `container`  | the container element. With `container` or `bound: 'pointer'` |
-| `startContainerX`, `startContainerY` | grab point relative to the container. With `container` or `bound: 'pointer'` |
-| `containerX`, `containerY` | grab point relative to the container + `dx`/`dy` (clamped). With `container` or `bound: 'pointer'` |
+| `container`  | the [container](#option-container) element |
 | `tx`, `ty`   | start `translate` + `dx`/`dy`. With `translate: true`         |
 
 

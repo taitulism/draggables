@@ -1,23 +1,23 @@
-import {beforeEach, afterEach, describe, it, expect, vi} from 'vitest';
+import {beforeEach, afterEach, describe, it, expect} from 'vitest';
 import {createDragger, type DragState, type Dragger, type DraggerOptions} from '../../src';
 import {createContainerElm, createDraggableElm} from '../dom-utils';
 import {createMouseSimulator} from '../mouse-simulator';
 
 describe('Container', () => {
 	let elm: HTMLElement;
-	let container: HTMLElement;
+	let contextElm: HTMLElement;
 	let instance: Dragger;
 	let mouse: ReturnType<typeof createMouseSimulator>;
 	let dragState: DragState;
 
 	beforeEach(() => {
-		container = createContainerElm();
-		container.style.position = 'relative';
-		document.body.appendChild(container);
+		contextElm = createContainerElm();
+		contextElm.style.position = 'relative';
+		document.body.appendChild(contextElm);
 
 		elm = createDraggableElm();
 		elm.style.position = 'absolute';
-		container.appendChild(elm);
+		contextElm.appendChild(elm);
 
 		mouse = createMouseSimulator();
 		mouse.moveToElm(elm);
@@ -25,7 +25,7 @@ describe('Container', () => {
 
 	afterEach(() => {
 		instance.destroy();
-		container.remove();
+		contextElm.remove();
 		mouse.reset();
 	});
 
@@ -47,25 +47,25 @@ describe('Container', () => {
 
 	describe('container option', () => {
 		const dragWithin = (container: HTMLElement | string) => {
-			dragWith(elm, {container});
+			dragWith(elm, {container, clamp: 'element'});
 		};
 
 		it('returns the unclamped delta when inside the container', () => {
-			dragWithin(container);
+			dragWithin(contextElm);
 			dragBy([20, 30]);
 			expect(dragState).toMatchObject({dx: 20, dy: 30});
 		});
 
 		it('stops at the far edges', () => {
 			placeAt(50, 50);
-			dragWithin(container);
+			dragWithin(contextElm);
 			dragBy([1000, 1000]);
 			expect(dragState).toMatchObject({dx: 250, dy: 250});
 		});
 
 		it('stops at the near edges', () => {
 			placeAt(50, 50);
-			dragWithin(container);
+			dragWithin(contextElm);
 			dragBy([-1000, -1000]);
 			expect(dragState).toMatchObject({dx: -50, dy: -50});
 		});
@@ -77,13 +77,12 @@ describe('Container', () => {
 			expect(dragState).toMatchObject({dx: 250, dy: 250});
 		});
 
-		it('returns the unclamped delta when the selector matches nothing', () => {
-			const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-			dragWithin('#nothing');
+		it('falls back to the context element when the selector matches nothing', () => {
+			elm.classList.add('item');
+			placeAt(50, 50);
+			dragWith(contextElm, {target: '.item', container: '#nothing', clamp: 'element'});
 			dragBy([1000, 1000]);
-			expect(dragState).toMatchObject({dx: 1000, dy: 1000});
-			expect(warn).toHaveBeenCalledWith('draggable: container "#nothing" matched no ancestor');
-			warn.mockRestore();
+			expect(dragState).toMatchObject({dx: 250, dy: 250});
 		});
 
 		it('works with translate positioning', () => {
@@ -92,16 +91,16 @@ describe('Container', () => {
 			elm.style.translate = '50px 50px';
 			mouse.reset();
 			mouse.moveToElm(elm);
-			dragWithin(container);
+			dragWithin(contextElm);
 			dragBy([1000, 1000]);
 			expect(dragState).toMatchObject({dx: 250, dy: 250});
 		});
 
 		it('refreshContainerBounds re-reads the container mid-drag', () => {
 			placeAt(50, 50);
-			dragWithin(container);
+			dragWithin(contextElm);
 			mouse.down([1, 1]);
-			container.style.width = '600px';
+			contextElm.style.width = '600px';
 			instance.refreshContainerBounds();
 			mouse.move([1000, 1000]);
 			mouse.up();
@@ -110,17 +109,17 @@ describe('Container', () => {
 
 		it('refreshContainerBounds is a chainable no-op without an active drag', () => {
 			placeAt(50, 50);
-			dragWithin(container);
-			container.style.width = '600px';
+			dragWithin(contextElm);
+			contextElm.style.width = '600px';
 			expect(instance.refreshContainerBounds()).toBe(instance);
-			container.style.width = '400px';
+			contextElm.style.width = '400px';
 			dragBy([1000, 1000]);
 			expect(dragState).toMatchObject({dx: 250, dy: 250});
 		});
 
 		it('clamps `dragStart` and `dragging` too', () => {
 			placeAt(50, 50);
-			dragWithin(container);
+			dragWithin(contextElm);
 			const starts: DragState[] = [];
 			const moves: DragState[] = [];
 			instance.on('dragStart', (data) => starts.push(data)).on('dragging', (data) => moves.push(data));
@@ -131,9 +130,9 @@ describe('Container', () => {
 		});
 
 		it('stops at the container padding box, inside its border', () => {
-			container.style.border = '10px solid';
+			contextElm.style.border = '10px solid';
 			placeAt(50, 50);
-			dragWithin(container);
+			dragWithin(contextElm);
 			dragBy([1000, 1000]);
 			expect(dragState).toMatchObject({dx: 230, dy: 230});
 			placeAt(50, 50);
@@ -142,126 +141,118 @@ describe('Container', () => {
 		});
 	});
 
+	describe('without clamp', () => {
+		it('does not clamp inside a container', () => {
+			placeAt(50, 50);
+			dragWith(elm, {container: contextElm});
+			dragBy([1000, 1000]);
+			expect(dragState).toMatchObject({dx: 1000, dy: 1000, x: 1051, y: 1051});
+		});
+	});
+
 	describe('default container', () => {
 		it('is the context element when a target is set', () => {
 			elm.classList.add('item');
 			placeAt(50, 50);
-			dragWith(container, {target: '.item'});
+			dragWith(contextElm, {target: '.item', clamp: 'element'});
 			dragBy([1000, 1000]);
-			expect(dragState).toMatchObject({dx: 250, dy: 250, containerX: 301, containerY: 301});
+			expect(dragState).toMatchObject({dx: 250, dy: 250, x: 301, y: 301});
 		});
 
-		it('is none when a target function returns the context element', () => {
+		it('is the context element without a target', () => {
 			placeAt(50, 50);
-			dragWith(elm, {target: () => elm});
+			dragWith(contextElm, {clamp: 'pointer'});
 			dragBy([1000, 1000]);
-			expect(dragState).toMatchObject({dx: 1000, dy: 1000});
-		});
-
-		it('is none without a target', () => {
-			placeAt(50, 50);
-			dragWith(elm);
-			dragBy([1000, 1000]);
-			expect(dragState).toMatchObject({dx: 1000, dy: 1000});
+			expect(dragState).toMatchObject({dx: 349, dy: 349, x: 400, y: 400});
 		});
 	});
 
-	describe('bound: pointer', () => {
+	describe('clamp: pointer', () => {
 		it('returns the pointer relative to the container', () => {
 			placeAt(50, 50);
-			dragWith(container, {bound: 'pointer'});
+			dragWith(contextElm, {container: contextElm, clamp: 'pointer'});
 			dragBy([20, 30]);
-			expect(dragState).toMatchObject({startContainerX: 51, startContainerY: 51});
-			expect(dragState).toMatchObject({containerX: 71, containerY: 81});
+			expect(dragState).toMatchObject({startX: 51, startY: 51});
+			expect(dragState).toMatchObject({x: 71, y: 81});
 		});
 
 		it('stops at the far edges', () => {
 			placeAt(50, 50);
-			dragWith(container, {bound: 'pointer'});
+			dragWith(contextElm, {container: contextElm, clamp: 'pointer'});
 			dragBy([1000, 1000]);
-			expect(dragState).toMatchObject({dx: 349, dy: 349, containerX: 400, containerY: 400});
+			expect(dragState).toMatchObject({dx: 349, dy: 349, x: 400, y: 400});
 		});
 
 		it('stops at the near edges', () => {
 			placeAt(50, 50);
-			dragWith(container, {bound: 'pointer'});
+			dragWith(contextElm, {container: contextElm, clamp: 'pointer'});
 			dragBy([-1000, -1000]);
-			expect(dragState).toMatchObject({dx: -51, dy: -51, containerX: 0, containerY: 0});
+			expect(dragState).toMatchObject({dx: -51, dy: -51, x: 0, y: 0});
 		});
 
 		it('keeps the pointer inside a given container', () => {
 			placeAt(50, 50);
-			dragWith(elm, {bound: 'pointer', container});
+			dragWith(elm, {clamp: 'pointer', container: contextElm});
 			dragBy([1000, 1000]);
-			expect(dragState).toMatchObject({dx: 349, dy: 349, containerX: 400, containerY: 400});
+			expect(dragState).toMatchObject({dx: 349, dy: 349, x: 400, y: 400});
 		});
 
-		it('returns the unclamped delta when the selector matches nothing', () => {
-			const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-			dragWith(elm, {bound: 'pointer', container: '#nothing'});
+		it('falls back to the context element when the selector matches nothing', () => {
+			placeAt(50, 50);
+			dragWith(contextElm, {clamp: 'pointer', container: '#nothing'});
 			dragBy([1000, 1000]);
-			expect(dragState).toMatchObject({dx: 1000, dy: 1000});
-			expect(dragState.containerX).toBeUndefined();
-			expect(warn).toHaveBeenCalledWith('draggable: container "#nothing" matched no ancestor');
-			warn.mockRestore();
+			expect(dragState).toMatchObject({dx: 349, dy: 349, x: 400, y: 400});
 		});
 	});
 
 	describe('container points', () => {
 		it('follows the clamped delta in element mode', () => {
 			placeAt(50, 50);
-			dragWith(elm, {container});
+			dragWith(elm, {container: contextElm, clamp: 'element'});
 			dragBy([1000, 1000]);
-			expect(dragState).toMatchObject({startContainerX: 51, startContainerY: 51});
-			expect(dragState).toMatchObject({containerX: 301, containerY: 301});
+			expect(dragState).toMatchObject({startX: 51, startY: 51});
+			expect(dragState).toMatchObject({x: 301, y: 301});
 		});
 
-		it('are undefined without a container', () => {
-			dragWith(elm);
+		it('are relative to the context element without a container', () => {
+			placeAt(50, 50);
+			dragWith(contextElm);
 			dragBy([20, 30]);
-			expect(dragState.containerX).toBeUndefined();
-			expect(dragState.startContainerX).toBeUndefined();
+			expect(dragState).toMatchObject({startX: 51, startY: 51});
+			expect(dragState).toMatchObject({x: 71, y: 81});
 		});
 	});
 
 	describe('container element', () => {
 		it('is the given element', () => {
-			dragWith(elm, {container});
+			dragWith(elm, {container: contextElm});
 			dragBy([20, 30]);
-			expect(dragState.container).toBe(container);
+			expect(dragState.container).toBe(contextElm);
 		});
 
 		it('is the element matched by a selector', () => {
 			dragWith(elm, {container: '#test-dom-container'});
 			dragBy([20, 30]);
-			expect(dragState.container).toBe(container);
+			expect(dragState.container).toBe(contextElm);
 		});
 
 		it('is the context element when a target is set', () => {
 			elm.classList.add('item');
-			dragWith(container, {target: '.item'});
+			dragWith(contextElm, {target: '.item'});
 			dragBy([20, 30]);
-			expect(dragState.container).toBe(container);
+			expect(dragState.container).toBe(contextElm);
 		});
 
-		it('is the dragged element with bound: pointer and no container', () => {
-			dragWith(container, {bound: 'pointer'});
+		it('is the context element without a container or a target', () => {
+			dragWith(contextElm);
 			dragBy([20, 30]);
-			expect(dragState.container).toBe(container);
+			expect(dragState.container).toBe(contextElm);
 		});
 
-		it('is undefined when the selector matches nothing', () => {
-			const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-			dragWith(elm, {container: '#nothing'});
+		it('is the context element when the selector matches nothing', () => {
+			dragWith(contextElm, {container: '#nothing'});
 			dragBy([20, 30]);
-			expect(dragState.container).toBeUndefined();
-			warn.mockRestore();
-		});
-
-		it('is undefined without a container', () => {
-			dragWith(elm);
-			dragBy([20, 30]);
-			expect(dragState.container).toBeUndefined();
+			expect(dragState.container).toBe(contextElm);
 		});
 	});
 
@@ -275,7 +266,7 @@ describe('Container', () => {
 
 		it('follows the clamped delta', () => {
 			placeAt(50, 50);
-			dragWith(elm, {container});
+			dragWith(elm, {container: contextElm, clamp: 'element'});
 			dragBy([1000, 1000]);
 			expect(dragState).toMatchObject({left: 300, top: 300});
 		});

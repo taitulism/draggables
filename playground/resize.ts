@@ -9,7 +9,7 @@ const stage = panel.parentElement!;
 let side = '';
 let anchor = {left: 0, top: 0, right: 0, bottom: 0};
 
-createDragger(panel, {grip: '[data-side]', bound: 'pointer', container: stage})
+createDragger(panel, {grip: '[data-side]', clamp: 'pointer', container: stage})
 	.on('grab', (dragState) => {
 		side = dragState.grip.dataset.side!;
 		anchor = {
@@ -22,21 +22,21 @@ createDragger(panel, {grip: '[data-side]', bound: 'pointer', container: stage})
 		logOutput('grab', dragState);
 	})
 	.on('dragging', (dragState) => {
-		const {containerX, containerY} = dragState;
+		const {x, y} = dragState;
 
 		if (side.includes('e')) {
-			panel.style.width = `${Math.max(containerX - anchor.left, MIN)}px`;
+			panel.style.width = `${Math.max(x - anchor.left, MIN)}px`;
 		}
 		if (side.includes('w')) {
-			const width = Math.max(anchor.right - containerX, MIN);
+			const width = Math.max(anchor.right - x, MIN);
 			panel.style.width = `${width}px`;
 			panel.style.left = `${anchor.right - width}px`;
 		}
 		if (side.includes('s')) {
-			panel.style.height = `${Math.max(containerY - anchor.top, MIN)}px`;
+			panel.style.height = `${Math.max(y - anchor.top, MIN)}px`;
 		}
 		if (side.includes('n')) {
-			const height = Math.max(anchor.bottom - containerY, MIN);
+			const height = Math.max(anchor.bottom - y, MIN);
 			panel.style.height = `${height}px`;
 			panel.style.top = `${anchor.bottom - height}px`;
 		}
