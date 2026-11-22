@@ -100,10 +100,10 @@ Core `Drag` is a private helper: it owns the state and the threshold, returns wh
 
 TODOs
 -----
-1. **`translate` silently reads `%` as `px`.** That's a quietly wrong result; it should throw or warn.
-2. **Common setup is left to the user.** Every user has to set `touch-action`, block native img/link drag and prevent text selection, or the drag breaks. Most drag libraries handle these by default and let you opt out.
-3. **Nested draggers both drag by default.** That's surprising, and the fix depends on `stopPropagation` and listener order. Expected: the innermost dragger wins by default. The lib can do this by having the first dragger to get a `pointerdown` mark the event as claimed (e.g. in a shared `WeakSet`), so outer draggers skip it. Unlike `stopPropagation`, this doesn't hide the event from the app's other listeners.
-
+* tl;dr - Address the README Caveats:
+  **Common setup is left to the user.** Every user has to set `touch-action`, block native img/link drag and prevent text selection, or the drag breaks. Most drag libraries block selection and native drag by default, usually only while a drag is active, on body/document; `touch-action` is split (see [Other libs' defaults](#other-libs-defaults)). Plan: block selection + native drag during a drag, with opt-out; keep `touch-action` a documented user step (inline would override the user's CSS).
+* **Nested draggers both drag by default.** That's surprising, and the fix depends on `stopPropagation` and listener order. Expected: the innermost dragger wins by default. The lib can do this by having the first dragger to get a `pointerdown` mark the event as claimed (e.g. in a shared `WeakSet`), so outer draggers skip it. Unlike `stopPropagation`, this doesn't hide the event from the app's other listeners.
+* **Cancel on resize / tab hidden, block context menu.** dnd-kit cancels on window `resize` and `visibilitychange`, and blocks `contextmenu` during a drag. We handle none — so a release away from the page (Ctrl+Tab, alt-tab) is missed (see Missed release below).
 * grid snapping helper? - `snap(n, step)`
 * DragState velocity (`vx`, `vy`) — flick/throw; consumers can't derive it without tracking state (see drag-velocity branch)
 * long-press delay: `delay` option (+ `tolerance` px, maybe touch-only) so touch pages can still scroll
@@ -120,3 +120,18 @@ TODOs
 - **Missed release** — releasing while away (Ctrl+Tab, alt-tab) sends no `pointerup`; back on the page the drag follows the mouse until the next click. Library's job (users have no way to end the drag). Fix: on `pointermove`, `ev.buttons === 0` → end or cancel the drag.
 - **`setPointerCapture`** — probably not wanted. Window listeners already survive a release outside the window or over devtools. Capture only helps with iframes. Cost: no hover / `:hover` on other elements mid-drag (e.g.
   dropzones).
+
+
+Other libs' defaults
+--------------------
+Checked against each lib's published npm source.
+
+| Library             | touch-action                  | Text selection                           | Native drag (dragstart)           |
+|---------------------|-------------------------------|------------------------------------------|-----------------------------------|
+| dnd-kit 6.3         | No (only on DragOverlay)      | Partial (clears selection)               | Yes (window dragstart preventDefault) |
+| GSAP Draggable 3.15 | Yes (none/pan-x/pan-y by axis)| Yes (user-select:none + onselectstart)   | Yes (ondragstart blocked)         |
+| neodrag 2.3         | Yes (inline none)             | Yes (body user-select:none, opt-out)     | No                                |
+| SortableJS 1.15     | No                            | Yes (selectstart + body user-select:none)| N/A (uses native drag)            |
+| interact.js 1.10    | No (dev warning suggests it)  | No (docs say use CSS)                    | Yes (document dragstart preventDefault) |
+| react-draggable 4.7 | No                            | Yes (transparent ::selection, opt-out)   | No                                |
+| jQuery UI 1.14      | Yes (theme CSS on handle)     | Yes (mousedown preventDefault)           | Yes (mousedown preventDefault)    |
