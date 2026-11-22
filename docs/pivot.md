@@ -112,7 +112,8 @@ TODOs
 * TBD (inconclusive, keeping as-is): First move past the threshold fires only `dragStart`, not `dragging`. Fire both? fire `dragging` with a `firstMove` bool?
 * multiple event listeners (EventEmitter like) - when the need arises.
 * ~~ctxElm selector (multi?)~~ rare case
-* ~~multiple target selectors (array) and dragState.selector?~~ consumer can pass `traget: '.aaa, .bbb'` and check `elm.matches('.aaa')` in event handlers. 
+* ~~multiple target selectors (array) and dragState.selector?~~ consumer can pass `traget: '.aaa, .bbb'` and check `elm.matches('.aaa')` in event handlers.
+* Deprecate 0.3.x: `npm deprecate draggables@"<0.4.0" "Replaced by v0.4 (new API)"`
 
 
 ### Later, Maybeas

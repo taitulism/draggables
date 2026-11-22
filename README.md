@@ -9,6 +9,8 @@ Event-based drag gestures.
 
 Each drag reports where it started, where it is now, and how far it moved. You decide what happens: move, resize, draw, etc.
 
+> v0.4 is a complete rewrite with a new API, not compatible with v0.3. v0.3.x is deprecated ([v0.3.x Docs](https://github.com/taitulism/draggables/blob/v0.3.5/README.md)).
+
 
 ### Table of Contents
 * [Quick Start](#quick-start)
