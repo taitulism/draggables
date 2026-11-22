@@ -15,7 +15,7 @@ export default [
 	pluginJs.configs.recommended,
 	...tsEsLint.configs.recommended,
 	{
-		ignores: ['src/vite-env.d.ts'],
+		ignores: ['src/vite-env.d.ts', 'archive/'],
 	},
 	{
 		rules: {

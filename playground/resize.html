@@ -1,0 +1,61 @@
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>resize — createDragger() Playground</title>
+	<link rel="stylesheet" href="./shared.css" />
+	<style type="text/css">
+		#panel {
+			position: absolute;
+			left: 100px;
+			top: 60px;
+			width: 200px;
+			height: 120px;
+			background-color: #6850d4;
+			color: white;
+			padding: 12px;
+		}
+
+		[data-side] {
+			position: absolute;
+			width: 12px;
+			height: 12px;
+			background-color: white;
+			border: 1px solid #333;
+			touch-action: none;
+		}
+
+		[data-side="n"], [data-side="s"] { left: calc(50% - 6px); cursor: ns-resize }
+		[data-side="e"], [data-side="w"] { top: calc(50% - 6px); cursor: ew-resize }
+		[data-side^="n"] { top: -6px }
+		[data-side^="s"] { bottom: -6px }
+		[data-side$="e"] { right: -6px }
+		[data-side$="w"] { left: -6px }
+		[data-side="nw"], [data-side="se"] { cursor: nwse-resize }
+		[data-side="ne"], [data-side="sw"] { cursor: nesw-resize }
+	</style>
+</head>
+<body>
+	<nav id="nav"></nav>
+	<div id="controls">
+	</div>
+	<div class="stage">
+		<div id="panel">
+			resize me
+			<div data-side="n"></div>
+			<div data-side="s"></div>
+			<div data-side="e"></div>
+			<div data-side="w"></div>
+			<div data-side="ne"></div>
+			<div data-side="nw"></div>
+			<div data-side="se"></div>
+			<div data-side="sw"></div>
+		</div>
+	</div>
+	<aside id="log-panel">
+		<button id="clear-log">Clear log</button>
+		<div id="log"></div>
+	</aside>
+
+	<script type="module" src="./resize.ts"></script>
+</body>
+</html>

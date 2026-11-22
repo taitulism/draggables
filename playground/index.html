@@ -1,0 +1,39 @@
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>core — createDragger() Playground</title>
+	<link rel="stylesheet" href="./shared.css" />
+	<style type="text/css">
+		#box {
+			position: absolute;
+			left: 50px;
+			top: 50px;
+			width: 120px;
+			height: 120px;
+			background-color: #6850d4;
+			color: white;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			user-select: none;
+		}
+	</style>
+</head>
+<body>
+	<nav id="nav"></nav>
+	<div id="controls">
+		<label>threshold <input id="threshold" type="number" value="3" min="0" style="width: 60px" /></label>
+		<span>Esc cancels</span>
+		<span id="status">idle</span>
+	</div>
+	<div id="stage" class="stage">
+		<div id="box">drag me</div>
+	</div>
+	<aside id="log-panel">
+		<button id="clear-log">Clear log</button>
+		<div id="log"></div>
+	</aside>
+
+	<script type="module" src="./core.ts"></script>
+</body>
+</html>

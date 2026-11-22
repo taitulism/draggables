@@ -1,0 +1,42 @@
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>gesture — createDragger() Playground</title>
+	<link rel="stylesheet" href="./shared.css" />
+	<style type="text/css">
+		#area {
+			cursor: crosshair;
+		}
+
+		#trail {
+			position: absolute;
+			inset: 0;
+			width: 100%;
+			height: 100%;
+			pointer-events: none;
+		}
+
+		#result {
+			position: absolute;
+			right: 12px;
+			top: 12px;
+			font-size: 24px;
+		}
+	</style>
+</head>
+<body>
+	<nav id="nav"></nav>
+	<div id="controls">
+	</div>
+	<div id="area" class="stage">
+		<svg id="trail"><line id="line" stroke="#6850d4" stroke-width="3" /></svg>
+		<div id="result"></div>
+	</div>
+	<aside id="log-panel">
+		<button id="clear-log">Clear log</button>
+		<div id="log"></div>
+	</aside>
+
+	<script type="module" src="./gesture.ts"></script>
+</body>
+</html>

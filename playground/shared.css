@@ -1,0 +1,83 @@
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+body {
+	font-family: monospace;
+	padding: 20px;
+}
+
+#nav {
+	display: flex;
+	margin-bottom: 16px;
+	background-color: #333;
+}
+
+#nav a {
+	padding: 8px 14px;
+	font-size: 15px;
+	color: #ddd;
+	text-decoration: none;
+}
+
+#nav a:hover {
+	background-color: #555;
+}
+
+#nav a[aria-current] {
+	font-weight: bold;
+	color: white;
+	background-color: #6850d4;
+}
+
+#controls {
+	display: flex;
+	gap: 16px;
+	align-items: center;
+	margin-bottom: 20px;
+}
+
+.stage {
+	position: relative;
+	height: 300px;
+	background-color: #dadada;
+	touch-action: none;
+}
+
+html:has(#log-panel) {
+	height: 100%;
+	overflow: hidden;
+}
+
+body:has(#log-panel) {
+	height: 100%;
+	width: 70%;
+	overflow: auto;
+}
+
+#log-panel {
+	position: fixed;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	width: 30%;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 8px;
+	background-color: #f3f3f3;
+	padding: 8px;
+}
+
+#log {
+	flex: 1;
+	align-self: stretch;
+	overflow: auto;
+	white-space: pre;
+}
+
+body.dragging * { cursor: grab !important }
+
+body { user-select: none; }

@@ -1,0 +1,281 @@
+import {beforeAll, beforeEach, afterEach, afterAll, describe, it, expect, vi} from 'vitest';
+import {createDragger, type Dragger} from '../../src';
+import {createContainerElm, createDraggableElm} from '../dom-utils';
+import {createMouseSimulator} from '../mouse-simulator';
+
+describe('Events', () => {
+	let elm: HTMLElement;
+	let container: HTMLElement;
+	let instance: Dragger;
+	let mouse: ReturnType<typeof createMouseSimulator>;
+
+	beforeAll(() => {
+		container = createContainerElm();
+		document.body.appendChild(container);
+		mouse = createMouseSimulator();
+	});
+
+	beforeEach(() => {
+		elm = createDraggableElm();
+		container.appendChild(elm);
+		mouse.moveToElm(elm);
+		instance = createDragger(elm);
+	});
+
+	afterEach(() => {
+		instance.destroy();
+		elm.remove();
+		mouse.reset();
+	});
+
+	afterAll(() => {
+		container.remove();
+	});
+
+	describe('.on()', () => {
+		it('emits `grab` with the element, pointer position and zero deltas', () => {
+			const spy = vi.fn();
+			instance.on('grab', spy);
+
+			const [x, y] = mouse.currentPosition;
+			mouse.down();
+
+			expect(spy).toHaveBeenCalledTimes(1);
+			expect(spy.mock.calls[0][0]).toMatchObject({elm, dx: 0, dy: 0});
+			expect(spy.mock.calls[0][0].ev).toMatchObject({clientX: x, clientY: y});
+			expect(spy.mock.calls[0][0].ev).toBeInstanceOf(Event);
+			mouse.up();
+		});
+
+		it('emits `dragStart` past the threshold with dx/dy since grab', () => {
+			const spy = vi.fn();
+			instance.on('dragStart', spy);
+
+			const [x, y] = mouse.currentPosition;
+			mouse.down().move([2, 2]);
+			expect(spy).not.toHaveBeenCalled();
+
+			mouse.move([3, 1]);
+			expect(spy).toHaveBeenCalledTimes(1);
+			expect(spy.mock.calls[0][0]).toMatchObject({elm, dx: 5, dy: 3});
+			expect(spy.mock.calls[0][0].ev).toMatchObject({clientX: x + 5, clientY: y + 3});
+			mouse.up();
+		});
+
+		it('emits `dragging` with dx/dy since grab', () => {
+			const spy = vi.fn();
+			instance.on('dragging', spy);
+
+			const [x, y] = mouse.currentPosition;
+			mouse.down().move([5, 5]).move([7, 8]);
+
+			expect(spy).toHaveBeenCalledTimes(1);
+			expect(spy.mock.calls[0][0]).toMatchObject({elm, dx: 12, dy: 13});
+			expect(spy.mock.calls[0][0].ev).toMatchObject({clientX: x + 12, clientY: y + 13});
+			mouse.up();
+		});
+
+		it('emits `dragEnd` with dx/dy from the pointerup position', () => {
+			const spy = vi.fn();
+			instance.on('dragEnd', spy);
+
+			const [x, y] = mouse.currentPosition;
+			mouse.down().move([5, 5]).up();
+
+			expect(spy).toHaveBeenCalledTimes(1);
+			expect(spy.mock.calls[0][0]).toMatchObject({elm, dx: 5, dy: 5});
+			expect(spy.mock.calls[0][0].ev).toMatchObject({clientX: x + 5, clientY: y + 5});
+		});
+
+		it('emits only `grab` on a click', () => {
+			const spy = vi.fn();
+			instance.on('grab', spy).on('dragStart', spy).on('dragging', spy).on('dragEnd', spy);
+
+			mouse.down().move([1, 1]).up();
+
+			expect(spy).toHaveBeenCalledTimes(1);
+		});
+
+		it('emits `release` with elm and grip on a click', () => {
+			const spy = vi.fn();
+			instance.on('release', spy);
+
+			mouse.down().up();
+
+			expect(spy).toHaveBeenCalledTimes(1);
+			expect(spy).toHaveBeenCalledWith({
+				elm,
+				grip: elm,
+				startLeft: elm.offsetLeft,
+				startTop: elm.offsetTop,
+			});
+		});
+
+		it('passes the start position to `dragCancel` and `release`', () => {
+			const cancelSpy = vi.fn();
+			const releaseSpy = vi.fn();
+			instance.on('dragCancel', cancelSpy).on('release', releaseSpy);
+
+			const startLeft = elm.offsetLeft;
+			const startTop = elm.offsetTop;
+			mouse.down().move([20, 30]);
+			elm.style.left = `${startLeft + 20}px`;
+			elm.style.top = `${startTop + 30}px`;
+			instance.cancelDrag();
+			mouse.up();
+
+			const expected = {elm, grip: elm, startLeft, startTop};
+			expect(cancelSpy).toHaveBeenCalledWith(expected);
+			expect(releaseSpy).toHaveBeenCalledWith(expected);
+		});
+
+		it('passes the start translate to `dragCancel` and `release` with `translate`', () => {
+			instance.destroy();
+			elm.style.translate = '10px 20px';
+			mouse.reset();
+			mouse.moveToElm(elm);
+			instance = createDragger(elm, {translate: true});
+			const cancelSpy = vi.fn();
+			const releaseSpy = vi.fn();
+			instance.on('dragCancel', cancelSpy).on('release', releaseSpy);
+
+			mouse.down().move([5, 5]);
+			instance.cancelDrag();
+			mouse.up();
+
+			expect(cancelSpy.mock.calls[0][0]).toMatchObject({startTx: 10, startTy: 20});
+			expect(releaseSpy.mock.calls[0][0]).toMatchObject({startTx: 10, startTy: 20});
+		});
+
+		it('omits the start translate without `translate`', () => {
+			const spy = vi.fn();
+			instance.on('release', spy);
+
+			mouse.down().up();
+
+			expect(spy.mock.calls[0][0]).not.toHaveProperty('startTx');
+			expect(spy.mock.calls[0][0]).not.toHaveProperty('startTy');
+		});
+
+		it('emits `release` after `dragEnd`', () => {
+			const calls: string[] = [];
+			instance.on('dragEnd', () => calls.push('dragEnd')).on('release', () => calls.push('release'));
+
+			mouse.down().move([5, 5]).up();
+
+			expect(calls).toEqual(['dragEnd', 'release']);
+		});
+
+		it('emits `release` after `dragCancel`', () => {
+			const calls: string[] = [];
+			instance
+				.on('dragCancel', () => calls.push('dragCancel'))
+				.on('release', () => calls.push('release'));
+
+			mouse.down().move([5, 5]);
+			instance.cancelDrag();
+			mouse.up();
+
+			expect(calls).toEqual(['dragCancel', 'release']);
+		});
+
+		it('emits `release` on a cancel before the threshold', () => {
+			const spy = vi.fn();
+			instance.on('release', spy);
+
+			mouse.down();
+			instance.cancelDrag();
+			mouse.up();
+
+			expect(spy).toHaveBeenCalledTimes(1);
+		});
+	});
+
+	it('passes `ev` and `elm` to every event handler', () => {
+		const spy = vi.fn();
+		instance.on('grab', spy).on('dragStart', spy).on('dragging', spy).on('dragEnd', spy);
+
+		mouse.down().move([5, 5]).move([7, 8]).up();
+
+		expect(spy).toHaveBeenCalledTimes(4);
+		for (const [payload] of spy.mock.calls) {
+			expect(payload.elm).toBe(elm);
+			expect(payload.ev).toBeInstanceOf(Event);
+		}
+	});
+
+	describe('.off()', () => {
+		it('stops listening to `grab` events', () => {
+			const spy = vi.fn();
+			instance.on('grab', spy).off('grab');
+
+			mouse.down().up();
+
+			expect(spy).not.toHaveBeenCalled();
+		});
+
+		it('stops listening to `dragStart` events', () => {
+			const spy = vi.fn();
+			instance.on('dragStart', spy);
+
+			mouse.down().move([5, 5]).up();
+			mouse.down().move([5, 5]).up();
+			expect(spy).toHaveBeenCalledTimes(2);
+
+			instance.off('dragStart');
+			mouse.down().move([5, 5]).up();
+			expect(spy).toHaveBeenCalledTimes(2);
+		});
+
+		it('stops listening to `dragging` events', () => {
+			const spy = vi.fn();
+			instance.on('dragging', spy);
+
+			mouse.down().move([5, 5]).move([5, 5]).up();
+			mouse.down().move([5, 5]).move([5, 5]).up();
+			expect(spy).toHaveBeenCalledTimes(2);
+
+			instance.off('dragging');
+			mouse.down().move([5, 5]).move([5, 5]).up();
+			expect(spy).toHaveBeenCalledTimes(2);
+		});
+
+		it('stops listening to `dragEnd` events', () => {
+			const spy = vi.fn();
+			instance.on('dragEnd', spy);
+
+			mouse.down().move([5, 5]).up();
+			mouse.down().move([5, 5]).up();
+			expect(spy).toHaveBeenCalledTimes(2);
+
+			instance.off('dragEnd');
+			mouse.down().move([5, 5]).up();
+			expect(spy).toHaveBeenCalledTimes(2);
+		});
+
+		it('stops listening to `dragCancel` events', () => {
+			const spy = vi.fn();
+			instance.on('dragCancel', spy);
+
+			mouse.down().move([5, 5]);
+			instance.cancelDrag();
+			mouse.up();
+			expect(spy).toHaveBeenCalledTimes(1);
+
+			instance.off('dragCancel');
+			mouse.down().move([5, 5]);
+			instance.cancelDrag();
+			mouse.up();
+			expect(spy).toHaveBeenCalledTimes(1);
+		});
+
+		it('stops listening to `release` events', () => {
+			const spy = vi.fn();
+			instance.on('release', spy).off('release');
+
+			mouse.down().up();
+
+			expect(spy).not.toHaveBeenCalled();
+		});
+	});
+});

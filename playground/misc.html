@@ -1,0 +1,80 @@
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>misc — createDragger() Playground</title>
+	<link rel="stylesheet" href="./shared.css" />
+	<style type="text/css">
+		h4 { margin: 16px 0 6px }
+
+		.stage { height: 200px }
+
+		.box {
+			position: absolute;
+			width: 80px;
+			height: 60px;
+			padding: 4px;
+			background-color: #fff;
+			border: 2px solid #6850d4;
+			cursor: grab;
+			user-select: none;
+		}
+
+		.box.locked { border-color: #999; cursor: not-allowed }
+
+		.card { cursor: default }
+
+		.card .grip {
+			height: 14px;
+			margin: -4px -4px 4px;
+			background-color: #6850d4;
+			cursor: grab;
+		}
+
+		#outer {
+			width: 260px;
+			height: 140px;
+			background-color: #e6e1fa;
+		}
+
+		#outer .box { width: 60px; height: 40px }
+
+		#growing { transition: none }
+	</style>
+</head>
+<body>
+	<nav id="nav"></nav>
+	<div id="controls">
+	</div>
+
+	<h4>target as a function (skips .locked)</h4>
+	<div id="fn-stage" class="stage">
+		<div class="box" data-name="fn-a" style="left: 20px; top: 20px">a</div>
+		<div class="box locked" data-name="fn-b" style="left: 140px; top: 20px">locked</div>
+		<div class="box" data-name="fn-c" style="left: 260px; top: 20px">c</div>
+	</div>
+
+	<h4>grip + target, container as a selector ('.stage')</h4>
+	<div id="cards-stage" class="stage">
+		<div class="box card" data-name="card-a" style="left: 20px; top: 20px"><div class="grip"></div>a</div>
+		<div class="box card" data-name="card-b" style="left: 140px; top: 20px"><div class="grip"></div>b</div>
+	</div>
+
+	<h4>refreshContainerBounds() — stage grows while dragging near its bottom</h4>
+	<div id="growing" class="stage">
+		<div class="box" data-name="grow" style="left: 20px; top: 20px">grow</div>
+	</div>
+
+	<h4>nested contexts</h4>
+	<div id="nested-stage" class="stage">
+		<div id="outer" class="box" style="left: 20px; top: 20px">
+			<div class="box" data-name="inner" style="left: 10px; top: 30px">inner</div>
+		</div>
+	</div>
+	<aside id="log-panel">
+		<button id="clear-log">Clear log</button>
+		<div id="log"></div>
+	</aside>
+
+	<script type="module" src="./misc.ts"></script>
+</body>
+</html>
