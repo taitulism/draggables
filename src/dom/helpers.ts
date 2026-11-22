@@ -65,7 +65,7 @@ export const resolveContainer = (
 const toPx = (raw: string, size: number) =>
 	raw.endsWith('%') ? parseFloat(raw) / 100 * size : parseFloat(raw);
 
-export const readTranslate =(elm: HTMLElement): Point => {
+export const readTranslate = (elm: HTMLElement): Point => {
 	const value = getComputedStyle(elm).translate;
 
 	if (value === 'none') return {x: 0, y: 0};

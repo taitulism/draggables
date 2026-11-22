@@ -1,5 +1,13 @@
 import {Drag, type DragPosition} from '../core/Drag';
-import type {DragState, DragEventHandler, DragEventName, DraggerOptions, Handlers, Active, ReleaseData} from './types';
+import type {
+	DragState,
+	DragEventHandler,
+	DragEventName,
+	DraggerOptions,
+	Handlers,
+	Active,
+	ReleaseData,
+} from './types';
 import {
 	assertName,
 	clampMove,

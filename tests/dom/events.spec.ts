@@ -103,7 +103,12 @@ describe('Events', () => {
 			mouse.down().up();
 
 			expect(spy).toHaveBeenCalledTimes(1);
-			expect(spy).toHaveBeenCalledWith({elm, grip: elm, startLeft: elm.offsetLeft, startTop: elm.offsetTop});
+			expect(spy).toHaveBeenCalledWith({
+				elm,
+				grip: elm,
+				startLeft: elm.offsetLeft,
+				startTop: elm.offsetTop,
+			});
 		});
 
 		it('passes the start position to `dragCancel` and `release`', () => {
