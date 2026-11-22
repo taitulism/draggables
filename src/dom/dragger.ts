@@ -41,6 +41,8 @@ export function createDragger<const O extends DraggerOptions = object> (
 			dy: move.dy,
 			rawDx: pos.dx,
 			rawDy: pos.dy,
+			vx: pos.vx,
+			vy: pos.vy,
 			left: startLeft + move.dx,
 			top: startTop + move.dy,
 			...toContainerPoints(activeDrag, move),
@@ -55,7 +57,7 @@ export function createDragger<const O extends DraggerOptions = object> (
 		if (!dragTarget) return;
 
 		const {elm, grip} = dragTarget;
-		core.start(ev.clientX, ev.clientY);
+		core.start(ev.clientX, ev.clientY, ev.timeStamp);
 		const containerElm = resolveContainer(contextElm, elm, opts);
 		active = {
 			elm,
@@ -76,13 +78,13 @@ export function createDragger<const O extends DraggerOptions = object> (
 		window.addEventListener('pointercancel', onCancel);
 		if (opts.cancelOnEsc ?? true) window.addEventListener('keydown', onKey);
 
-		emit('grab', ev, active, {dx: 0, dy: 0, x: ev.clientX, y: ev.clientY});
+		emit('grab', ev, active, {dx: 0, dy: 0, x: ev.clientX, y: ev.clientY, vx: 0, vy: 0});
 	};
 
 	const onMove = (ev: PointerEvent) => {
 		if (!active || ev.pointerId !== active.pointerId) return;
 
-		const move = core.move(ev.clientX, ev.clientY);
+		const move = core.move(ev.clientX, ev.clientY, ev.timeStamp);
 		if (!move) return;
 
 		const {isStart, ...pos} = move;
@@ -93,7 +95,7 @@ export function createDragger<const O extends DraggerOptions = object> (
 		if (!active || ev.pointerId !== active.pointerId) return;
 
 		const activeDrag = active;
-		const pos = core.end(ev.clientX, ev.clientY);
+		const pos = core.end(ev.clientX, ev.clientY, ev.timeStamp);
 		unbind();
 		if (pos) emit('dragEnd', ev, activeDrag, pos);
 		handlers.release?.({elm: activeDrag.elm, grip: activeDrag.grip});

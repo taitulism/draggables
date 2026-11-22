@@ -300,8 +300,7 @@ Not ported:
 
 TODOs
 -----
-* add DragState `rawDx`/`rawDy` (unclamped) for rubber-band, auto-scroll speed
-* DragState velocity (`vx`, `vy`) — flick/throw; consumers can't derive it without tracking state
+* DragState velocity (`vx`, `vy`) — flick/throw; consumers can't derive it without tracking state (see drag-velocity branch)
 * long-press delay: `delay` option (+ `tolerance` px, maybe touch-only) so touch pages can still scroll
 * a12y/keyboard: add instance methods to control drag (with events)
 ------------------------------

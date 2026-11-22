@@ -25,6 +25,8 @@ export type DragState<O extends DraggerOptions = DraggerOptions> = {
 	dy: number
 	rawDx: number
 	rawDy: number
+	vx: number
+	vy: number
 	x: number
 	y: number
 	startX: number
