@@ -7,7 +7,7 @@ draggables
 ==========
 Event-based drag gestures.
 
-Each drag reports where it started, where it is now, and how far it moved - You decide what happens: move, resize, draw, etc.
+Each drag reports where it started, where it is now, and how far it moved. You decide what happens: move, resize, draw, etc.
 
 
 ### Table of Contents
@@ -44,7 +44,7 @@ dragger.on('dragEnd', (dragState) => {...});
    ------------------
    ev     - the pointer event
    elm    - the dragged element (not always ev.target)
-   x, y   - pointer position
+   x, y   - pointer position relative to the container
    dx, dy - distance moved since drag start
    
    ...and more
@@ -106,16 +106,16 @@ The context element is also the default [container](#option-container).
 
 
 ### Options
-| Option         | Value                          | Default    |
-|----------------|--------------------------------|------------|
-| [`target`](#option-target) | `string` \| `(ev) => HTMLElement \| null` | context element |
-| [`grip`](#option-grip) | `string`                       | -          |
-| [`container`](#option-container) | `HTMLElement` \| `string`      | context element |
-| [`clamp`](#option-clamp) | `"element"` \| `"pointer"`     | -          |
-| [`button`](#option-button) | `number`                       | `0`        |
-| [`translate`](#option-translate) | `boolean`                      | `false`    |
-| [`cancelOnEsc`](#option-cancelonesc) | `boolean`                      | `true`     |
-| [`threshold`](#option-threshold) | `number` (px)                  | `3`        |
+| Option                               | Value                                     | Default         |
+|--------------------------------------|-------------------------------------------|-----------------|
+| [`target`](#option-target)           | `string` \| `(ev) => HTMLElement \| null` | context element |
+| [`grip`](#option-grip)               | `string`                                  | -               |
+| [`container`](#option-container)     | `HTMLElement` \| `string`                 | context element |
+| [`clamp`](#option-clamp)             | `"element"` \| `"pointer"`                | -               |
+| [`button`](#option-button)           | `number`                                  | `0`             |
+| [`translate`](#option-translate)     | `boolean`                                 | `false`         |
+| [`cancelOnEsc`](#option-cancelonesc) | `boolean`                                 | `true`          |
+| [`threshold`](#option-threshold)     | `number` (px)                             | `3`             |
 
 &nbsp;
 
@@ -240,6 +240,8 @@ createDragger(board, {target: '.card', cancelOnEsc: false});
 ### Option: `threshold`
 Number of pixels the pointer must travel before `dragStart` fires. Below it, a release is a plain click (no `dragEnd`). Default: `3`.
 
+`dx`/`dy` are always measured from the grab point, so on `dragStart` the element catches up with the pointer.
+
 ```js
 createDragger(list, {target: '.item', threshold: 10});
 ```
@@ -257,14 +259,14 @@ A dragger instance emits an event at each stage of the gesture. Each event carri
 
 
 ### Gesture Lifecycle
-| Event          | Fires                                                                 | Use for |
-|----------------|-----------------------------------------------------------------------|---------|
-| `'grab'` | on `pointerdown` on a target                         | highlight |
-| `'dragStart'` | on the first `pointermove` that crosses the [threshold](#option-threshold)                 | "dragging" class |
-| `'dragging'` | on every `pointermove` after that                                     | moving |
-| `'dragEnd'` | on `pointerup`, only if the drag started                              | saving position |
-| `'dragCancel'` | when the drag is aborted: on `Esc` keypress, on `pointercancel`, or when calling the instance's `.cancelDrag()` or `.destroy()` | reverting |
-| `'release'` | on `pointerup`, or after `dragCancel` | unhighlight |
+| Event          | Fires                                                                                                                           | Use for          |
+|----------------|---------------------------------------------------------------------------------------------------------------------------------|------------------|
+| `'grab'`       | on `pointerdown` on a target                                                                                                    | highlight        |
+| `'dragStart'`  | on the first `pointermove` that crosses the [threshold](#option-threshold)                                                      | "dragging" class |
+| `'dragging'`   | on every `pointermove` after that                                                                                               | moving           |
+| `'dragEnd'`    | on `pointerup`, only if the drag started                                                                                        | saving position  |
+| `'dragCancel'` | when the drag is aborted: on `Esc` keypress, on `pointercancel`, or when calling the instance's `.cancelDrag()` or `.destroy()` | reverting        |
+| `'release'`    | on `pointerup`, or after `dragCancel`                                                                                           | unhighlight      |
 
 > A click (no move past the threshold) fires only `grab` and `release`.
 
@@ -300,18 +302,18 @@ createDragger(board, {target: '.card'})
 ```
 
 
-| Property     | Description                                                   |
-|--------------|---------------------------------------------------------------|
-| `ev`         | the vanilla `PointerEvent`                                    |
-| `elm`        | the dragged element (not always `ev.target`)                  |
-| [`grip`](#option-grip) | the grabbed grip (when no `grip` option, it's `=== elm`)            |
-| `dx`, `dy`   | delta/distance since drag start. Clamped with `clamp`                    |
-| `rawDx`, `rawDy` | same as `dx`/`dy`, never clamped. For rubber-band, auto-scroll speed |
-| `startX`, `startY` | grab point relative to the container |
-| `x`, `y`     | grab point relative to the container + `dx`/`dy`  |
-| `left`, `top`| start `offsetLeft`/`offsetTop` (from nearest positioned ancestor) + `dx`/`dy` |
-| `container`  | the [container](#option-container) element |
-| `tx`, `ty`   | start `translate` + `dx`/`dy`. With `translate: true`         |
+| Property               | Type           | Description                                                                   |
+|------------------------|----------------|-------------------------------------------------------------------------------|
+| `ev`                   | `PointerEvent` | the vanilla `PointerEvent`                                                    |
+| `elm`                  | `HTMLElement`  | the dragged element (not always `ev.target`)                                  |
+| [`grip`](#option-grip) | `HTMLElement`  | the grabbed grip (when no `grip` option, it's `=== elm`)                      |
+| `container`            | `HTMLElement`  | the [container](#option-container) element                                    |
+| `dx`, `dy`             | `number`       | delta/distance since drag start. Clamped with `clamp`                         |
+| `rawDx`, `rawDy`       | `number`       | same as `dx`/`dy`, never clamped. For rubber-band, auto-scroll speed          |
+| `startX`, `startY`     | `number`       | grab point relative to the container                                          |
+| `x`, `y`               | `number`       | grab point relative to the container + `dx`/`dy`                              |
+| `left`, `top`          | `number`       | start `offsetLeft`/`offsetTop` (from nearest positioned ancestor) + `dx`/`dy` |
+| `tx`, `ty`             | `number`       | start `translate` + `dx`/`dy`. With `translate: true`                         |
 
 
 > In TypeScript, optional fields appear only when you set the option that enables them (e.g. `tx`/`ty` with `translate: true`).
@@ -362,7 +364,7 @@ useEffect(() => {
 Caveats
 -------
 ### Nested Context Elements
-Nested context elements both drag. To drag only the inner one, stop propagation on its `grab`:
+When context elements are nested, both drag. To drag only the inner one, stop propagation on its `grab`:
 
 ```js
 createDragger(inner).on('grab', ({ev}) => ev.stopPropagation());
@@ -372,6 +374,10 @@ createDragger(inner).on('grab', ({ev}) => ev.stopPropagation());
 ### Touch
 Set `touch-action: none` on your draggables (or grips). Without it, the browser claims touch drags as page scrolls.
 
+```css
+.card { touch-action: none; }
+```
+
 
 ### Images & Links
 Dragging an `<img>` or `<a>` starts the browser's native drag, which cancels yours. Either set `draggable="false"` on them (or CSS `-webkit-user-drag: none`), or prevent it for the whole context element:
@@ -380,11 +386,7 @@ Dragging an `<img>` or `<a>` starts the browser's native drag, which cancels you
 board.addEventListener('dragstart', (ev) => ev.preventDefault());
 ```
 
-```css
-.card { touch-action: none; }
-```
-
-If the browser cancels the pointer (`pointercancel`), the drag ends with `dragCancel`.
+When a native drag takes over, the browser cancels the pointer (`pointercancel`) and the drag ends with `dragCancel`.
 
 
 ### Text Selection
@@ -454,6 +456,8 @@ createDragger(board, {target: '.note'}).on('dragging', ({elm}) => {
 ### Dropzones
 Find which of your dropzones (elements matching a selector you pass) is under the pointer. Each helper returns the zone element or `null`.
 
+They expect viewport coordinates (`ev.clientX`/`ev.clientY`), not the container-relative `x`/`y` from the drag state.
+
 Pass the dragged element as `exclude` so it doesn't count as a zone. With nested zones, the innermost wins.
 
 
@@ -466,8 +470,8 @@ import {createDragger, measureZones, hitZone} from 'draggables';
 let zones;
 createDragger(board, {target: '.card'})
    .on('dragStart', ({elm}) => zones = measureZones('.trash', elm))
-   .on('dragEnd', ({elm, x, y}) => {
-      if (hitZone(zones, x, y)) elm.remove();
+   .on('dragEnd', ({elm, ev}) => {
+      if (hitZone(zones, ev.clientX, ev.clientY)) elm.remove();
    });
 ```
 
@@ -479,8 +483,8 @@ Ask the browser what's under the pointer on each move (`findDropzone`). Slower, 
 import {createDragger, findDropzone} from 'draggables';
 
 createDragger(board, {target: '.card'})
-   .on('dragEnd', ({elm, x, y}) => {
-      if (findDropzone(x, y, '.trash', elm)) elm.remove();
+   .on('dragEnd', ({elm, ev}) => {
+      if (findDropzone(ev.clientX, ev.clientY, '.trash', elm)) elm.remove();
    });
 ```
 
@@ -490,7 +494,7 @@ createDragger(board, {target: '.card'})
 
 DEVELOPMENT
 -----------
-Install Chromium for playwright testing
+Install Chromium for Playwright testing
 ```sh
 $ npx playwright install --only-shell --with-deps chromium
 ```

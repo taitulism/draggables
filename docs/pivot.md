@@ -300,6 +300,13 @@ Not ported:
 
 TODOs
 -----
+1. **Scrolling isn't handled.** If the page or container scrolls mid-drag, the positions are probably wrong and clamping uses stale bounds. `refreshContainerBounds()` is a manual workaround, and there's no auto-scroll, which is a very common need.
+2. **`dragCancel` and `release` get almost nothing.** They're documented as the place to revert, but there are no start values (start left/top/tx) to revert to. Users have to save the start themselves on `grab` or `dragStart`.
+3. **`translate` silently reads `%` as `px`.** That's a quietly wrong result; it should throw or warn.
+4. **Common setup is left to the user.** Every user has to set `touch-action`, block native img/link drag and prevent text selection, or the drag breaks. Most drag libraries handle these by default and let you opt out.
+5. **Nested draggers both drag by default.** That's surprising, and the fix depends on `stopPropagation` and listener order. Expected: the innermost dragger wins by default. The lib can do this by having the first dragger to get a `pointerdown` mark the event as claimed (e.g. in a shared `WeakSet`), so outer draggers skip it. Unlike `stopPropagation`, this doesn't hide the event from the app's other listeners.
+
+* grid snapping helper? - `snap(n, step)`
 * DragState velocity (`vx`, `vy`) — flick/throw; consumers can't derive it without tracking state (see drag-velocity branch)
 * long-press delay: `delay` option (+ `tolerance` px, maybe touch-only) so touch pages can still scroll
 * a12y/keyboard: add instance methods to control drag (with events)
