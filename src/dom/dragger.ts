@@ -5,6 +5,10 @@ import {
 	clampMove,
 	measureBBox,
 	measureClampBox,
+	measureAnchoredBBox,
+	measureScrollAnchor,
+	measureScrollDelta,
+	compensateScroll,
 	readTranslate,
 	resolveContainer,
 	toContainerPoints,
@@ -26,12 +30,14 @@ export function createDragger<const O extends DraggerOptions = object> (
 		window.removeEventListener('pointerup', onUp);
 		window.removeEventListener('pointercancel', onCancel);
 		window.removeEventListener('keydown', onKey);
+		window.removeEventListener('scroll', onScroll, true);
 		active = undefined;
 	};
 
-	const emit = (name: DragEventName, ev: PointerEvent, activeDrag: Active, pos: DragPosition) => {
+	const emit = (name: DragEventName, ev: PointerEvent, activeDrag: Active, rawPos: DragPosition) => {
 		const {elm, grip, startLeft, startTop} = activeDrag;
-		const move = clampMove(activeDrag, pos);
+		const pos = compensateScroll(rawPos, activeDrag.scrollDelta);
+		const move = clampMove(activeDrag, pos, activeDrag.scrollDelta);
 
 		(handlers[name] as DragEventHandler<O> | undefined)?.({
 			ev,
@@ -69,12 +75,16 @@ export function createDragger<const O extends DraggerOptions = object> (
 			clampBox: opts.clamp ? measureClampBox(elm, ev, opts.clamp) : null,
 			containerElm,
 			containerBBox: measureBBox(containerElm),
+			scrollAnchor: measureScrollAnchor(containerElm),
+			scrollDelta: {shiftX: 0, shiftY: 0, ownX: 0, ownY: 0},
+			lastEv: ev,
 		};
 
 		window.addEventListener('pointermove', onMove);
 		window.addEventListener('pointerup', onUp);
 		window.addEventListener('pointercancel', onCancel);
 		if (opts.cancelOnEsc ?? true) window.addEventListener('keydown', onKey);
+		window.addEventListener('scroll', onScroll, true);
 
 		emit('grab', ev, active, {dx: 0, dy: 0, x: ev.clientX, y: ev.clientY});
 	};
@@ -82,6 +92,7 @@ export function createDragger<const O extends DraggerOptions = object> (
 	const onMove = (ev: PointerEvent) => {
 		if (!active || ev.pointerId !== active.pointerId) return;
 
+		active.lastEv = ev;
 		const move = core.move(ev.clientX, ev.clientY);
 		if (!move) return;
 
@@ -97,6 +108,13 @@ export function createDragger<const O extends DraggerOptions = object> (
 		unbind();
 		if (pos) emit('dragEnd', ev, activeDrag, pos);
 		handlers.release?.({elm: activeDrag.elm, grip: activeDrag.grip});
+	};
+
+	const onScroll = () => {
+		if (!active) return;
+
+		active.scrollDelta = measureScrollDelta(active);
+		instance.update();
 	};
 
 	const onCancel = () => {
@@ -124,7 +142,13 @@ export function createDragger<const O extends DraggerOptions = object> (
 		},
 
 		refreshContainerBounds () {
-			if (active) active.containerBBox = measureBBox(active.containerElm);
+			if (active) active.containerBBox = measureAnchoredBBox(active);
+
+			return instance;
+		},
+
+		update () {
+			if (active) onMove(active.lastEv);
 
 			return instance;
 		},

@@ -1,4 +1,4 @@
-import {createDragger, type DragState} from '../src';
+import {createDragger, autoScroll, type DragState} from '../src';
 import {logOutput, logCancel, lockCursor, unlockCursor} from './shared';
 
 const fnStage = document.getElementById('fn-stage')!;
@@ -51,6 +51,8 @@ createDragger(cardsStage, {
 		restore(elm, start);
 	});
 
+const growScroller = autoScroll(document.body);
+
 const grow = createDragger(growing, {
 	target: '.box',
 	clamp: 'element',
@@ -58,13 +60,15 @@ const grow = createDragger(growing, {
 	.on('grab', grab)
 	.on('dragging', (dragState) => {
 		move(dragState);
+		growScroller.update(dragState.ev.clientX, dragState.ev.clientY);
 		const bottom = dragState.top + dragState.elm.offsetHeight;
 		if (bottom > growing.clientHeight - 10) {
 			growing.style.height = `${growing.clientHeight + 20}px`;
-			grow.refreshContainerBounds();
+			grow.refreshContainerBounds().update();
 		}
 	})
-	.on('dragCancel', ({elm}) => restore(elm, start));
+	.on('dragCancel', ({elm}) => restore(elm, start))
+	.on('release', () => growScroller.stop());
 
 createDragger(nestedStage, {
 	target: '#outer',

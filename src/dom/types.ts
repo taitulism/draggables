@@ -54,6 +54,20 @@ export type BBox = {left: number, top: number, right: number, bottom: number}
 
 export type Point = {x: number, y: number}
 
+export type ScrollAnchor = {
+	left: number,
+	top: number,
+	scrollLeft: number,
+	scrollTop: number,
+}
+
+export type ScrollDelta = {
+	shiftX: number,
+	shiftY: number,
+	ownX: number,
+	ownY: number,
+}
+
 export type Active = DragTarget & {
 	pointerId: number
 	startX: number
@@ -64,4 +78,7 @@ export type Active = DragTarget & {
 	clampBox: BBox | null
 	containerElm: HTMLElement
 	containerBBox: BBox
+	scrollAnchor: ScrollAnchor
+	scrollDelta: ScrollDelta
+	lastEv: PointerEvent
 }

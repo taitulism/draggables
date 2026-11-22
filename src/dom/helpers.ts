@@ -1,6 +1,15 @@
 import type {DragPosition} from '../core/Drag';
 import {clamp} from '../utils/clamp';
-import type {Active, BBox, DragEventName, DraggerOptions, Point, DragTarget} from './types';
+import type {
+	Active,
+	BBox,
+	DragEventName,
+	DraggerOptions,
+	Point,
+	DragTarget,
+	ScrollAnchor,
+	ScrollDelta,
+} from './types';
 
 export const EVENT_NAMES: DragEventName[] = [
 	'grab', 'dragStart', 'dragging', 'dragEnd', 'dragCancel', 'release',
@@ -80,13 +89,55 @@ export const measureClampBox = (
 	return elm.getBoundingClientRect();
 };
 
-export const clampMove = ({clampBox, containerBBox}: Active, pos: DragPosition): DragPosition => {
+export const measureScrollAnchor = (box: HTMLElement): ScrollAnchor => {
+	const {left, top} = box.getBoundingClientRect();
+
+	return {left, top, scrollLeft: box.scrollLeft, scrollTop: box.scrollTop};
+};
+
+export const measureScrollDelta = ({containerElm, scrollAnchor}: Active): ScrollDelta => {
+	const {left, top} = containerElm.getBoundingClientRect();
+
+	return {
+		shiftX: scrollAnchor.left - left,
+		shiftY: scrollAnchor.top - top,
+		ownX: containerElm.scrollLeft - scrollAnchor.scrollLeft,
+		ownY: containerElm.scrollTop - scrollAnchor.scrollTop,
+	};
+};
+
+export const compensateScroll = (
+	pos: DragPosition,
+	{shiftX, shiftY, ownX, ownY}: ScrollDelta,
+): DragPosition => ({
+	...pos,
+	dx: pos.dx + shiftX + ownX,
+	dy: pos.dy + shiftY + ownY,
+});
+
+export const measureAnchoredBBox = (activeDrag: Active): BBox => {
+	const {shiftX, shiftY} = measureScrollDelta(activeDrag);
+	const {left, top, right, bottom} = measureBBox(activeDrag.containerElm);
+
+	return {left: left + shiftX, top: top + shiftY, right: right + shiftX, bottom: bottom + shiftY};
+};
+
+export const clampMove = (
+	{clampBox, containerBBox}: Active,
+	pos: DragPosition,
+	{ownX, ownY}: ScrollDelta,
+): DragPosition => {
 	if (!clampBox) return pos;
+
+	const minX = containerBBox.left - clampBox.left + ownX;
+	const maxX = containerBBox.right - clampBox.right + ownX;
+	const minY = containerBBox.top - clampBox.top + ownY;
+	const maxY = containerBBox.bottom - clampBox.bottom + ownY;
 
 	return {
 		...pos,
-		dx: clamp(pos.dx, containerBBox.left - clampBox.left, containerBBox.right - clampBox.right),
-		dy: clamp(pos.dy, containerBBox.top - clampBox.top, containerBBox.bottom - clampBox.bottom),
+		dx: clamp(pos.dx, minX, maxX),
+		dy: clamp(pos.dy, minY, maxY),
 	};
 };
 

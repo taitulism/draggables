@@ -24,6 +24,7 @@ Each drag reports where it started, where it is now, and how far it moved. You d
 * Helper Utils:
 	* [Clamp](#clamp)
 	* [Edge Proximity](#edge-proximity)
+	* [Auto-Scroll](#auto-scroll)
 	* [Dropzones](#dropzones)
 
 
@@ -263,7 +264,7 @@ A dragger instance emits an event at each stage of the gesture. Each event carri
 |----------------|---------------------------------------------------------------------------------------------------------------------------------|------------------|
 | `'grab'`       | on `pointerdown` on a target                                                                                                    | highlight        |
 | `'dragStart'`  | on the first `pointermove` that crosses the [threshold](#option-threshold)                                                      | "dragging" class |
-| `'dragging'`   | on every `pointermove` after that                                                                                               | moving           |
+| `'dragging'`   | on every `pointermove` after that, and on scroll                                                                                | moving           |
 | `'dragEnd'`    | on `pointerup`, only if the drag started                                                                                        | saving position  |
 | `'dragCancel'` | when the drag is aborted: on `Esc` keypress, on `pointercancel`, or when calling the instance's `.cancelDrag()` or `.destroy()` | reverting        |
 | `'release'`    | on `pointerup`, or after `dragCancel`                                                                                           | unhighlight      |
@@ -324,6 +325,7 @@ A `Dragger` also has the following methods:
 
 * [.cancelDrag()](#canceldrag)
 * [.refreshContainerBounds()](#refreshcontainerbounds)
+* [.update()](#update)
 * [.destroy()](#destroy)
 
 
@@ -336,10 +338,21 @@ window.addEventListener('blur', () => dragger.cancelDrag());
 
 
 #### **.refreshContainerBounds()**
-Sometimes the container moves or resizes during a drag (e.g. the page scrolls). Call this to re-read its rect, so clamping matches its new edges. No-op when idle.
+Sometimes the container resizes during a drag (e.g. it grows). Call this to re-read its rect, so clamping matches its new edges. No-op when idle. Scrolling is handled automatically.
+
+It doesn't re-fire `dragging`, so the new bounds apply on the next move. Chain [`.update()`](#update) to apply them now.
 
 ```js
-list.addEventListener('scroll', () => dragger.refreshContainerBounds());
+container.style.height = `${container.clientHeight + 20}px`;
+dragger.refreshContainerBounds();
+```
+
+
+#### **.update()**
+Re-fires `dragging` with the last pointer position, without waiting for the pointer to move. Useful after changing something the drag depends on, like the container size, or in an auto-scroll loop. No-op when idle. Scrolling calls it automatically.
+
+```js
+dragger.refreshContainerBounds().update();
 ```
 
 
@@ -369,6 +382,10 @@ When context elements are nested, both drag. To drag only the inner one, stop pr
 ```js
 createDragger(inner).on('grab', ({ev}) => ev.stopPropagation());
 ```
+
+
+### Scrolling
+If the page or any container scrolls mid-drag, `dx`/`dy` include the scroll distance, so the element stays under the pointer. For scrolling near edges, see the [Auto-Scroll](#auto-scroll) helper.
 
 
 ### Touch
@@ -450,6 +467,26 @@ createDragger(board, {target: '.note'}).on('dragging', ({elm}) => {
       board.classList.toggle(`near-${edge}`, distance <= 10);
    }
 });
+```
+
+
+### Auto-Scroll
+Scrolls an element (or `window`) while the pointer is near its edges. Speed ramps up toward the edge, and it stops on its own once you move away. The dragger compensates for the scroll, so the dragged element keeps following the pointer.
+
+`autoScroll(scrollElm, {threshold, speed})`
+* `threshold` - edge band in px where scrolling starts. Default `40`.
+* `speed` - max px per frame, reached at the edge. Default `15`.
+
+Returns `{update(x, y), stop()}`. Pass viewport coordinates (`ev.clientX`/`ev.clientY`).
+
+```js
+import {createDragger, autoScroll} from 'draggables';
+
+const scroller = autoScroll(window);
+
+createDragger(board, {target: '.note'})
+   .on('dragging', ({ev}) => scroller.update(ev.clientX, ev.clientY))
+   .on('release', () => scroller.stop());
 ```
 
 
